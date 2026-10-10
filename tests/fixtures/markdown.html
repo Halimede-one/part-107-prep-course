@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Markdown check</title>
+</head>
+<body>
+
+<!-- Loaded by tests/test_markdown.py over a local HTTP server, as the course
+     page is. Renders sample tutor text with ui/markdown.js and writes PASS,
+     or one line per failed check, into #result. -->
+<pre id="result">NOT RUN</pre>
+
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script>
+(function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+  function block(text) { var d = document.createElement("div"); d.appendChild(markdown.block(text)); return d; }
+  function inline(text) { var d = document.createElement("div"); d.appendChild(markdown.inline(text)); return d; }
+  function text(d, selector) { var n = d.querySelector(selector); return n ? n.textContent : null; }
+
+  try {
+    var d = block("Fly **below 400 feet** and *yield*.\n\n- one\n- two\n\n1. first\n2. second");
+    check("bold", text(d, "p strong") === "below 400 feet");
+    check("italic", text(d, "p em") === "yield");
+    check("bullet list", d.querySelectorAll("ul > li").length === 2);
+    check("numbered list", d.querySelectorAll("ol > li").length === 2);
+
+    d = block("## Airspace\n\n| Class | Authorization |\n|---|---|\n| D | Required |\n\n> Quoted.\n\n```\nsome code\n```");
+    check("heading", text(d, "h2") === "Airspace");
+    check("table header", text(d, "table th") === "Class");
+    check("table cell", text(d, "table td:last-child") === "Required");
+    check("block quote", text(d, "blockquote p") === "Quoted.");
+    check("code block", text(d, "pre code") === "some code\n");
+
+    d = block("See [14 CFR 107.41](https://www.ecfr.gov/current/title-14/section-107.41).");
+    var a = d.querySelector("a");
+    check("link", a && a.getAttribute("href") === "https://www.ecfr.gov/current/title-14/section-107.41");
+    check("link opens a new tab", a && a.target === "_blank" && a.rel === "noopener");
+
+    d = block("![Sectional chart](https://example.com/chart.png)\n\n![Class D](images/class-d.svg)");
+    var imgs = d.querySelectorAll("img");
+    check("remote image", imgs.length === 2 && imgs[0].getAttribute("src") === "https://example.com/chart.png");
+    check("image alt text", imgs.length === 2 && imgs[0].alt === "Sectional chart");
+    check("local image", imgs.length === 2 && imgs[1].getAttribute("src") === "images/class-d.svg");
+
+    d = block("<script>window.ran = 1<\/script>\n\n<div onclick=\"window.ran = 1\">x</div>");
+    check("block HTML is not markup", !d.querySelector("script, div"));
+    check("block HTML shows as text", d.textContent.indexOf("<script>") !== -1 && d.textContent.indexOf("<div") !== -1);
+
+    d = block("Hi <img src=x onerror=\"window.ran = 1\"> there");
+    check("inline HTML is not markup", !d.querySelector("img"));
+    check("inline HTML shows as text", d.textContent.indexOf("<img") !== -1);
+
+    d = block("[one](javascript:alert(1)) [two](JaVaScRiPt:alert(1)) ![three](data:image/svg+xml;base64,PHN2Zy8+)");
+    check("unsafe links and images removed", !d.querySelector("a, img"));
+    check("their text is kept", d.textContent.indexOf("one") !== -1 && d.textContent.indexOf("three") !== -1);
+
+    d = block("Before.\n\n```svg Class D airspace, side view\n<svg viewBox='0 0 40 20' width='40' height='20'><rect width='40' height='20'/></svg>\n```\n\nAfter.");
+    var drawn = d.querySelector("img.drawn");
+    check("drawing shows as an image", drawn && drawn.getAttribute("src").indexOf("data:image/svg+xml") === 0);
+    check("drawing alt text", drawn && drawn.alt === "Class D airspace, side view");
+    check("drawing gets xmlns", drawn && decodeURIComponent(drawn.getAttribute("src")).indexOf('<svg xmlns="http://www.w3.org/2000/svg" viewBox') !== -1);
+    check("drawing is not code", !d.querySelector("pre") && d.querySelectorAll("p").length === 2);
+
+    d = block("```svg Half drawn\n<svg viewBox='0 0 40 20'><rect");
+    check("unfinished drawing waits", !d.querySelector("img, pre") && text(d, "p.drawing") === "Drawing a picture…");
+
+    d = block("```js\nvar x = 1;\n```");
+    check("other code stays code", text(d, "pre code") === "var x = 1;\n" && !d.querySelector("img"));
+
+    d = inline("A **bold** stem with `code` and [a link](https://www.faa.gov/uas)\n\n- not a list");
+    check("inline bold", text(d, "strong") === "bold");
+    check("inline code", text(d, "code") === "code");
+    check("inline link opens a new tab", d.querySelector("a") && d.querySelector("a").target === "_blank");
+    check("inline has no blocks", !d.querySelector("p, ul, li"));
+
+    check("unfinished text while streaming", block("Partly **writ").textContent.indexOf("writ") !== -1);
+    check("no text", block(undefined).textContent === "" && inline(null).textContent === "");
+    check("nothing ran", window.ran === undefined);
+
+    document.getElementById("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
+  } catch (e) {
+    document.getElementById("result").textContent = "ERROR " + e.message;
+  }
+}());
+</script>
+</body>
+</html>

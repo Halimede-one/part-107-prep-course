@@ -230,8 +230,14 @@ class Orchestrator:
             ]
         return lines
 
-    def teach_context(self, unit, gear, content):
-        return "\n".join(self._header(unit, gear) + self._material(unit, content))
+    def teach_context(self, unit, gear, content, chosen=False):
+        lines = self._header(unit, gear)
+        if chosen:
+            lines.append(
+                "SITUATION: the student picked this unit and this gear from the course tree, "
+                "to review it or to get ahead. Teach it at the named gear as a fresh pass."
+            )
+        return "\n".join(lines + self._material(unit, content))
 
     def remediate_context(self, unit, gear, content, misconception=None, returning=False):
         lines = self._header(unit, gear)
@@ -306,24 +312,25 @@ class Orchestrator:
         lines += ["- practice exam passes so far: %d of %d needed" % (ready["passes"], ready["passes_needed"])]
         return "\n".join(lines)
 
-    def qa_context(self, question, chunks, can_search, unit=None, content=None, history=()):
-        """The chat's message: earlier turns, the question, the unit on screen, and
-        the retrieved chunks. Earlier turns are context only, never a source."""
+    def qa_context(self, question, chunks, can_search, unit=None, content=None, history=(), can_search_course=False):
+        """The chat's message: earlier turns, the question, which searches the tutor
+        can run, the unit on screen, and the retrieved chunks. Earlier turns are
+        context only, never a source."""
         lines = []
         if history:
             lines.append("EARLIER IN THIS CONVERSATION (what the student means; not a source of facts):")
             lines += ["%s: %s" % (m["role"].upper(), m["text"]) for m in history]
             lines.append("")
-        lines.append("STUDENT QUESTION: %s" % question)
+        lines += [
+            "STUDENT QUESTION: %s" % question,
+            "COURSE SEARCH AVAILABLE: %s" % ("yes" if can_search_course else "no"),
+            "WEB SEARCH AVAILABLE: %s" % ("yes" if can_search else "no"),
+        ]
         if content is not None:
             lines += ["", "THE UNIT ON SCREEN (course material):"] + self._header(unit, 2)[:2]
             lines += self._material(unit, content)
         if not chunks:
-            lines += [
-                "",
-                "RETRIEVED MATERIAL: none. Nothing in the knowledge base matched.",
-                "WEB SEARCH AVAILABLE: %s" % ("yes" if can_search else "no"),
-            ]
+            lines += ["", "RETRIEVED MATERIAL: none. Nothing in the knowledge base matched."]
             return "\n".join(lines)
         ordered = sorted(chunks, key=lambda c: 0 if c.get("kind", "source") == "source" else 1)
         material = "\n\n".join(

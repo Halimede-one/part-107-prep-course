@@ -238,18 +238,26 @@ class Ledger:
                 return "mastered"
         return "learning"
 
-    def state(self, curriculum_dir):
-        """The /state payload the course map consumes."""
+    def state(self, curriculum_dir, objectives=None):
+        """The /state payload the course map consumes. `objectives` maps a unit
+        to its title; attempts per gear come from the attempt history."""
+        attempts = {}
+        for attempt in self.attempts:
+            per_gear = attempts.setdefault(attempt["unit"], {})
+            per_gear[str(attempt["gear"])] = per_gear.get(str(attempt["gear"]), 0) + 1
         units = []
         for unit in self.order:
             entry = self.units.get(unit, _entry(self.default_gear))
             units.append({
                 "id": unit,
                 "task": unit.split(".")[2],
+                "title": (objectives or {}).get(unit, ""),
                 "mastery": self.mastery(unit),
                 "current": unit == self.current_unit,
                 "available_gears": available_gears(unit, curriculum_dir),
+                "written": os.path.isfile(os.path.join(curriculum_dir, "%s.md" % unit)),
                 "gears_taken": entry["gears_taken"],
+                "attempts": attempts.get(unit, {}),
                 "current_gear": entry["current_gear"],
                 "needs_attention": entry["needs_attention"],
                 "parked": entry.get("parked", False),

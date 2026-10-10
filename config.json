@@ -13,7 +13,7 @@
       "command": "claude",
       "model": "",
       "timeout_seconds": 120,
-      "supports_web_search": false
+      "supports_web_search": true
     },
     "ollama": {
       "endpoint": "http://localhost:11434/api/chat",

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course tree mockup</title>
+<!-- The real shell's stylesheet, so the mockup matches the course as it is. -->
+<link rel="stylesheet" href="../../../ui/styles.css">
+<link rel="stylesheet" href="course-tree.css">
+</head>
+<body>
+
+<!-- Mockup of the course tree in its three placements. Pick a scene and a
+     sample state in the bar at the bottom, or by query string:
+     ?scene=sidebar|intake|full&state=fresh|mid|late&steps=N&goto=UNIT&gear=G&pick=UNIT:G&bare=1
+     (steps advances the sample state N units first; goto makes a unit current at a gear;
+     pick opens the picker on a unit and gear) -->
+
+<!-- Scene 1: the course shell with the tree in the progress card -->
+<div class="scene" id="scene-sidebar" hidden>
+  <header class="topbar">
+    <div class="brand">Part 107 <span class="sep">·</span> Regulations</div>
+    <div class="topbar-right"><button class="mock-btn" type="button">Practice exam</button></div>
+  </header>
+  <main class="layout">
+    <section class="content" aria-label="Lesson">
+      <div id="block-root">
+        <div>
+          <div><span class="gear-tag" id="lesson-gear">Gear 2 · Guided</span><span class="unit-code" id="lesson-code">UA.I.B.K17</span></div>
+          <h2 class="block-title" id="lesson-title">Operating in the vicinity of airports</h2>
+          <div class="block-body">
+            <p>A remote pilot may not operate a small unmanned aircraft in a manner that interferes with operations and traffic patterns at any airport, heliport, or seaplane base. The rule is about interference, not distance: there is no fixed radius in part 107.</p>
+            <p>Worked example: a survey flight a mile from an uncontrolled airfield, in Class G airspace, needs no authorization. It still must stay clear of the traffic pattern and give way to every manned aircraft.</p>
+            <p>Common misreading: "within five miles of an airport" is a recreational-flyer notion from an older rule. Under part 107 the questions are the airspace class and interference.</p>
+          </div>
+          <div class="citations">
+            <div class="citations-label">Sources</div>
+            <div class="citation"><a href="#">14 CFR 107.43</a></div>
+            <div class="citation"><a href="#">AC 107-2A, chapter 5</a></div>
+          </div>
+          <div class="actions"><button class="btn" type="button">Continue</button></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="side">
+      <aside class="map" id="progress-card" aria-label="Course progress">
+        <div class="map-head">
+          <span class="map-title">Progress</span>
+          <span id="map-summary" class="map-summary"></span>
+        </div>
+        <div class="tree-wrap">
+          <div id="course-tree" class="tree-window" tabindex="0" aria-label="Course tree, scrollable"></div>
+          <button id="tree-recenter" class="tree-recenter" type="button" hidden>Back to current unit</button>
+        </div>
+        <div id="tree-pick" class="tree-pick" hidden>
+          <div class="tree-pick-title"></div>
+          <div class="tree-pick-state"></div>
+          <div class="tree-pick-gears">
+            <button type="button" data-gear="1" aria-pressed="false">1 · Fast-track</button>
+            <button type="button" data-gear="2" aria-pressed="false">2 · Guided</button>
+            <button type="button" data-gear="3" aria-pressed="false">3 · Foundational</button>
+          </div>
+          <div class="tree-pick-actions">
+            <button type="button" class="btn tree-pick-start">Review</button>
+            <button type="button" class="btn secondary tree-pick-cancel">Cancel</button>
+          </div>
+        </div>
+        <p id="map-task-name" class="map-task-name"></p>
+        <div class="tree-key">
+          <div class="row">
+            <span class="k"><span class="k-dot mastered"></span>Mastered</span>
+            <span class="k"><span class="k-dot learning"></span>Learning</span>
+            <span class="k"><span class="k-dot unseen"></span>Not started</span>
+            <span class="k"><span class="k-dot current"></span>Current</span>
+            <span class="k"><span class="k-dot parked"></span>Set aside</span>
+          </div>
+          <div class="lanes">
+            <span id="key-lanes"></span>
+            <span>Lanes: fast-track, guided, foundational. Color: the unit's state. Weight: your attempts at that gear. Click a lane or a unit to review it at that speed.</span>
+          </div>
+        </div>
+        <div id="readiness" class="readiness"></div>
+      </aside>
+
+      <section class="chat" aria-label="Ask the tutor">
+        <div class="chat-head">Ask the tutor</div>
+        <div class="chat-log">
+          <div class="msg student">Is there a distance rule for airports?</div>
+          <div class="msg tutor"><div class="msg-text"><p>No. Part 107 has no fixed distance from an airport. Section 107.43 says you may not interfere with operations and traffic patterns at an airport, heliport, or seaplane base. Whether you need authorization depends on the airspace class, not the distance.</p></div>
+            <div class="citations"><div class="citations-label">Sources</div><div class="citation"><a href="#">14 CFR 107.43</a></div></div></div>
+        </div>
+        <form class="chat-form" autocomplete="off" onsubmit="return false">
+          <textarea rows="2" placeholder="Ask about anything in the course"></textarea>
+          <button type="submit">Send</button>
+        </form>
+        <div class="chat-meta">claude-sonnet-5-5 · context 9.2k</div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Scene 2: the intake page, with the whole course in the right margin -->
+<div class="scene" id="scene-intake" hidden>
+  <div class="intake">
+    <div class="intake-card">
+      <h1>FAA Part 107 remote pilot course</h1>
+      <div class="intake-intro">
+        <p>An adaptive course for the Regulations area of the FAA remote pilot knowledge test (Unmanned Aircraft General). A tutor teaches from the regulations and FAA guidance only, and every statement links to its source.</p>
+        <h2>What it covers</h2>
+        <p>Area of Operation I, Regulations, of the FAA Airman Certification Standards (FAA-S-ACS-10B): six tasks and 77 knowledge units. A, General. B, Operating Rules. C, Remote Pilot Certification. D, Waivers. E, Operations Over People. F, Remote Identification. Regulations is 15 to 25 percent of the 60-question test. The other four areas (Airspace, Weather, Loading and Performance, Operations) are not in this course yet.</p>
+        <h2>What it teaches from</h2>
+        <p>The current text of 14 CFR parts 107, 89, 48, and 47 and the sections they reference; the ACS; AC 107-2A; the FAA study guide and sample questions; the Pilot's Handbook; the AIM; and FAA guidance pages. The tutor does not answer from memory. If the material does not cover a question, it says so.</p>
+        <h2>How it works</h2>
+        <p>Pick a pace below. Each unit is taught, then checked. Two correct answers in a row, on different questions, master it. A miss moves that unit one gear deeper, where it is taught a different way. Mastered units are re-checked at the end of each task. The Ask the tutor box takes any question at any time.</p>
+        <h2>Goals</h2>
+        <ol>
+          <li>Master all 77 units.</li>
+          <li>Pass the fixed 20-question practice exam twice at 85 percent or better. The real test's pass mark is 70 percent; this bar is higher on purpose.</li>
+          <li>Know where each rule lives, so you can check it yourself.</li>
+        </ol>
+        <p>Readiness is decided from the fixed exam and your unit record, never by the tutor's opinion. The FAA test has 60 questions, a two-hour limit, and a 70 percent pass mark. This course is a study aid, not legal advice.</p>
+      </div>
+      <h2>Choose your starting pace</h2>
+      <p>Pick where to begin. You can go deeper on any unit at any time, and units you already know you can move through quickly.</p>
+      <div class="intake-options">
+        <button class="intake-btn" type="button"><span class="intake-name">Fast-track</span><span class="intake-desc">Recommended. Straight to the checks, deeper only where you miss.</span></button>
+        <button class="intake-btn" type="button"><span class="intake-name">Guided</span><span class="intake-desc">Full lessons with worked examples, then the checks.</span></button>
+        <button class="intake-btn" type="button"><span class="intake-name">Foundational</span><span class="intake-desc">Smallest steps, most support, for material that is new to you.</span></button>
+      </div>
+    </div>
+    <aside class="intake-tree" aria-label="The whole course, bottom to top">
+      <div class="intake-tree-head"><span>The whole course, bottom to top</span><span id="intake-summary" class="count"></span></div>
+      <div id="intake-tree" class="intake-tree-scroll" tabindex="0"></div>
+      <div id="intake-pick" class="tree-pick" hidden>
+          <div class="tree-pick-title"></div>
+          <div class="tree-pick-state"></div>
+          <div class="tree-pick-gears">
+            <button type="button" data-gear="1" aria-pressed="false">1 · Fast-track</button>
+            <button type="button" data-gear="2" aria-pressed="false">2 · Guided</button>
+            <button type="button" data-gear="3" aria-pressed="false">3 · Foundational</button>
+          </div>
+          <div class="tree-pick-actions">
+            <button type="button" class="btn tree-pick-start">Review</button>
+            <button type="button" class="btn secondary tree-pick-cancel">Cancel</button>
+          </div>
+        </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Scene 3: the whole tree as a document -->
+<div class="scene" id="scene-full" hidden>
+  <div class="full-scene">
+    <div class="sheet">
+      <h1>Course tree</h1>
+      <p id="full-caption"></p>
+      <div id="full-tree"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="mock-bar" aria-label="Mockup controls">
+  <a href="?scene=sidebar" data-scene="sidebar">Sidebar</a>
+  <a href="?scene=intake" data-scene="intake">Intake page</a>
+  <a href="?scene=full" data-scene="full">Full tree</a>
+  <span class="sep">|</span>
+  <label>State <select id="state-select"><option value="fresh">fresh</option><option value="mid">mid-course</option><option value="late">late</option></select></label>
+  <button id="step-btn" type="button" title="Master the current unit and move to the next">Step</button>
+</nav>
+
+<script src="units.js"></script>
+<script src="states.js"></script>
+<script src="course-tree.js"></script>
+<script src="mockup.js"></script>
+</body>
+</html>

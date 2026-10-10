@@ -35,6 +35,16 @@ _MOCK_STAGE = {
 # Earlier chat messages sent with each new question, so follow-ups make sense.
 CHAT_MEMORY = 6
 
+# Responses that move the teaching flow. A prefetch started while handling one
+# of them is used by the next one, or not at all.
+_FLOW = ("intake", "advance", "goto", "answer")
+
+# Pictures the curriculum may show, served from its images folder at /images/.
+IMAGE_TYPES = {
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".gif": "image/gif", ".svg": "image/svg+xml", ".webp": "image/webp",
+}
+
 # Streaming: the text fields of each stage's block that are shown while the
 # model writes them, and what the status indicator says. The quiz streams only
 # its stem; the key and the rationale never leave the server.
@@ -62,6 +72,14 @@ _STATUS_AFTER = {
     ("score_diagnose", "message"): "Adding the sources",
     ("qa", "answer"): "Adding the sources",
 }
+# The status while the chat tutor runs a tool, by the tool's name.
+_SEARCHING = {
+    "Read": "Searching the course material",
+    "Grep": "Searching the course material",
+    "Glob": "Searching the course material",
+    "WebSearch": "Searching the web",
+    "WebFetch": "Searching the web",
+}
 
 
 class Session:
@@ -76,6 +94,7 @@ class Session:
         self.review_queue = []     # units awaiting a spaced-review check at a task boundary
         self.reviewing = None      # the unit whose review question is on screen
         self.returning = set()     # units unparked at the last boundary, for the remediate framing
+        self.chosen = None         # a unit picked from the course tree, in play until mastered or set aside
         self.mock = None           # the practice-exam attempt in progress, if any
         self.resume_stage = None   # where the course was when the exam started
 
@@ -100,6 +119,8 @@ class Course:
         self.session = Session()
         self.chat = []       # the conversation in the chat panel, for this server run
         self.chat_meta = {}  # model and context use of the last chat answer
+        self.prefetches = {}  # (stage, message) -> Prefetch, calls started before they are needed
+        self.turn = 0         # teaching-flow responses handled, so a prefetch knows when it went stale
 
     @property
     def calls(self):
@@ -118,31 +139,64 @@ class Course:
 
         When the request streams, the page first gets a "start" event with the
         status text and the parts of the block already known (`preview`), then
-        the stage's text fields as the model writes them.
+        the stage's text fields as the model writes them. A prefetch with the
+        same stage and message stands in for the call; if it is still writing,
+        the page gets the text so far at once and then the rest.
         """
         emit = getattr(self._local, "emit", None)
-        forward = None
+        forward = on_tool = begin = None
         if emit:
-            emit({"start": {"stage": stage, "status": _STATUS.get(stage, "Writing"),
-                            "model": self.client.model_name, "block": preview or {}}})
-            fields = FieldStream(_STREAMED.get(stage, ()))
+            live = {}
+
+            def begin():
+                emit({"start": {"stage": stage, "status": _STATUS.get(stage, "Writing"),
+                                "model": self.client.model_name, "block": preview or {}}})
+                live["fields"] = FieldStream(_STREAMED.get(stage, ()))
+                live["searched"] = []  # set while a search status is showing
 
             def forward(chunk):
-                for field, text, closed in fields.feed(chunk):
+                for field, text, closed in live["fields"].feed(chunk):
                     if text:
+                        if live["searched"]:
+                            live["searched"].clear()
+                            emit({"status": _STATUS.get(stage, "Writing")})
                         emit({"delta": text, "field": field})
                     if closed and (stage, field) in _STATUS_AFTER:
                         emit({"status": _STATUS_AFTER[(stage, field)]})
 
+            def on_tool(name):
+                if name in _SEARCHING:
+                    live["searched"].append(name)
+                    emit({"status": _SEARCHING[name]})
+
+            begin()
+
         started = time.perf_counter()
-        try:
-            raw = self.client.complete(
-                self.tutor.system(stage), context, stage=_MOCK_STAGE.get(stage, "lesson"), on_text=forward
-            )
-        except LLMError as error:
-            self.record_call(stage, started, error=True)
-            return {"type": "error", "message": str(error)}
-        self.record_call(stage, started)
+        job = self.prefetches.pop((stage, context), None)
+        if job is not None:
+            ready = job.finished
+            raw = job.follow(forward)
+            if job.error is None:
+                self.calls.append(dict(job.metrics, stage=stage, ms=round((time.perf_counter() - started) * 1000),
+                                       prefetched="ready" if ready else "joined", written_ms=job.ms))
+            else:
+                # The early call failed. Make it now, from a clean start on the
+                # page if the failed call had already shown some text.
+                self.log_prefetch(job, "failed")
+                if begin and job.chunks:
+                    begin()
+        if job is None or job.error is not None:
+            # Only the chat may search, and only on a backend that runs its own tools.
+            research = self.research_dirs() if stage == "qa" and self.client.supports_course_search else None
+            try:
+                raw = self.client.complete(
+                    self.tutor.system(stage), context, stage=_MOCK_STAGE.get(stage, "lesson"), on_text=forward,
+                    research_dirs=research, on_tool=on_tool,
+                )
+            except LLMError as error:
+                self.record_call(stage, started, error=True)
+                return {"type": "error", "message": str(error)}
+            self.record_call(stage, started)
         block = _parse_json_block(raw)
         if block is None:
             # Flagged in the metrics with the start of the reply, so a format
@@ -151,43 +205,144 @@ class Course:
             return {"type": "error", "message": "The tutor returned a response that was not a valid block."}
         return block
 
+    def research_dirs(self):
+        """The folders the chat tutor may read: the knowledge base first, as its
+        working directory, then the lessons and the folder of the reference facts.
+        Never the course root, which holds the practice-exam keys and the
+        student's progress. A folder not built yet is left out."""
+        folders = [self.paths["knowledge_base"], self.paths["curriculum"], os.path.dirname(self.paths["reference"])]
+        return [folder for folder in folders if os.path.isdir(folder)]
+
     def record_call(self, stage, started, error=False):
         call = dict(self.client.last_metrics, stage=stage, ms=round((time.perf_counter() - started) * 1000))
         if error:
             call["error"] = True
         self.calls.append(call)
 
+    # ---- prefetch ---------------------------------------------------------
+    def prefetch(self, call):
+        """Start the model call that Continue will make next, on a background
+        thread, so it is written while the student reads. It is used only if
+        the real call has the same stage and message (see `generate`), so a
+        wrong guess costs one unused call, never a wrong block."""
+        if call is None:
+            return
+        key = (call["stage"], call["context"])
+        job = self.prefetches.get(key)
+        if job is None:
+            job = self.prefetches[key] = Prefetch(self, *key)
+        job.turn = self.turn
+
+    def drop_stale_prefetches(self):
+        """A prefetch serves the response after the one that started it, or none."""
+        for key, job in list(self.prefetches.items()):
+            if job.turn < self.turn:
+                del self.prefetches[key]
+                self.log_prefetch(job, "unused")
+
+    def log_prefetch(self, job, outcome):
+        """Note a prefetch that was not used, so the cost of wrong guesses shows."""
+        log_metrics(self.paths["metrics"], dict(
+            job.metrics, source="server", kind="prefetch", stage=job.stage, outcome=outcome,
+            finished=job.finished, ms=job.ms if job.finished else round((time.perf_counter() - job.started) * 1000),
+        ))
+
+    def unit_gear(self, unit):
+        return self.ledger.units.get(unit, {}).get("current_gear", self.ledger.default_gear)
+
+    def lesson_gear(self, unit, gear=None):
+        return min(gear or self.unit_gear(unit), max(self.gears_for(unit)))
+
+    def lesson_call(self, unit, stage="teach", gear=None, chosen=False):
+        """The model call that teaches a unit: its stage, gear, and message, or
+        None when there is no content at that gear. A unit just missed, or
+        returning after being set aside, is re-taught from a fresh angle."""
+        gear = self.lesson_gear(unit, gear)
+        content = self.tutor.content(unit, gear)
+        if content is None:
+            return None
+        returning = unit in self.session.returning
+        if stage == "remediate" or returning:
+            context = self.tutor.remediate_context(unit, gear, content, self.session.misconception, returning=returning)
+            return {"stage": "remediate", "gear": gear, "context": context}
+        return {"stage": "teach", "gear": gear, "context": self.tutor.teach_context(unit, gear, content, chosen=chosen)}
+
+    def quiz_call(self, unit, review=False):
+        """The model call that asks a question on a unit, or None when there is
+        no unit or no content at its gear."""
+        if unit is None:
+            return None
+        gear = self.unit_gear(unit)
+        content = self.tutor.content(unit, gear)
+        if content is None:
+            return None
+        context = self.tutor.quiz_context(unit, gear, content, self.session.asked.get(unit, []), review=review)
+        return {"stage": "quiz", "gear": gear, "context": context}
+
+    def call_after_answer(self, review):
+        """The model call that Continue will make after this answer's feedback,
+        worked out as advance() works it out but without changing anything.
+        None when it cannot be known yet: a task boundary or the end of the area."""
+        action, gear = self.session.next_action or (None, None)
+        if not review and action == "quiz":
+            return self.quiz_call(self.session.chosen or orchestrator.current_unit(self.ledger))
+        if not review and action == "remediate":
+            unit = self.session.chosen or orchestrator.current_unit(self.ledger)
+            return self.lesson_call(unit, "remediate", gear) if unit else None
+        # A mastered or set-aside unit, and every review, go on through between_units().
+        if self.session.review_queue:
+            return self.quiz_call(self.session.review_queue[0], review=True)
+        if orchestrator.boundary_due(self.ledger):
+            return None
+        unit = orchestrator.current_unit(self.ledger)
+        return self.lesson_call(unit) if unit else None
+
     # ---- turns ----------------------------------------------------------
     def gears_for(self, unit):
         return ledger_module.available_gears(unit, self.paths["curriculum"])
 
-    def teach(self, stage="teach", gear=None):
-        unit = orchestrator.current_unit(self.ledger)
+    def teach(self, stage="teach", gear=None, chosen=False):
+        unit = self.session.chosen or orchestrator.current_unit(self.ledger)
         if unit is None:
             return self.done_block()
 
-        gear = gear or self.ledger.units.get(unit, {}).get("current_gear", self.ledger.default_gear)
-        gear = min(gear, max(self.gears_for(unit)))
-        content = self.tutor.content(unit, gear)
-        if content is None:
-            return self.missing_content(unit, gear)
+        call = self.lesson_call(unit, stage, gear, chosen)
+        if call is None:
+            return self.missing_content(unit, self.lesson_gear(unit, gear))
 
-        self.ledger.set_gear(unit, gear)
+        self.ledger.set_gear(unit, call["gear"])
         self.save_ledger()
-
-        returning = unit in self.session.returning
         self.session.returning.discard(unit)
-        if stage == "remediate" or returning:
-            context = self.tutor.remediate_context(
-                unit, gear, content, self.session.misconception, returning=returning
-            )
-            stage = "remediate"
-        else:
-            context = self.tutor.teach_context(unit, gear, content)
 
-        block = self.generate(stage, context, preview={"type": "lesson", "unit": unit, "gear": gear})
+        # The question on this unit does not depend on the lesson, so it is
+        # written alongside it and is ready when the student continues.
+        self.prefetch(self.quiz_call(unit))
+        block = self.generate(call["stage"], call["context"],
+                              preview={"type": "lesson", "unit": unit, "gear": call["gear"]})
         self.session.stage = "teach"
         return block
+
+    def goto(self, payload):
+        """The student picked a unit and a gear from the course tree. Teach it
+        now at that gear. The unit stays in play until it is mastered or set
+        aside; then the course resumes from the ledger as usual."""
+        if self.session.mock is not None:
+            return {"type": "error", "message": "Finish the practice exam first."}
+        unit = payload.get("unit")
+        if not isinstance(unit, str) or unit not in self.ledger.units:
+            return {"type": "error", "message": "Unknown unit %r." % unit}
+        try:
+            gear = int(payload.get("gear") or self.ledger.units[unit]["current_gear"])
+        except (TypeError, ValueError):
+            gear = self.ledger.units[unit]["current_gear"]
+        gear = max(1, min(gear, max(self.gears_for(unit))))
+        if self.tutor.content(unit, gear) is None:
+            return self.missing_content(unit, gear)
+        self.session.chosen = unit
+        self.session.pending = None
+        self.session.next_action = None
+        self.session.reviewing = None
+        return self.teach(gear=gear, chosen=True)
 
     def done_block(self):
         """The end of the area. Parked units, if any, are offered for another try."""
@@ -215,18 +370,16 @@ class Course:
         }
 
     def quiz(self, unit=None, review=False):
-        unit = unit or orchestrator.current_unit(self.ledger)
+        unit = unit or self.session.chosen or orchestrator.current_unit(self.ledger)
         if unit is None:
             return self.done_block()
-        gear = self.ledger.units.get(unit, {}).get("current_gear", self.ledger.default_gear)
-        content = self.tutor.content(unit, gear)
-        if content is None:
-            return self.missing_content(unit, gear)
+        call = self.quiz_call(unit, review)
+        if call is None:
+            return self.missing_content(unit, self.unit_gear(unit))
 
         block = self.generate(
-            "quiz",
-            self.tutor.quiz_context(unit, gear, content, self.session.asked.get(unit, []), review=review),
-            preview={"type": "question", "unit": unit, "gear": gear, "review": review},
+            "quiz", call["context"],
+            preview={"type": "question", "unit": unit, "gear": call["gear"], "review": review},
         )
         if block.get("type") == "question":
             # The key stays on the server. The browser never sees it.
@@ -254,6 +407,15 @@ class Course:
         """Handle one posted response and return the next block. With `emit`,
         progress events go to it while the model writes (see `generate`)."""
         self._local.emit = emit
+        if payload.get("type") not in _FLOW:
+            return self.dispatch(payload)
+        self.turn += 1
+        try:
+            return self.dispatch(payload)
+        finally:
+            self.drop_stale_prefetches()
+
+    def dispatch(self, payload):
         kind = payload.get("type")
         self.log_response(payload)
 
@@ -267,6 +429,9 @@ class Course:
 
         if kind == "advance":
             return self.advance()
+
+        if kind == "goto":
+            return self.goto(payload)
 
         if kind == "answer":
             return self.handle_answer(payload)
@@ -355,6 +520,11 @@ class Course:
         if stage == "teach":
             return self.quiz()
 
+        if stage == "quiz":
+            # Try again after a question that failed to arrive, or Back to the
+            # course after an exam taken with a question on screen: ask again.
+            return self.quiz()
+
         if stage == "feedback" and self.session.next_action:
             action, gear = self.session.next_action
             self.session.next_action = None
@@ -374,6 +544,7 @@ class Course:
 
     def between_units(self):
         """Pick what comes next: a pending review, a task boundary, or the next unit."""
+        self.session.chosen = None
         if self.session.review_queue:
             return self.quiz(unit=self.session.review_queue.pop(0), review=True)
 
@@ -397,10 +568,10 @@ class Course:
 
     def handle_answer(self, payload):
         item_id = payload.get("question_id", "")
-        unit = payload.get("unit") or orchestrator.current_unit(self.ledger)
+        pending = self.session.pending or {}
+        unit = payload.get("unit") or pending.get("unit") or orchestrator.current_unit(self.ledger)
         selected = payload.get("selected_option", "")
         gear = self.ledger.units.get(unit, {}).get("current_gear", self.ledger.default_gear)
-        pending = self.session.pending or {}
 
         # A vetted key wins. Failing that, the key the tutor declared when it wrote
         # the question is used, so scoring stays a comparison rather than a judgement.
@@ -433,10 +604,18 @@ class Course:
             )
             if action == "park":
                 self.ledger.park(unit)
+            elif action == "advance" and self.ledger.units[unit].get("parked"):
+                self.ledger.units[unit]["parked"] = False   # mastered from the tree while set aside
             outcome = action
             self.session.next_action = (action, next_gear)
         self.save_ledger()
+        self.session.misconception = None if correct else "they chose %s on: %s" % (
+            selected, pending.get("stem", "")
+        )
 
+        # What Continue will ask the model for is known now, so it is written
+        # while the tutor explains this answer and the student reads it.
+        self.prefetch(self.call_after_answer(review))
         block = self.generate(
             "score_diagnose",
             self.tutor.feedback_context(
@@ -451,9 +630,6 @@ class Course:
             block["question_id"] = item_id
             block["unit"] = unit
 
-        self.session.misconception = None if correct else "they chose %s on: %s" % (
-            selected, pending.get("stem", "")
-        )
         self.session.stage = "review_feedback" if review else "feedback"
         self.session.pending = None
         self.session.reviewing = None
@@ -466,7 +642,8 @@ class Course:
         """Answer a chat question and add the exchange to the chat history.
 
         The material is the knowledge-base chunks that match, plus the vetted
-        content of the unit on screen. With `emit`, progress events and the
+        content of the unit on screen; a backend with course search can read
+        more of the course, and the web, itself. With `emit`, progress events and the
         answer text go to it while the model writes (see `generate`). Returns
         the cited_answer block, or an error.
         """
@@ -483,7 +660,8 @@ class Course:
         unit = context_unit if context_unit in self.ledger.units else self.ledger.current_unit
         content = self.tutor.content(unit, 2) if unit else None
 
-        if not found and content is None and not self.client.supports_web_search:
+        can_search = self.client.supports_web_search or self.client.supports_course_search
+        if not found and content is None and not can_search:
             # Nothing to answer from: say so at once rather than spend a model call.
             block = {
                 "type": "cited_answer", "question": question, "in_corpus": False, "citations": [],
@@ -495,6 +673,7 @@ class Course:
             context = self.tutor.qa_context(
                 question, found, self.client.supports_web_search,
                 unit=unit, content=content, history=self.chat[-CHAT_MEMORY:],
+                can_search_course=self.client.supports_course_search,
             )
             block = self.generate("qa", context, preview={"type": "cited_answer"})
             if block.get("type") != "cited_answer":
@@ -525,7 +704,7 @@ class Course:
         self.ledger.save(self.paths["ledger"])
 
     def state(self):
-        state = self.ledger.state(self.paths["curriculum"])
+        state = self.ledger.state(self.paths["curriculum"], self.tutor.objectives)
         state["readiness"] = mockexam.readiness(self.ledger, self.ledger.mock_attempts)
         state["mock_available"] = bool(mockexam.mock_items(self.items))
         state["mock_in_progress"] = self.session.mock is not None
@@ -631,6 +810,61 @@ class FieldStream:
         return "".join(out), closed
 
 
+class Prefetch:
+    """One model call started before it is needed, on a background thread.
+
+    It keeps the text written so far, so a request that arrives while it is
+    still running can show that text at once and then follow the rest. It
+    never raises: a failure is kept in `error` for the request to see.
+    """
+
+    def __init__(self, course, stage, context):
+        self.stage, self.context = stage, context
+        self.turn = course.turn
+        self.started = time.perf_counter()
+        self.chunks = []
+        self.raw = self.error = self.ms = None
+        self.metrics = {}
+        self.finished = False
+        self._changed = threading.Condition()
+        threading.Thread(target=self._run, args=(course,), daemon=True).start()
+
+    def _run(self, course):
+        raw = error = None
+        try:
+            raw = course.client.complete(course.tutor.system(self.stage), self.context,
+                                         stage=_MOCK_STAGE.get(self.stage, "lesson"), on_text=self._add)
+        except Exception as caught:  # kept for the request, which then makes the call itself
+            error = caught
+        with self._changed:
+            self.raw, self.error = raw, error
+            self.metrics = dict(course.client.last_metrics)
+            self.ms = round((time.perf_counter() - self.started) * 1000)
+            self.finished = True
+            self._changed.notify_all()
+
+    def _add(self, chunk):
+        with self._changed:
+            self.chunks.append(chunk)
+            self._changed.notify_all()
+
+    def follow(self, on_text=None):
+        """Pass on the text written so far, then the rest as it comes, and
+        return the full reply once the call has finished."""
+        sent = 0
+        while True:
+            with self._changed:
+                while sent == len(self.chunks) and not self.finished:
+                    self._changed.wait()
+                new, finished = self.chunks[sent:], self.finished
+            sent += len(new)
+            if on_text:
+                for chunk in new:
+                    on_text(chunk)
+            if finished and sent == len(self.chunks):
+                return self.raw
+
+
 # ---- metrics --------------------------------------------------------------
 def log_metrics(path, record):
     """Print one line to the terminal and append the full record to the metrics file."""
@@ -665,12 +899,20 @@ def _metrics_line(r):
                 parts.append("draw " + _ms(r["draw_ms"]))
             return "[browser] %-14s %s%s" % (r.get("what"), ", ".join(parts), hidden)
         return "[browser] %s" % json.dumps(r)
+    if r.get("kind") == "prefetch":
+        state = ("written in " if r.get("finished") else "still writing after ") + _ms(r.get("ms") or 0)
+        if r.get("output_tokens"):
+            state += ", out %d tok" % r["output_tokens"]
+        return "[server]  prefetch %-10s %s (%s)" % (r.get("stage"), r.get("outcome"), state)
     label = r.get("type") or r.get("path")
     line = "[server]  %-4s %-14s %8s  %5.1f kB" % (r["method"], label, _ms(r["ms"]), r["bytes"] / 1024.0)
     if r.get("first_text_ms") is not None:
         line += "  first text %s" % _ms(r["first_text_ms"])
     for call in r.get("calls") or []:
         parts = []
+        if call.get("prefetched"):
+            # "ready": written before the student asked; "joined": still writing then.
+            parts.append("prefetched, %s, written in %s" % (call["prefetched"], _ms(call.get("written_ms") or 0)))
         if call.get("api_ms"):
             parts.append("api " + _ms(call["api_ms"]))
         if call.get("context_tokens"):
@@ -702,6 +944,14 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(self.course.state())
         if self.path == "/api/chat":
             return self.send_json({"messages": self.course.chat, "meta": self.course.chat_meta})
+        if self.path.startswith("/images/"):
+            # A unit file writes images/x.png, which the page asks for as /images/x.png.
+            name = os.path.basename(self.path)
+            candidate = os.path.join(self.course.paths["curriculum"], "images", name)
+            content_type = IMAGE_TYPES.get(os.path.splitext(name)[1].lower())
+            if content_type and os.path.isfile(candidate):
+                return self.send_file(candidate, content_type)
+            return self.send_error(404, "Not found")
         name = os.path.basename(self.path)
         candidate = os.path.join(ROOT, "ui", name)
         if name and os.path.isfile(candidate):

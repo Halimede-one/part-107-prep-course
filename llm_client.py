@@ -52,12 +52,21 @@ class LLMClient:
     def supports_web_search(self):
         return bool(self.settings.get("supports_web_search", False))
 
-    def complete(self, system, user, stage=None, on_text=None):
+    @property
+    def supports_course_search(self):
+        """Whether the model can search the course folders itself. Only Claude Code
+        runs its own tool loop; the other backends answer from the message alone."""
+        return self.name == "claude_code"
+
+    def complete(self, system, user, stage=None, on_text=None, research_dirs=None, on_tool=None):
         """Return the provider's text response.
 
         `stage` is a hint used only by the mock provider to pick a canned block.
         With `on_text`, the response is streamed: each piece of text is passed to
         it as the model writes it, and the full text is still returned at the end.
+        With `research_dirs`, a backend that supports course search lets the model
+        read those folders, and search the web if configured, before it answers;
+        `on_tool` gets the name of each tool the model starts while streaming.
         """
         self.last_metrics = {}
         if self.name == "mock":
@@ -65,7 +74,7 @@ class LLMClient:
         if self.name == "anthropic":
             return self._anthropic(system, user, on_text)
         if self.name == "claude_code":
-            return self._claude_code(system, user, on_text)
+            return self._claude_code(system, user, on_text, research_dirs, on_tool)
         if self.name == "ollama":
             return self._ollama(system, user, on_text)
         raise LLMError("Provider %r has no adapter." % self.name)
@@ -80,7 +89,7 @@ class LLMClient:
             )
         body = {
             "model": self.settings.get("model"),
-            "max_tokens": 1500,
+            "max_tokens": 4096,  # room for a drawing (an SVG in the text) as well as the words
             "system": system,
             "messages": [{"role": "user", "content": user}],
         }
@@ -153,30 +162,48 @@ class LLMClient:
         }
         return text.strip()
 
-    def _claude_code(self, system, user, on_text=None):
+    def _claude_code(self, system, user, on_text=None, research_dirs=None, on_tool=None):
         """Shell out to headless Claude Code, which draws on the signed-in plan.
 
         The prompt goes in on stdin rather than argv, so a long lesson prompt
-        cannot hit the command-line length limit. Tools are disabled: this spawns
-        an agent on the student's machine, and a tutor has no business reading or
-        writing their files. The system prompt is replaced outright, because the
-        Claude Code default is a coding agent.
+        cannot hit the command-line length limit. Tools are disabled unless the
+        call names research folders: this spawns an agent on the student's
+        machine, and a tutor has no business reading or writing their files. A
+        research call (the chat) gets read-only tools over those folders, and web
+        search if the config allows it. The system prompt is replaced outright,
+        because the Claude Code default is a coding agent.
         """
         command = self.settings.get("command", "claude")
-        # No tools at all, none of the user's settings or CLAUDE.md files, and no
-        # session transcript left behind for each tutor turn.
+        web = ["WebSearch", "WebFetch"] if research_dirs and self.supports_web_search else []
+        tools = ["Read", "Grep", "Glob"] + web if research_dirs else []
+        # Only the tools above, none of the user's settings or CLAUDE.md files, and
+        # no session transcript left behind for each tutor turn.
         output = ["stream-json", "--verbose", "--include-partial-messages"] if on_text else ["json"]
         argv = [command, "-p", "--output-format"] + output + [
-            "--system-prompt", system, "--tools", "", "--setting-sources", "", "--no-session-persistence"]
+            "--system-prompt", system, "--tools", ",".join(tools), "--setting-sources", "", "--no-session-persistence"]
+        if research_dirs:
+            # Claude Code reads freely in its working directory and the added ones,
+            # and dontAsk refuses everything else. Allow rules cannot narrow reads
+            # inside the working directory, so it must never be the course root,
+            # which holds the practice-exam keys and the student's progress.
+            argv += ["--permission-mode", "dontAsk"]
+            if research_dirs[1:]:
+                argv += ["--add-dir"] + list(research_dirs[1:])
+            if web:
+                argv += ["--allowedTools"] + web
         if self.settings.get("model"):
             argv += ["--model", self.settings["model"]]
         timeout = self.settings.get("timeout_seconds", 120)
+        cwd = research_dirs[0] if research_dirs else None
+        # Keep the developer's Claude Code memory out of the tutor's context.
+        env = dict(os.environ, CLAUDE_CODE_DISABLE_AUTO_MEMORY="1")
 
         try:
             if on_text:
-                finished = _claude_code_stream(argv, user, on_text, timeout)
+                finished = _claude_code_stream(argv, user, on_text, timeout, cwd, env, on_tool)
             else:
-                finished = subprocess.run(argv, input=user, capture_output=True, text=True, timeout=timeout)
+                finished = subprocess.run(argv, input=user, capture_output=True, text=True, timeout=timeout,
+                                          cwd=cwd, env=env)
         except FileNotFoundError:
             raise LLMError(
                 "Could not find the %r command. Install Claude Code and sign in with your "
@@ -266,8 +293,9 @@ class LLMClient:
             raise LLMError("%s stopped streaming: %s" % (self.name, error))
 
 
-def _claude_code_stream(argv, user, on_text, timeout):
-    """Run Claude Code with streamed output and pass each piece of text on.
+def _claude_code_stream(argv, user, on_text, timeout, cwd=None, env=None, on_tool=None):
+    """Run Claude Code with streamed output and pass each piece of text on, and
+    the name of each tool the model starts to `on_tool`.
 
     Returns the run as `subprocess.run` would, with the final result event as
     its output, so the caller checks and reads both modes the same way.
@@ -275,7 +303,7 @@ def _claude_code_stream(argv, user, on_text, timeout):
     expired = []
     result = ""
     with subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE, text=True) as process:
+                          stderr=subprocess.PIPE, text=True, cwd=cwd, env=env) as process:
 
         def expire():
             expired.append(True)
@@ -293,8 +321,11 @@ def _claude_code_stream(argv, user, on_text, timeout):
                     continue
                 inner = event.get("event") or {}
                 delta = inner.get("delta") or {}
+                block = inner.get("content_block") or {}
                 if inner.get("type") == "content_block_delta" and delta.get("type") == "text_delta":
                     on_text(delta.get("text", ""))
+                elif inner.get("type") == "content_block_start" and block.get("type") == "tool_use" and on_tool:
+                    on_tool(block.get("name", ""))
                 elif event.get("type") == "result":
                     result = line
             process.wait()

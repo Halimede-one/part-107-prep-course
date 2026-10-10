@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Panels check</title>
+<link rel="stylesheet" href="../../ui/styles.css">
+</head>
+<body>
+
+<!-- Loaded by tests/test_layout.py. Runs the course page's own markup with
+     ui/panels.js and ui/app.js, moves the dividers, and writes PASS, or one
+     line per failed check, into #result. The query picks the checks:
+     none, the dividers (1600 px window); ?stored, widths kept from an earlier
+     visit; ?narrow, the one-column layout (800 px window). -->
+<pre id="result">NOT RUN</pre>
+
+<script>
+// The course page's markup: index.html's body up to its scripts.
+var page = new XMLHttpRequest();
+page.open("GET", "../../ui/index.html", false);
+page.send();
+document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
+</script>
+<script>
+var MODE = location.search.slice(1);
+document.getElementById("intake").hidden = true;
+localStorage.clear();
+if (MODE === "stored") { localStorage.setItem("part107.panels", JSON.stringify({ left: 420, right: 380 })); }
+
+// The two requests app.js makes at start, answered here instead of by the
+// server: twelve units, so the tree is taller than its window.
+function unit(n) {
+  var mastery = n === 1 ? "mastered" : n === 2 ? "learning" : "unseen";
+  return { id: "UA.I." + (n <= 6 ? "A" : "B") + ".K" + n, task: n <= 6 ? "A" : "B", title: "Knowledge unit number " + n + " of this small test course.",
+           mastery: mastery, current: n === 2, available_gears: [1, 2, 3], written: true, gears_taken: mastery === "unseen" ? [] : [1],
+           attempts: mastery === "unseen" ? {} : { "1": 2 }, current_gear: 1, needs_attention: false, parked: false };
+}
+var REPLIES = {
+  "/api/state": {
+    summary: { mastered: 1, total: 12 },
+    readiness: { ready: false, passes: 0, passes_needed: 2, reasons: ["11 units not yet mastered"] },
+    units: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(unit)
+  },
+  "/api/chat": { meta: {}, messages: [] }
+};
+// ResizeObserver reports at the next frame, and headless Chrome draws no
+// frames when it dumps the page. The stub keeps the callback for the checks.
+var observers = [];
+window.ResizeObserver = function (callback) {
+  this.observe = function () { observers.push(callback); };
+};
+window.fetch = function (url) {
+  return Promise.resolve({
+    headers: { get: function () { return null; } },
+    json: function () { return Promise.resolve(REPLIES[url]); }
+  });
+};
+</script>
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script src="../../ui/course-tree.js"></script>
+<script src="../../ui/panels.js"></script>
+<script src="../../ui/app.js"></script>
+<script>
+window.addEventListener("load", function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+
+  var map = document.querySelector(".map"), lesson = document.querySelector(".content"), chat = document.querySelector(".chat");
+  var left = document.querySelector('.divider[data-side="left"]'), right = document.querySelector('.divider[data-side="right"]');
+  var tree = document.getElementById("course-tree");
+  function width(node) { return Math.round(node.getBoundingClientRect().width); }
+  // The width the side panels and the lesson share: the layout without its padding and the dividers.
+  function room() { return document.querySelector(".layout").clientWidth - 40 - width(left) - width(right); }
+  function treeWidth() { var svg = tree.querySelector("svg"); return svg ? Number(svg.getAttribute("width")) : 0; }
+  function drag(divider, dx) {
+    var x = divider.getBoundingClientRect().left + 10;
+    divider.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, button: 0, clientX: x }));
+    document.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: x + dx }));
+    document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: x + dx }));
+  }
+  function key(divider, name) { divider.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true })); }
+  function finish() { document.getElementById("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS"; }
+
+  try {
+    if (MODE === "narrow") {
+      check("the dividers are hidden", left.offsetWidth === 0 && right.offsetWidth === 0);
+      var top = function (node) { return node.getBoundingClientRect().top; };
+      check("the lesson comes first, then progress, then chat", top(lesson) < top(map) && top(map) < top(chat));
+      check("the panels share one column", width(map) === width(lesson) && width(chat) === width(lesson));
+      return finish();
+    }
+    if (MODE === "stored") {
+      check("the stored widths come back", width(map) === 420 && width(chat) === 380);
+      check("the dividers report them", left.getAttribute("aria-valuenow") === "420" && right.getAttribute("aria-valuenow") === "380");
+      return finish();
+    }
+
+    var space = room(), lesson0 = width(lesson);
+    check("three panels side by side", map.getBoundingClientRect().right <= lesson.getBoundingClientRect().left &&
+      lesson.getBoundingClientRect().right <= chat.getBoundingClientRect().left);
+    check("at the default widths", width(map) === 340 && width(chat) === 360 && lesson0 === space - 700);
+    check("the tree is drawn at its window's width", treeWidth() === tree.clientWidth);
+    check("the tree is on the current unit, as far as it scrolls", !CourseTree.offCurrent(tree));
+    var tree0 = treeWidth();
+
+    drag(left, 100);
+    check("dragging the left divider right widens progress", width(map) === 440 && width(lesson) === lesson0 - 100);
+    check("the drag ends cleanly", !document.body.classList.contains("resizing") && !left.classList.contains("dragging"));
+    drag(right, -100);
+    check("dragging the right divider left widens chat", width(chat) === 460);
+
+    drag(left, -1000);
+    check("progress stops at 300", width(map) === 300);
+    drag(right, 1000);
+    check("chat stops at 300", width(chat) === 300);
+    drag(left, 2000);
+    check("the left divider stops at a 400 px lesson", width(lesson) === 400);
+    drag(left, -2000);
+    drag(right, -2000);
+    check("the right divider stops at a 400 px lesson", width(lesson) === 400);
+    drag(right, 2000);
+
+    left.focus();
+    key(left, "ArrowRight");
+    check("ArrowRight moves the left divider 20 px", width(map) === 320 && left.getAttribute("aria-valuenow") === "320");
+    key(left, "ArrowLeft");
+    check("ArrowLeft moves it back", width(map) === 300 && left.getAttribute("aria-valuenow") === "300");
+    key(right, "ArrowLeft");
+    check("ArrowLeft on the right divider widens chat", width(chat) === 320 && right.getAttribute("aria-valuenow") === "320");
+    var kept = JSON.parse(localStorage.getItem("part107.panels") || "null");
+    check("the widths are kept for the next visit", kept && kept.left === 300 && kept.right === 320);
+
+    check("the tree scrolls", tree.scrollHeight > tree.clientHeight);
+    tree.scrollTop = 0;
+    check("app.js watches the tree's size", observers.length === 1);
+    observers.forEach(function (callback) { callback(); });
+    check("the tree is drawn again at the new width", treeWidth() === tree.clientWidth && treeWidth() !== tree0);
+    check("where the student left it", tree.scrollTop === 0);
+    finish();
+  } catch (e) {
+    document.getElementById("result").textContent = "ERROR " + e.message;
+  }
+});
+</script>
+</body>
+</html>

@@ -276,7 +276,7 @@ It must convey:
 
 Data model: to feed this, the ledger records per unit not only the current gear but the sequence of gears traversed (the path), and `/state` exposes, per unit, the available gears, the gears traversed, the current gear, mastery, and flags. Getting this data right now is what lets the visual design slot in later without touching the data model.
 
-Visual design is a deferred design pass (Section 13). The v1 shell ships a plain, functional placeholder that reads the same `/state`, so the loop is testable immediately and the pathway design replaces only the rendering later.
+The v1 shell shipped a plain placeholder grid that read the same `/state`. The design pass replaced it on October 10, 2026 with the course tree (Section 13, item 4).
 
 ### 12.7 The practice exam and readiness
 
@@ -299,5 +299,5 @@ Still open, all local:
 1. Vetting. Every authored unit, every reference fact, and every exam item against the source text, recorded in `curriculum/regulations/STATUS.md`. Items flagged there carry specific questions.
 2. Verify at first run: the Anthropic model string, the web-search tool format (then set `supports_web_search` true), and the PDF links in `knowledge-base/sources.json`.
 3. Author Tasks B to F against the built knowledge base, one task per batch, and extend the exam if the task weighting drifts.
-4. Course-map visual design pass (Section 12.5), still deferred.
+4. Course-map visual design pass (Section 12.5): done on October 10, 2026 as the course tree. The design record (mockup, encoding, review) is `docs/mockups/course-tree/`. It added `title` and `attempts` per unit to `/state` and a `goto` request that teaches a unit the student picks from the tree at the gear they pick.
 5. Tunables to revisit with real students: TERMINAL_CYCLES, REVIEW_PER_BOUNDARY, REVIEW_DEMOTION_GEAR, the pass mark, and the minutes per exam item.

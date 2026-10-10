@@ -19,33 +19,66 @@
   </div>
 </header>
 
+<!-- Three panels: progress, lesson, chat. The dividers between them set the
+     side panels' widths (panels.js). -->
 <main class="layout">
+  <aside class="map" aria-label="Course progress">
+    <div class="map-head">
+      <span class="map-title">Progress</span>
+      <span id="map-summary" class="map-summary"></span>
+    </div>
+    <div class="tree-wrap">
+      <div id="course-tree" class="tree-window" tabindex="0" aria-label="Course tree, scrollable. Tab reaches the current unit; the arrow keys move between units"></div>
+      <button id="tree-recenter" class="tree-recenter" type="button" hidden>Back to current unit</button>
+    </div>
+    <div id="tree-pick" class="tree-pick" hidden>
+      <div class="tree-pick-title"></div>
+      <div class="tree-pick-state"></div>
+      <div class="tree-pick-gears">
+        <button type="button" data-gear="1" aria-pressed="false">1 · Fast-track</button>
+        <button type="button" data-gear="2" aria-pressed="false">2 · Guided</button>
+        <button type="button" data-gear="3" aria-pressed="false">3 · Foundational</button>
+      </div>
+      <div class="tree-pick-actions">
+        <button type="button" class="btn tree-pick-start">Review</button>
+        <button type="button" class="btn secondary tree-pick-cancel">Cancel</button>
+      </div>
+    </div>
+    <p id="map-task-name" class="map-task-name"></p>
+    <div class="tree-key">
+      <div class="row">
+        <span class="k"><span class="k-dot mastered"></span>Mastered</span>
+        <span class="k"><span class="k-dot learning"></span>Learning</span>
+        <span class="k"><span class="k-dot unseen"></span>Not started</span>
+        <span class="k"><span class="k-dot current"></span>Current</span>
+        <span class="k"><span class="k-dot parked"></span>Set aside</span>
+      </div>
+      <div class="lanes">
+        <span id="key-lanes"></span>
+        <span>Lanes: fast-track, guided, foundational. Color: the unit's state. Weight: your attempts at that gear. Click a lane or a unit to review it at that speed.</span>
+      </div>
+    </div>
+    <div id="readiness" class="readiness"></div>
+  </aside>
+
+  <div class="divider" data-side="left" role="separator" aria-orientation="vertical" aria-label="Resize the progress panel" tabindex="0"></div>
+
   <section class="content" aria-label="Lesson">
     <div id="block-root"></div>
   </section>
 
-  <div class="side">
-    <aside class="map" aria-label="Course progress">
-      <div class="map-head">
-        <span class="map-title">Progress</span>
-        <span id="map-summary" class="map-summary"></span>
-      </div>
-      <div id="course-map"></div>
-      <div id="readiness" class="readiness"></div>
-      <p class="map-note">Placeholder view. The pathway visualization is a separate design pass.</p>
-    </aside>
+  <div class="divider" data-side="right" role="separator" aria-orientation="vertical" aria-label="Resize the tutor panel" tabindex="0"></div>
 
-    <section class="chat" aria-label="Ask the tutor">
-      <div class="chat-head">Ask the tutor</div>
-      <div id="chat-log" class="chat-log" aria-live="polite"></div>
-      <form id="chat-form" class="chat-form" autocomplete="off">
-        <label for="chat-input" class="visually-hidden">Ask the tutor a question</label>
-        <textarea id="chat-input" rows="2" placeholder="Ask about anything in the course"></textarea>
-        <button id="chat-send" type="submit">Send</button>
-      </form>
-      <div id="chat-meta" class="chat-meta"></div>
-    </section>
-  </div>
+  <section class="chat" aria-label="Ask the tutor">
+    <div class="chat-head">Ask the tutor</div>
+    <div id="chat-log" class="chat-log" aria-live="polite"></div>
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <label for="chat-input" class="visually-hidden">Ask the tutor a question</label>
+      <textarea id="chat-input" rows="2" placeholder="Ask about anything in the course"></textarea>
+      <button id="chat-send" type="submit">Send</button>
+    </form>
+    <div id="chat-meta" class="chat-meta"></div>
+  </section>
 </main>
 
 <details id="sent" class="sent">
@@ -89,8 +122,29 @@
       </button>
     </div>
   </div>
+  <aside class="intake-tree" aria-label="The whole course, bottom to top">
+    <div class="intake-tree-head"><span>The whole course, bottom to top</span><span id="intake-summary" class="count"></span></div>
+    <div id="intake-tree" class="intake-tree-scroll" tabindex="0"></div>
+    <div id="intake-pick" class="tree-pick" hidden>
+      <div class="tree-pick-title"></div>
+      <div class="tree-pick-state"></div>
+      <div class="tree-pick-gears">
+        <button type="button" data-gear="1" aria-pressed="false">1 · Fast-track</button>
+        <button type="button" data-gear="2" aria-pressed="false">2 · Guided</button>
+        <button type="button" data-gear="3" aria-pressed="false">3 · Foundational</button>
+      </div>
+      <div class="tree-pick-actions">
+        <button type="button" class="btn tree-pick-start">Review</button>
+        <button type="button" class="btn secondary tree-pick-cancel">Cancel</button>
+      </div>
+    </div>
+  </aside>
 </div>
 
+<script src="marked.min.js"></script>
+<script src="markdown.js"></script>
+<script src="course-tree.js"></script>
+<script src="panels.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

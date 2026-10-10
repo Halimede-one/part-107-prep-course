@@ -84,10 +84,14 @@ result and what happens next. The model explains a decision it did not make.
 
 The chat panel takes any question at any time. The server retrieves the best
 matching chunks from the knowledge base. It adds the unit on screen and recent
-chat turns, and sends them with the question. The model answers from that
-material only, paraphrased and cited with links, and streams the answer as it
-writes. If the material does not cover the question, it says so. Web search is
-an optional fallback on the `anthropic` backend and is off by default.
+chat turns, and sends them with the question. On the `claude_code` backend the
+model can also search the course material itself: the knowledge base, the unit
+lessons, and the reference facts. It cannot read the practice exam or the
+student's progress. When the course material does not cover the question, it
+searches the web, official FAA and government sources first. The model answers
+from that material only, paraphrased and cited with links, and streams the
+answer as it writes. If no material covers the question, it says so. On the
+`anthropic` backend, web search is an optional fallback and is off by default.
 
 ## Run it
 
@@ -106,14 +110,18 @@ The backend is set by `provider` in `config.json`.
 | Provider | Needs | Notes |
 |---|---|---|
 | `anthropic` (default) | `ANTHROPIC_API_KEY` in your environment, and connectivity | Best for distribution: each student supplies their own key. Billed per token. Can use cited web search for questions outside the course material once `supports_web_search` is switched on. |
-| `claude_code` | [Claude Code](https://code.claude.com/docs/en/quickstart) installed and signed in to a Claude plan | Draws on your own plan instead of API billing, so it costs nothing extra while you build. Personal use only: plan allocation is per-user and cannot be shared with students. |
+| `claude_code` | [Claude Code](https://code.claude.com/docs/en/quickstart) installed and signed in to a Claude plan | Draws on your own plan instead of API billing, so it costs nothing extra while you build. Personal use only: plan allocation is per-user and cannot be shared with students. The chat tutor searches the course material, and the web while `supports_web_search` is true. |
 | `ollama` | [Ollama](https://ollama.com) running locally with the model in `config.json` pulled | Fully offline and free. Free-form answers are limited to the course material. |
 | `mock` | nothing | Canned blocks for testing the plumbing without a model. |
 
 Your API key is read from the environment and is never stored in this folder.
 
-Two notes on the `claude_code` backend. It runs `claude -p` with all tools disabled,
-because the course has no business reading or writing your files. And setting
+Two notes on the `claude_code` backend. It runs `claude -p` with all tools disabled
+for lessons, questions, and feedback, because the course has no business reading or
+writing your files. The chat gets read-only tools instead. It runs in the
+knowledge-base folder, may also read the lessons and the reference facts, and nothing
+else; with `supports_web_search` it may also search the web. No tutor call loads your
+Claude Code memory. And setting
 `ANTHROPIC_API_KEY` in your shell makes Claude Code bill to the API instead of your
 plan, so keep that variable out of your shell profile if you use this backend.
 
@@ -220,7 +228,7 @@ reference/       the per-unit ground-truth facts the tutor keys answers to
 mock/            the fixed practice exam
 knowledge-base/  the source manifest and the two-layer corpus (built locally)
 sources/         the authoritative references and their precedence
-tools/           fetch_sources, build_kb, enhance_kb, check_companions, probe_retrieval, check_integrity, check_links, package
+tools/           fetch_sources, build_kb, enhance_kb, check_companions, probe_retrieval, probe_chat, check_integrity, check_links, package
 tests/           the test suite; fixtures live under tests/fixtures
 docs/            the illustrated guide: the SVG diagrams shown at the top of this file
 ```

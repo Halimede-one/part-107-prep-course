@@ -122,4 +122,4 @@ Emitted by the server, not the model, when the tutor cannot be reached (for exam
 ## Notes
 
 - The mock provider's canned blocks are test scaffolding, not authoritative course content. Verified content and links arrive in Phase 4.
-- The shell renders block text as plain paragraphs (split on blank lines). It does not execute markup from a block.
+- The shell renders block text as Markdown, also while it streams. Bodies, messages, debriefs and chat answers get full Markdown, images included; titles, stems and options get inline Markdown only (bold, italic, code, links). Raw HTML in a block shows as text, and links and images keep only http, https and relative URLs, so the shell never executes markup from a block. A relative image such as `images/x.png` is served from the curriculum's `images/` folder. A fenced block whose first line is ```` ```svg <description> ```` is a drawing by the tutor: the shell shows it as an image once the `</svg>` has arrived, and a "Drawing a picture" note until then.

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chat drawing check</title>
+</head>
+<body>
+
+<!-- Loaded by tests/test_markdown.py. Runs ui/app.js with a chat history
+     that holds a drawing, clicks the drawing, and writes PASS, or one line
+     per failed check, into #result. -->
+<pre id="result">NOT RUN</pre>
+
+<!-- The parts of the course page that app.js reads at start -->
+<div id="block-root"></div>
+<span id="map-summary"></span><div id="readiness"></div>
+<!-- The course tree the progress card draws, and the picker under it -->
+<div id="course-tree"></div><button id="tree-recenter" hidden></button><span id="key-lanes"></span><div id="map-task-name"></div>
+<div id="tree-pick" hidden><button class="tree-pick-start"></button><button class="tree-pick-cancel"></button></div>
+<!-- The intake page's tree and picker; hidden, as after the pace is chosen -->
+<div id="intake" hidden><div id="intake-tree"></div>
+  <div id="intake-pick" hidden><button class="tree-pick-start"></button><button class="tree-pick-cancel"></button></div></div>
+<button id="mock-btn" type="button" hidden></button>
+<div id="chat-log"></div>
+<form id="chat-form"><textarea id="chat-input"></textarea><button id="chat-send" type="submit"></button></form>
+<div id="chat-meta"></div><div id="sent-log"></div>
+
+<script>
+// The two requests app.js makes at start, answered here instead of by the server.
+var REPLIES = {
+  "/api/state": { summary: { mastered: 0, total: 0 }, units: [] },
+  "/api/chat": { meta: {}, messages: [{ role: "tutor", citations: [], text:
+    "A side view.\n\n```svg Class D airspace, side view\n" +
+    "<svg viewBox='0 0 40 20' width='40' height='20'><rect width='40' height='20'/></svg>\n```" }] }
+};
+window.fetch = function (url) {
+  return Promise.resolve({
+    headers: { get: function () { return null; } },
+    json: function () { return Promise.resolve(REPLIES[url]); }
+  });
+};
+</script>
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script src="../../ui/course-tree.js"></script>
+<script src="../../ui/app.js"></script>
+<script>
+// app.js draws the chat history before the load event.
+window.addEventListener("load", function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+
+  try {
+    var drawing = document.querySelector("#chat-log img.drawn");
+    check("the chat shows the drawing", drawing);
+
+    document.querySelector("#chat-log p").click();
+    check("a click on text opens nothing", !document.querySelector("dialog"));
+
+    drawing.click();
+    var dialog = document.querySelector("dialog.enlarged");
+    check("a click on the drawing opens it", dialog && dialog.open);
+    check("the dialog shows the same drawing", dialog && dialog.querySelector("img").src === drawing.src);
+    check("with its description", dialog && dialog.querySelector("img").alt === "Class D airspace, side view");
+
+    dialog.click();
+    check("a click closes it", !dialog.open);
+
+    document.getElementById("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
+  } catch (e) {
+    document.getElementById("result").textContent = "ERROR " + e.message;
+  }
+});
+</script>
+</body>
+</html>

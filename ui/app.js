@@ -13,12 +13,17 @@
       logSent(payload);
       // The buttons on screen go dead at once, so a second click cannot send a second request.
       Array.prototype.forEach.call(document.querySelectorAll("#block-root button"), function (b) { b.disabled = true; });
+      turn.busy = true;
       return streamRequest(payload.type, "/api/respond", payload, showProgress)
         .then(function (final) {
           return final.block || { type: "error", message: final.error };
         })
         .catch(function () {
           return { type: "error", message: "Could not reach the course server. Is it still running?" };
+        })
+        .then(function (block) {
+          turn.busy = false;
+          return block;
         });
     }
   };
@@ -112,6 +117,7 @@
   });
 
   var currentUnit = null;
+  var turn = { busy: false };   // a lesson, question or feedback request in flight
 
   // ---- small DOM helper -------------------------------------------------
   function el(tag, attrs, kids) {
@@ -145,10 +151,6 @@
     ]);
   }
 
-  function paragraphs(text) {
-    return (text || "").split(/\n\s*\n/).map(function (p) { return el("p", null, p); });
-  }
-
   function citations(cites) {
     if (!cites || !cites.length) { return null; }
     var links = cites.map(function (c) {
@@ -165,7 +167,7 @@
     stopTimer();
     stopProgress();
     renderBlock(result);
-    api.getState().then(renderMap);
+    api.getState().then(function (state) { renderMap(state, true); });
   }
 
   // ---- status indicator -------------------------------------------------
@@ -192,13 +194,15 @@
     };
   }
 
-  // Text arriving for one field: append it and move the caret there.
+  // Text arriving for one field: add it to the field's Markdown, show it
+  // rendered, and move the caret there. Titles and stems are h2 fields.
   function streamInto(target, text) {
     Array.prototype.forEach.call(document.querySelectorAll(".streaming-text.active"), function (n) {
       if (n !== target) { n.classList.remove("active"); }
     });
     target.classList.add("active");
-    target.textContent += text;
+    target.raw = (target.raw || "") + text;
+    target.replaceChildren(target.tagName === "H2" ? markdown.inline(target.raw) : markdown.block(target.raw));
   }
 
   // ---- streaming into the lesson panel ----------------------------------
@@ -267,7 +271,7 @@
   function renderError(b) {
     return el("div", null, [
       el("p", { class: "result incorrect" }, "The tutor is unavailable"),
-      el("div", { class: "block-body" }, paragraphs(b.message)),
+      el("div", { class: "block-body" }, markdown.block(b.message)),
       el("div", { class: "actions" }, el("button", {
         class: "btn secondary",
         onclick: function () { api.post({ type: "advance", unit: currentUnit, timestamp: iso() }).then(render); }
@@ -278,8 +282,8 @@
   function renderLesson(b) {
     return el("div", null, [
       gearTag(b),
-      el("h2", { class: "block-title" }, b.title),
-      el("div", { class: "block-body" }, paragraphs(b.body)),
+      el("h2", { class: "block-title" }, markdown.inline(b.title)),
+      el("div", { class: "block-body" }, markdown.block(b.body)),
       citations(b.citations),
       el("div", { class: "actions" }, el("button", {
         class: "btn",
@@ -303,7 +307,7 @@
           this.setAttribute("aria-pressed", "true");
           submit.removeAttribute("disabled");
         }
-      }, o.id + ". " + o.text);
+      }, [o.id + ". ", markdown.inline(o.text)]);
     });
     submit = el("button", {
       class: "btn", disabled: true,
@@ -315,7 +319,7 @@
     return el("div", null, [
       gearTag(b),
       b.review ? el("p", { class: "mock-pos" }, "Review check on a unit you mastered earlier") : null,
-      el("h2", { class: "block-title" }, b.stem),
+      el("h2", { class: "block-title" }, markdown.inline(b.stem)),
       el("div", { class: "options" }, opts),
       el("div", { class: "actions" }, submit)
     ]);
@@ -357,7 +361,7 @@
           this.setAttribute("aria-pressed", "true");
           submit.removeAttribute("disabled");
         }
-      }, o.id + ". " + o.text);
+      }, [o.id + ". ", markdown.inline(o.text)]);
     });
     submit = el("button", {
       class: "btn", disabled: true,
@@ -375,7 +379,7 @@
         el("span", { class: "mock-pos" }, "Practice exam \u00b7 question " + b.position + " of " + b.total),
         clock
       ]),
-      el("h2", { class: "block-title" }, b.stem),
+      el("h2", { class: "block-title" }, markdown.inline(b.stem)),
       el("div", { class: "options" }, opts),
       el("div", { class: "actions" }, submit)
     ]);
@@ -405,7 +409,7 @@
   function renderMockResult(b) {
     timer.deadline = 0;
     return el("div", null, mockResultParts(b).concat([
-      el("div", { class: "block-body" }, paragraphs(b.debrief)),
+      el("div", { class: "block-body" }, markdown.block(b.debrief)),
       citations(b.citations),
       el("div", { class: "actions" }, el("button", {
         class: "btn",
@@ -447,7 +451,7 @@
     return el("div", null, [
       gearTag(b),
       feedbackResult(b),
-      el("div", { class: "block-body" }, paragraphs(b.message)),
+      el("div", { class: "block-body" }, markdown.block(b.message)),
       citations(b.citations),
       el("div", { class: "actions" }, el("button", {
         class: "btn",
@@ -465,7 +469,7 @@
   var chat = { busy: false, paused: false };
 
   function chatMessage(m) {
-    var kids = [el("div", { class: "msg-text" }, m.role === "student" ? m.text : paragraphs(m.text))];
+    var kids = [el("div", { class: "msg-text" }, m.role === "student" ? m.text : markdown.block(m.text))];
     if (m.role === "tutor" && m.in_corpus === false && m.citations && m.citations.length) {
       kids.unshift(el("div", { class: "msg-note" }, "Not in the course material. These sources are from the web."));
     }
@@ -480,6 +484,20 @@
     if (force || log.scrollHeight - log.scrollTop - log.clientHeight < 60) {
       log.scrollTop = log.scrollHeight;
     }
+  }
+
+  // A drawing in the chat is scaled down to the panel's width, which makes its
+  // labels hard to read. A click shows it large in a dialog; a click anywhere
+  // or Escape closes it.
+  function enlargeDrawing(e) {
+    if (!e.target.matches("img.drawn")) { return; }
+    var dialog = el("dialog", {
+      class: "enlarged",
+      onclick: function () { dialog.close(); },
+      onclose: function () { dialog.remove(); }
+    }, el("img", { src: e.target.src, alt: e.target.alt }));
+    document.body.appendChild(dialog);
+    dialog.showModal();
   }
 
   function appendChat(node) {
@@ -570,46 +588,116 @@
     });
   }
 
-  // ---- placeholder map --------------------------------------------------
-  function renderMap(state) {
+  // ---- course tree ------------------------------------------------------
+  // The progress card draws the course as a tree (course-tree.js) from the
+  // state the server derives from the ledger, and the intake page draws the
+  // whole tree beside its card. A click on a lane or a unit opens the picker;
+  // its Review sends a goto, and the server teaches that unit at that gear.
+  var TASKS = {
+    A: "General", B: "Operating Rules", C: "Remote Pilot Certification with an sUAS Rating",
+    D: "Waivers", E: "Operations Over People", F: "Remote Identification (RID)"
+  };
+  var lastState = null, pickers = {}, glide = null;
+
+  function currentOf(state) { return (state.units || []).filter(function (u) { return u.current; })[0]; }
+  function unitById(state, id) { return (state.units || []).filter(function (u) { return u.id === id; })[0]; }
+
+  // A glide the shell started is not the student scrolling away: when the
+  // window is off the current unit, hold the recenter button until the window
+  // arrives there (or, if it never does, for two seconds).
+  function gliding() {
+    clearTimeout(glide);
+    glide = null;
+    document.getElementById("tree-recenter").hidden = true;
+    if (CourseTree.offCurrent(document.getElementById("course-tree"))) {
+      glide = setTimeout(function () { glide = null; }, 2000);
+    }
+  }
+
+  function renderMap(state, animate) {
+    lastState = state;
     renderReadiness(state);
     chat.paused = !!state.mock_in_progress;
     setChatState();
     document.getElementById("map-summary").textContent =
       (state.summary.mastered || 0) + " / " + (state.summary.total || 0);
-    var wrap = document.getElementById("course-map");
-    wrap.innerHTML = "";
-    var byTask = {};
-    (state.units || []).forEach(function (u) {
-      (byTask[u.task] = byTask[u.task] || []).push(u);
-    });
-    Object.keys(byTask).forEach(function (task) {
-      var grid = el("div", { class: "map-grid" }, byTask[task].map(function (u) {
-        var cell = el("div", { class: "cell " + u.mastery + (u.current ? " current" : "") });
-        cell.title = u.id + " (gears " + u.available_gears.join("/") + ")" + (u.parked ? ", set aside" : "");
-        if (u.gears_taken && u.gears_taken.length > 1) { cell.appendChild(el("span", { class: "dot deeper" })); }
-        if (u.needs_attention || u.parked) { cell.appendChild(el("span", { class: "dot attn" })); }
-        return cell;
-      }));
-      wrap.appendChild(el("div", { class: "map-task" }, [el("span", { class: "lab" }, task), grid]));
-    });
-    wrap.appendChild(legend());
+    var cur = currentOf(state);
+    document.getElementById("map-task-name").textContent =
+      cur ? "Task " + cur.task + " \u00b7 " + (TASKS[cur.task] || "") : "";
+    if (pickers.sidebar) { pickers.sidebar.hide(); }
+    var tree = document.getElementById("course-tree");
+    CourseTree.render(tree, state, TASKS, "sidebar", !!animate, { width: tree.clientWidth });
+    if (animate) { gliding(); }
+    if (!document.getElementById("intake").hidden) {
+      if (pickers.intake) { pickers.intake.hide(); }
+      var fresh = (state.units || []).every(function (u) { return u.mastery === "unseen"; });
+      document.getElementById("intake-summary").textContent =
+        (state.summary.mastered || 0) + " of " + (state.summary.total || 0) + " mastered";
+      CourseTree.render(document.getElementById("intake-tree"), state, TASKS, "full", false, { fresh: fresh });
+    }
   }
 
-  function legend() {
-    function item(cls, dot, label) {
-      var sw = el("span", { class: "sw " + cls });
-      if (dot) { sw.appendChild(el("span", { class: "dot " + dot })); }
-      return el("span", { class: "lg" }, [sw, label]);
+  // The picker under a tree: the unit, its state, the speeds written for it,
+  // and the three speeds as buttons with the clicked lane preselected.
+  function picker(box, tree, onStart) {
+    var title = box.querySelector(".tree-pick-title"), words = box.querySelector(".tree-pick-state");
+    var gears = box.querySelectorAll(".tree-pick-gears button"), start = box.querySelector(".tree-pick-start");
+    var chosen = null;
+    function press() {
+      Array.prototype.forEach.call(gears, function (b) {
+        b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gear")) === chosen.gear));
+      });
+      CourseTree.markSelected(tree, chosen.unit, chosen.gear);
     }
-    return el("div", { class: "map-legend" }, [
-      item("mastered", null, "Mastered"),
-      item("learning", null, "Learning"),
-      item("unseen", null, "Not started"),
-      item("mastered current", null, "Current"),
-      item("mastered", "deeper", "Deeper gear"),
-      item("learning", "attn", "Needs attention")
-    ]);
+    function show(sel) {
+      var u = lastState && unitById(lastState, sel.unit);
+      if (!u || lastState.mock_in_progress || turn.busy) { return; }
+      var written = CourseTree.writtenGears(u);
+      chosen = { unit: u.id, gear: sel.gear && written.indexOf(sel.gear) >= 0 ? sel.gear : u.current_gear };
+      title.textContent = u.id + " \u00b7 " + CourseTree.titleOf(u);
+      words.textContent = (u.mastery === "unseen" ? "Not started"
+        : (u.mastery === "mastered" ? "Mastered at gear " : "Learning at gear ") + u.current_gear + (u.parked ? ", set aside" : "")) +
+        ". Speeds written: " + (written.map(gearName).join(", ") || "none yet") + ".";
+      Array.prototype.forEach.call(gears, function (b) {
+        var g = Number(b.getAttribute("data-gear"));
+        b.disabled = written.indexOf(g) < 0;
+        b.title = b.disabled ? "Not written yet for this unit" : "";
+      });
+      start.textContent = u.mastery === "unseen" ? "Start here" : (u.current ? "Switch speed" : "Review");
+      start.disabled = !written.length;
+      box.hidden = false;
+      press();
+      start.focus();
+    }
+    function hide() {
+      if (!box.hidden && box.contains(document.activeElement)) { tree.focus(); }
+      box.hidden = true;
+      chosen = null;
+      CourseTree.markSelected(tree, null);
+    }
+    box.addEventListener("keydown", function (e) { if (e.key === "Escape") { hide(); } });
+    Array.prototype.forEach.call(gears, function (b) {
+      b.addEventListener("click", function () {
+        if (chosen) { chosen.gear = Number(b.getAttribute("data-gear")); press(); }
+      });
+    });
+    start.addEventListener("click", function () {
+      if (!chosen) { return; }
+      var sel = chosen;
+      hide();
+      onStart(sel);
+    });
+    box.querySelector(".tree-pick-cancel").addEventListener("click", hide);
+    CourseTree.onSelect(tree, show);
+    return { show: show, hide: hide };
+  }
+
+  // onError, when given, takes a refusal instead of the lesson panel showing it.
+  function goTo(sel, onError) {
+    if (turn.busy) { return; }
+    api.post({ type: "goto", unit: sel.unit, gear: sel.gear, timestamp: iso() }).then(function (block) {
+      if (onError && block.type === "error") { onError(block); } else { render(block); }
+    });
   }
 
   // ---- sent log ---------------------------------------------------------
@@ -647,6 +735,37 @@
       }
     });
     document.getElementById("mock-btn").addEventListener("click", startMock);
+    document.getElementById("chat-log").addEventListener("click", enlargeDrawing);
+    document.getElementById("key-lanes").innerHTML = CourseTree.laneGlyph();
+    var tree = document.getElementById("course-tree"), recenter = document.getElementById("tree-recenter");
+    tree.addEventListener("scroll", function () {
+      var off = CourseTree.offCurrent(tree);
+      if (glide && off) { return; }
+      clearTimeout(glide);
+      glide = null;
+      recenter.hidden = !off;
+    });
+    recenter.addEventListener("click", function () { gliding(); CourseTree.scrollToCurrent(tree, true); });
+    // The student sets the progress panel's width (panels.js): draw the tree
+    // again at the new width, scrolled where it was.
+    new ResizeObserver(function () {
+      var drawn = tree.querySelector("svg");
+      if (!lastState || !drawn || Number(drawn.getAttribute("width")) === tree.clientWidth) { return; }
+      var top = tree.scrollTop;
+      renderMap(lastState, false);
+      tree.scrollTop = top;
+    }).observe(tree);
+    pickers.sidebar = picker(document.getElementById("tree-pick"), tree, goTo);
+    pickers.intake = picker(document.getElementById("intake-pick"), document.getElementById("intake-tree"), function (sel) {
+      // Picked from the first page: straight into that unit, at the pace of the
+      // lane. A refusal keeps the first page, with the reason in the picker.
+      document.getElementById("intake").hidden = true;
+      goTo(sel, function (block) {
+        document.getElementById("intake").hidden = false;
+        pickers.intake.show(sel);
+        document.querySelector("#intake-pick .tree-pick-state").textContent = block.message;
+      });
+    });
     api.getState().then(renderMap);
     loadChat();
   });

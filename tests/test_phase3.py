@@ -35,6 +35,7 @@ def stub_paths(tmp):
         "prompts": os.path.join(ROOT, "prompts"),
         "ledger": os.path.join(tmp, "ledger.md"),
         "responses": os.path.join(tmp, "responses.jsonl"),
+        "metrics": os.path.join(tmp, "metrics.jsonl"),
     }
 
 
@@ -62,6 +63,7 @@ def make_course(tmp):
     course.session = server_module.Session()
     course.calls = []
     course.chat, course.chat_meta = [], {}
+    course.prefetches, course.turn = {}, 0
     return course
 
 
@@ -176,6 +178,16 @@ class TestPromptAssembly(unittest.TestCase):
     def test_qa_context_reports_an_empty_corpus_honestly(self):
         context = self.tutor.qa_context("what is photosynthesis", [], can_search=False)
         self.assertIn("none", context)
+        self.assertIn("WEB SEARCH AVAILABLE: no", context)
+
+    def test_qa_context_says_which_searches_the_tutor_can_run(self):
+        chunk = {"kind": "source", "source": "14 CFR 107.29", "section": "107.29", "url": "u", "text": "Night."}
+        for chunks in ([], [chunk]):
+            context = self.tutor.qa_context("can I fly at night", chunks, can_search=True, can_search_course=True)
+            self.assertIn("COURSE SEARCH AVAILABLE: yes", context)
+            self.assertIn("WEB SEARCH AVAILABLE: yes", context)
+        context = self.tutor.qa_context("can I fly at night", [chunk], can_search=False)
+        self.assertIn("COURSE SEARCH AVAILABLE: no", context)
         self.assertIn("WEB SEARCH AVAILABLE: no", context)
 
 
@@ -457,3 +469,135 @@ class TestBoundariesAndReview(unittest.TestCase):
             self.assertTrue(again.units["UA.I.B.K21c"]["parked"])
             self.assertEqual(again.last_task, "C")
             self.assertEqual(again.parked_units(), ["UA.I.B.K21c"])
+
+
+class TestGoto(unittest.TestCase):
+    """A unit and a gear picked from the course tree. The stub's course order is
+    B.K16, B.K21c, C.K4, D.K1, so picking C.K4 at the start is a jump ahead."""
+
+    def start(self, tmp):
+        course = make_course(tmp)
+        course.handle({"type": "intake", "default_gear": 1, "timestamp": "t"})
+        return course
+
+    def capture(self, course):
+        """Record every model call: (stage, context, preview)."""
+        seen, real = [], course.generate
+
+        def generate(stage, context, preview=None):
+            seen.append((stage, context, preview))
+            return real(stage, context, preview)
+
+        course.generate = generate
+        return seen
+
+    def test_teaches_the_chosen_unit_at_the_chosen_gear_with_the_tree_framing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            seen = self.capture(course)
+            block = course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 2, "timestamp": "t"})
+            self.assertEqual(block["type"], "lesson")
+            stage, context, preview = seen[-1]
+            self.assertEqual((stage, preview["unit"], preview["gear"]), ("teach", "UA.I.C.K4", 2))
+            self.assertIn("picked this unit", context)
+            self.assertEqual(course.ledger.current_unit, "UA.I.C.K4")
+            self.assertEqual(course.ledger.units["UA.I.C.K4"]["current_gear"], 2)
+            self.assertEqual(course.ledger.units["UA.I.C.K4"]["gears_taken"], [2])
+            self.assertTrue(next(u for u in course.state()["units"] if u["id"] == "UA.I.C.K4")["current"])
+
+    def test_the_gear_is_capped_at_the_deepest_written_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            seen = self.capture(course)
+            course.handle({"type": "goto", "unit": "UA.I.B.K21c", "gear": 3, "timestamp": "t"})
+            self.assertEqual(seen[-1][2]["gear"], 2)
+            self.assertEqual(course.ledger.units["UA.I.B.K21c"]["current_gear"], 2)
+
+    def test_the_chosen_unit_stays_in_play_until_mastered_then_the_course_resumes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"})
+            for index in range(2):
+                question = course.handle({"type": "advance", "timestamp": "t"})
+                self.assertEqual((question["type"], question["unit"]), ("question", "UA.I.C.K4"))
+                course.handle({"type": "answer", "question_id": "g%d" % index, "unit": "UA.I.C.K4",
+                               "selected_option": "B", "timestamp": "t"})
+            self.assertEqual(course.ledger.mastery("UA.I.C.K4"), "mastered")
+            block = course.handle({"type": "advance", "timestamp": "t"})
+            # Back to the earliest unmastered unit, and nothing is left in play.
+            self.assertEqual(block["type"], "lesson")
+            self.assertIsNone(course.session.chosen)
+            self.assertEqual(course.ledger.current_unit, "UA.I.B.K16")
+
+    def test_a_miss_on_the_chosen_unit_re_teaches_that_unit_deeper(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            seen = self.capture(course)
+            course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"})
+            course.handle({"type": "advance", "timestamp": "t"})
+            course.handle({"type": "answer", "question_id": "g0", "unit": "UA.I.C.K4",
+                           "selected_option": "A", "timestamp": "t"})
+            block = course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual(block["type"], "lesson")
+            self.assertEqual((seen[-1][0], seen[-1][2]["unit"], seen[-1][2]["gear"]), ("remediate", "UA.I.C.K4", 2))
+
+    def test_a_review_of_a_mastered_unit_is_one_check_then_the_course_resumes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            master(course, "UA.I.B.K16", "a")
+            course.handle({"type": "advance", "timestamp": "t"})      # teach K21c
+            course.handle({"type": "goto", "unit": "UA.I.B.K16", "gear": 2, "timestamp": "t"})
+            question = course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual(question["unit"], "UA.I.B.K16")
+            course.handle({"type": "answer", "question_id": "r", "unit": "UA.I.B.K16",
+                           "selected_option": "B", "timestamp": "t"})
+            self.assertEqual(course.ledger.mastery("UA.I.B.K16"), "mastered")
+            course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual(course.ledger.current_unit, "UA.I.B.K21c")
+
+    def test_refuses_an_unknown_unit_a_pick_during_the_exam_and_a_unit_without_content(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            self.assertEqual(course.handle({"type": "goto", "unit": "UA.I.X.K9", "gear": 1, "timestamp": "t"})["type"], "error")
+            course.session.mock = {}
+            self.assertEqual(course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"})["type"], "error")
+            course.session.mock = None
+            live = os.path.join(STUB_CURRICULUM, "UA.I.D.K1.md")
+            hidden = live + ".hidden"
+            os.rename(live, hidden)
+            try:
+                block = course.handle({"type": "goto", "unit": "UA.I.D.K1", "gear": 1, "timestamp": "t"})
+            finally:
+                os.rename(hidden, live)
+            self.assertEqual(block["type"], "error")
+            self.assertIsNone(course.session.chosen)
+            self.assertEqual(course.ledger.current_unit, "UA.I.B.K16")
+
+    def test_a_set_aside_unit_mastered_from_the_tree_is_no_longer_set_aside(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = make_course(tmp)
+            course.handle({"type": "intake", "default_gear": 3, "timestamp": "t"})
+            for index in range(2):                                   # park K16 at gear 3
+                course.handle({"type": "advance", "timestamp": "t"})
+                course.handle({"type": "answer", "question_id": "p%d" % index, "unit": "UA.I.B.K16",
+                               "selected_option": "A", "timestamp": "t"})
+            self.assertTrue(course.ledger.units["UA.I.B.K16"]["parked"])
+            course.handle({"type": "goto", "unit": "UA.I.B.K16", "gear": 2, "timestamp": "t"})
+            for index in range(2):
+                course.handle({"type": "advance", "timestamp": "t"})
+                course.handle({"type": "answer", "question_id": "m%d" % index, "unit": "UA.I.B.K16",
+                               "selected_option": "B", "timestamp": "t"})
+            self.assertEqual(course.ledger.mastery("UA.I.B.K16"), "mastered")
+            self.assertFalse(course.ledger.units["UA.I.B.K16"]["parked"])
+
+    def test_the_chosen_unit_survives_a_question_that_failed_to_arrive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"})
+            real = course.generate
+            course.generate = lambda stage, context, preview=None: {"type": "error", "message": "down"}
+            self.assertEqual(course.handle({"type": "advance", "timestamp": "t"})["type"], "error")
+            course.generate = real
+            question = course.handle({"type": "advance", "timestamp": "t"})   # Try again
+            self.assertEqual((question["type"], question["unit"]), ("question", "UA.I.C.K4"))
+            self.assertEqual(course.session.chosen, "UA.I.C.K4")

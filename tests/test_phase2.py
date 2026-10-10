@@ -11,6 +11,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -234,6 +235,66 @@ class TestClaudeCodeAdapter(unittest.TestCase):
             self.assertEqual(argv[argv.index("--tools") + 1], "")
             self.assertEqual(argv[argv.index("--setting-sources") + 1], "")
             self.assertIn("-p", out["argv"])
+            self.assertNotIn("--add-dir", argv)
+            self.assertNotIn("--permission-mode", argv)
+
+    def test_a_research_call_gets_read_only_tools_in_the_first_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folders = [os.path.join(tmp, name) for name in ("kb", "lessons", "facts")]
+            for folder in folders:
+                os.makedirs(folder)
+            fake = self.fake_claude(tmp, (
+                "import sys, json, os\n"
+                "sys.stdin.read()\n"
+                "print(json.dumps({'result': json.dumps({'argv': sys.argv[1:], 'cwd': os.getcwd()})}))\n"
+            ))
+            client = self.client_with(tmp, fake)
+            client.settings["supports_web_search"] = True
+            out = json.loads(client.complete("s", "u", research_dirs=folders))
+            argv = out["argv"]
+            self.assertEqual(argv[argv.index("--tools") + 1], "Read,Grep,Glob,WebSearch,WebFetch")
+            self.assertEqual(argv[argv.index("--permission-mode") + 1], "dontAsk")
+            self.assertEqual(argv[argv.index("--add-dir") + 1:][:2], folders[1:])
+            self.assertEqual(argv[argv.index("--allowedTools") + 1:][:2], ["WebSearch", "WebFetch"])
+            self.assertEqual(os.path.realpath(out["cwd"]), os.path.realpath(folders[0]))
+
+    def test_a_research_call_without_web_search_has_no_web_tools(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = self.fake_claude(tmp, (
+                "import sys, json\n"
+                "sys.stdin.read()\n"
+                "print(json.dumps({'result': json.dumps(sys.argv[1:])}))\n"
+            ))
+            argv = json.loads(self.client_with(tmp, fake).complete("s", "u", research_dirs=[tmp]))
+            self.assertEqual(argv[argv.index("--tools") + 1], "Read,Grep,Glob")
+            self.assertNotIn("--allowedTools", argv)
+            self.assertFalse([a for a in argv if "Web" in a])
+
+    def test_streaming_reports_each_tool_the_model_starts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = self.fake_claude(tmp, (
+                "import sys, json\n"
+                "sys.stdin.read()\n"
+                "def out(event):\n"
+                "    print(json.dumps(event), flush=True)\n"
+                "for kind, name in [('tool_use', 'Grep'), ('tool_use', 'WebSearch'), ('text', '')]:\n"
+                "    out({'type': 'stream_event', 'event': {'type': 'content_block_start',\n"
+                "         'content_block': {'type': kind, 'name': name}}})\n"
+                "out({'type': 'result', 'result': '{}', 'usage': {}, 'modelUsage': {}})\n"
+            ))
+            tools = []
+            self.client_with(tmp, fake).complete("s", "u", on_text=lambda piece: None,
+                                                 research_dirs=[tmp], on_tool=tools.append)
+            self.assertEqual(tools, ["Grep", "WebSearch"])
+
+    def test_the_developer_memory_is_kept_out(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = self.fake_claude(tmp, (
+                "import sys, json, os\n"
+                "sys.stdin.read()\n"
+                "print(json.dumps({'result': os.environ.get('CLAUDE_CODE_DISABLE_AUTO_MEMORY', 'unset')}))\n"
+            ))
+            self.assertEqual(self.client_with(tmp, fake).complete("s", "u"), "1")
 
     def test_reports_the_main_model_tokens_and_timings(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -392,6 +453,23 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(unit["available_gears"], [1, 2, 3])
         self.assertEqual(unit["gears_taken"], [1])
 
+    def test_state_carries_titles_and_attempts_per_gear(self):
+        led = ledger_module.Ledger.bootstrap(OBJECTIVES)
+        led.record_attempt("UA.I.B.K16", "i1", 1, False, "t1")
+        led.record_attempt("UA.I.B.K16", "i2", 2, True, "t2")
+        led.record_attempt("UA.I.B.K16", "i3", 2, True, "t3")
+        objectives = orchestrator.load_objectives(OBJECTIVES)
+        state = led.state(os.path.join(ROOT, "curriculum", "regulations"), objectives)
+        unit = next(u for u in state["units"] if u["id"] == "UA.I.B.K16")
+        self.assertEqual(unit["attempts"], {"1": 1, "2": 2})
+        self.assertIn("authorization", unit["title"].lower())
+        untouched = next(u for u in state["units"] if u["id"] == "UA.I.A.K1")
+        self.assertEqual(untouched["attempts"], {})
+        self.assertIn("applicability", untouched["title"].lower())
+        # Content exists for task A and the two exemplars; the rest is not written yet.
+        self.assertTrue(untouched["written"])
+        self.assertFalse(next(u for u in state["units"] if u["id"] == "UA.I.F.K7")["written"])
+
 
 class TestFieldStream(unittest.TestCase):
     """The page shows a block's text while the model is still writing it."""
@@ -466,6 +544,7 @@ class TestCourse(unittest.TestCase):
         course.session = server_module.Session()
         course.calls = []
         course.chat, course.chat_meta = [], {}
+        course.prefetches, course.turn = {}, 0
         return course
 
     def test_intake_sets_gear_and_returns_a_block(self):
@@ -590,6 +669,30 @@ class TestCourse(unittest.TestCase):
             self.assertIsNotNone(record["first_text_ms"])
             self.assertIn("[server]  POST intake", printed.getvalue())
 
+    def test_the_markdown_scripts_and_curriculum_images_are_served(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.make(tmp)
+            course.paths["curriculum"] = tmp
+            os.makedirs(os.path.join(tmp, "images"))
+            for name in ("images/class-d.svg", "images/notes.txt", "outside.png"):
+                with open(os.path.join(tmp, name), "w", encoding="utf-8") as handle:
+                    handle.write('<svg xmlns="http://www.w3.org/2000/svg"/>')
+            with self.serving(course) as (base, printed):
+                scripts = [urllib.request.urlopen(base + "/" + name).headers.get("content-type")
+                           for name in ("marked.min.js", "markdown.js")]
+                image = urllib.request.urlopen(base + "/images/class-d.svg")
+                refused = []
+                # Not a picture, not there, and outside the images folder.
+                for path in ("/images/notes.txt", "/images/missing.png", "/images/../outside.png"):
+                    with self.assertRaises(urllib.error.HTTPError) as caught:
+                        urllib.request.urlopen(base + path)
+                    refused.append(caught.exception.code)
+
+            self.assertEqual(scripts, ["text/javascript", "text/javascript"])
+            self.assertEqual(image.headers.get("content-type"), "image/svg+xml")
+            self.assertEqual(image.read(), b'<svg xmlns="http://www.w3.org/2000/svg"/>')
+            self.assertEqual(refused, [404, 404, 404])
+
     def test_an_unparseable_reply_is_flagged_in_the_metrics(self):
         with tempfile.TemporaryDirectory() as tmp:
             course = self.make(tmp)
@@ -609,9 +712,9 @@ class TestCourse(unittest.TestCase):
             seen = []
             real = course.client.complete
 
-            def spy(system, user, stage=None, on_text=None):
+            def spy(system, user, **kwargs):
                 seen.append(user)
-                return real(system, user, stage=stage, on_text=on_text)
+                return real(system, user, **kwargs)
 
             course.client.complete = spy
             course.ask("night anti-collision lighting", "UA.I.B.K16")
@@ -639,6 +742,68 @@ class TestCourse(unittest.TestCase):
             block = course.ask("photosynthesis chlorophyll")
             self.assertFalse(block["in_corpus"])
             self.assertEqual([m["role"] for m in course.chat], ["student", "tutor"])
+
+    def searching_course(self, tmp, tools=()):
+        """A course on the claude_code backend whose model calls are answered by the
+        mock and recorded. `tools` are reported as started before the answer."""
+        course = self.make(tmp, provider="claude_code")
+        mock = LLMClient(mock_config(tmp))
+        seen = []
+
+        def complete(system, user, stage=None, on_text=None, research_dirs=None, on_tool=None):
+            seen.append({"stage": stage, "user": user, "research_dirs": research_dirs})
+            for name in tools:
+                on_tool(name)
+            return mock.complete(system, user, stage=stage, on_text=on_text)
+
+        course.client.complete = complete
+        return course, seen
+
+    def test_the_chat_may_read_the_course_but_not_the_exam_or_progress(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.make(tmp)
+            with open(os.path.join(ROOT, "config.json"), encoding="utf-8") as handle:
+                course.paths = {k: os.path.join(ROOT, v) for k, v in json.load(handle)["paths"].items()}
+            folders = [os.path.realpath(f) + os.sep for f in course.research_dirs()]
+            self.assertEqual(folders[0], os.path.realpath(course.paths["knowledge_base"]) + os.sep)
+            closed = [course.paths[key] for key in ("items", "ledger", "responses", "metrics", "prompts")]
+            for path in closed + [os.path.join(ROOT, "config.json")]:
+                inside = [f for f in folders if os.path.realpath(path).startswith(f)]
+                self.assertEqual(inside, [], path)
+
+    def test_only_the_chat_gets_the_research_folders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course, seen = self.searching_course(tmp)
+            course.handle({"type": "intake", "default_gear": 2, "timestamp": "t"})
+            course.ask("night anti-collision lighting")
+            for job in course.prefetches.values():
+                job.follow()  # the question on the lesson's unit, written on a background thread
+            by_stage = {call["stage"]: call for call in seen}
+            self.assertEqual(sorted(by_stage), ["lesson", "qa", "question"])
+            self.assertIsNone(by_stage["lesson"]["research_dirs"])
+            self.assertIsNone(by_stage["question"]["research_dirs"])
+            self.assertEqual(by_stage["qa"]["research_dirs"], course.research_dirs())
+            self.assertTrue(by_stage["qa"]["research_dirs"])
+
+    def test_with_course_search_the_model_answers_even_without_material(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course, seen = self.searching_course(tmp)
+            course.ledger.current_unit = None
+            block = course.ask("photosynthesis chlorophyll")
+            self.assertEqual(block["type"], "cited_answer")
+            self.assertEqual(len(seen), 1)
+            self.assertIn("COURSE SEARCH AVAILABLE: yes", seen[0]["user"])
+
+    def test_a_search_shows_in_the_status_until_the_answer_starts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course, _ = self.searching_course(tmp, tools=("Grep", "WebSearch", "SomethingElse"))
+            events = []
+            course.ask("night anti-collision lighting", emit=events.append)
+            statuses = [e["status"] for e in events if "status" in e]
+            self.assertEqual(statuses, ["Searching the course material", "Searching the web",
+                                        "Writing the answer", "Adding the sources"])
+            first_text = next(i for i, e in enumerate(events) if "delta" in e)
+            self.assertEqual(events[first_text - 1], {"status": "Writing the answer"})
 
     def test_the_chat_is_paused_during_a_practice_exam(self):
         with tempfile.TemporaryDirectory() as tmp:
