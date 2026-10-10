@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+<title>Ask the tutor: answers come from retrieved material, with links</title>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#5f5f5a"/></marker>
+</defs>
+<style>
+text{fill:#1f1f1d}
+.h1{font-size:18px;font-weight:600}
+.b{font-weight:600}
+.s{font-size:12px}
+.m{font-size:12px;fill:#5f5f5a}
+.box{fill:#fff;stroke:#c9c9c2;stroke-width:1.2}
+.acc{fill:#e7f0f4;stroke:#2f6f8f;stroke-width:1.2}
+.ln{fill:none;stroke:#5f5f5a;stroke-width:1.4}
+.life{fill:none;stroke:#c9c9c2;stroke-width:1.2;stroke-dasharray:5 4}
+</style>
+<rect width="960" height="540" rx="12" fill="#f7f7f5"/>
+<text x="30" y="34" class="h1">Ask the tutor: answers come from retrieved material, with links</text>
+<text x="30" y="52" class="m">Any question, any time. The answer is paraphrased from the course material and cited, or the tutor says the material does not cover it.</text>
+
+<path d="M160 124 L160 400" class="life"/>
+<path d="M480 124 L480 400" class="life"/>
+<path d="M800 124 L800 400" class="life"/>
+
+<rect x="40" y="76" width="240" height="48" rx="8" class="box"/>
+<text x="160" y="96" text-anchor="middle" class="b">Student</text>
+<text x="160" y="114" text-anchor="middle" class="m">the chat panel in the shell</text>
+<rect x="360" y="76" width="240" height="48" rx="8" class="acc"/>
+<text x="480" y="96" text-anchor="middle" class="b">Server and orchestrator</text>
+<text x="480" y="114" text-anchor="middle" class="m">server.py, retrieval.py</text>
+<rect x="680" y="76" width="240" height="48" rx="8" class="box"/>
+<text x="800" y="96" text-anchor="middle" class="b">Tutor model</text>
+<text x="800" y="114" text-anchor="middle" class="m">anthropic, claude_code, ollama, or mock</text>
+
+<path d="M160 160 L478 160" class="ln" marker-end="url(#a)"/>
+<text x="320" y="153" text-anchor="middle" class="s">1  the question text, and the unit on screen</text>
+
+<rect x="320" y="180" width="330" height="80" rx="8" class="acc"/>
+<text x="336" y="200" class="b">2  Retrieve, in code</text>
+<text x="336" y="218" class="m">retrieval.py: lexical search over the knowledge</text>
+<text x="336" y="234" class="m">base, top 3 chunks, source text ranked first;</text>
+<text x="336" y="250" class="m">plus the unit on screen and recent chat turns</text>
+
+<path d="M480 296 L798 296" class="ln" marker-end="url(#a)"/>
+<text x="640" y="275" text-anchor="middle" class="s">3  qa.md: the chunks, each with its source and link,</text>
+<text x="640" y="289" text-anchor="middle" class="s">and the earlier turns (context, not a source)</text>
+<path d="M800 342 L482 342" class="ln" marker-end="url(#a)"/>
+<text x="640" y="335" text-anchor="middle" class="s">4  a cited_answer block, streamed as written</text>
+<path d="M480 382 L162 382" class="ln" marker-end="url(#a)"/>
+<text x="320" y="375" text-anchor="middle" class="s">5  the answer streams in, each source as a link</text>
+
+<rect x="40" y="410" width="430" height="110" rx="8" class="box"/>
+<text x="56" y="432" class="b">When the material does not answer</text>
+<text x="56" y="452" class="m">The model sets in_corpus to false and says the question is</text>
+<text x="56" y="468" class="m">not covered. It does not reason its way to a rule.</text>
+<text x="56" y="490" class="m">No match and no web search: the server says so itself,</text>
+<text x="56" y="506" class="m">without a model call.</text>
+<rect x="490" y="410" width="430" height="110" rx="8" class="box"/>
+<text x="506" y="432" class="b">Web search, a fallback that is off by default</text>
+<text x="506" y="452" class="m">Only on the anthropic backend, when supports_web_search is</text>
+<text x="506" y="468" class="m">true. Results are labelled as web sources; FAA and CFR</text>
+<text x="506" y="484" class="m">sources still outrank them, and every claim keeps its link.</text>
+<text x="506" y="506" class="m">Earlier chat turns are context only, never a source.</text>
+</svg>

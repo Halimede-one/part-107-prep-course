@@ -1,0 +1,13 @@
+---
+source: Explanation of FAA-G-8082-22, Remote Pilot - Small Unmanned Aircraft Systems Study Guide (2016)
+section: Chapter 11 (part 3 of 3)
+url: https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/remote_pilot_study_guide.pdf#page=73
+page: 73
+kind: explanation
+derived_from: faa-g-8082-22-chapter-11-p3.md
+---
+This chunk picks up mid-sentence in a discussion of antenna towers and similar "skeletal structures" — the open lattice-work towers used for radio, TV, and cell transmission. The sentence fragment tells us some of these structures extend higher than 2,000 feet AGL (above ground level). The warning that follows is about what holds them up: most are braced by guy wires, which are thin steel cables running from the tower down to anchor points on the ground. The study guide says these wires are very difficult to see in good weather and can be invisible at dusk or during periods of reduced visibility. Because the wires can extend about 1,500 feet horizontally from the structure, the guide's recommendation is to avoid all skeletal structures horizontally by at least 2,000 feet. The chunk closes with a second caution: a new tower may not appear on the chart you are holding, because the information did not reach the chart maker before that chart was printed. So the absence of a tower symbol on your chart is not proof that no tower is there.
+
+Illustration: You are planning an inspection flight along a rural fence line and you spot a tall lattice radio tower about a quarter mile from your intended flight path. Your sectional chart shows the tower, so you know roughly how tall it is. A quarter mile is about 1,320 feet — inside the 2,000 feet of horizontal clearance the study guide recommends, and inside the roughly 1,500 feet the guy wires could reach. You shift your flight line farther from the tower so you stay at least 2,000 feet away horizontally, because the guy wires are nearly invisible against the sky and you will not see them in time to avoid them. On the walk back you also notice a second, smaller tower that is not printed on your chart at all — a reminder to scout the actual site rather than trusting the chart alone.
+
+Common misreading: Two traps here. First, people treat the 2,000 feet as a vertical number — "I'll just fly above it." The 2,000 feet in the recommendation is horizontal separation, meant to keep you clear of guy wires that fan out sideways from the base. Second, pilots assume that if a tower is not on the chart, it is not there. The chunk says the opposite: new towers may be missing because the information arrived after the chart was printed, so a clean chart does not guarantee a clear site.

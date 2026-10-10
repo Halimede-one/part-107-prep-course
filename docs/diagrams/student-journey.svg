@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+<title>The student's path through the Part 107 course</title>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#5f5f5a"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#2e7d54"/></marker>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#b26a12"/></marker>
+</defs>
+<style>
+text{fill:#1f1f1d}
+.h1{font-size:18px;font-weight:600}
+.h2{font-size:14px;font-weight:600}
+.s{font-size:12px}
+.m{font-size:12px;fill:#5f5f5a}
+.box{fill:#fff;stroke:#c9c9c2;stroke-width:1.2}
+.good{fill:#e6f2ea;stroke:#2e7d54;stroke-width:1.2}
+.acc{fill:#e7f0f4;stroke:#2f6f8f;stroke-width:1.2}
+.ln{fill:none;stroke:#5f5f5a;stroke-width:1.4}
+.lg{stroke:#2e7d54}.lw{stroke:#b26a12}
+.dash{stroke-dasharray:5 4}
+</style>
+<rect width="960" height="600" rx="12" fill="#f7f7f5"/>
+<text x="30" y="34" class="h1">The student's path</text>
+<text x="30" y="52" class="m">Fast where the student already knows the material, deeper only where they miss. The bar is the same for everyone.</text>
+
+<rect x="30" y="90" width="190" height="190" rx="8" class="box"/>
+<text x="46" y="114" class="h2">1  Choose a pace</text>
+<text x="46" y="140">Fast-track (default)</text>
+<text x="46" y="160">Guided</text>
+<text x="46" y="180">Foundational</text>
+<text x="46" y="210" class="m">Sets the starting gear for</text>
+<text x="46" y="226" class="m">every unit in this session.</text>
+<path d="M220 185 L258 185" class="ln" marker-end="url(#a)"/>
+
+<rect x="260" y="90" width="430" height="190" rx="8" class="box"/>
+<text x="276" y="114" class="h2">2  Work through the units, one at a time</text>
+<rect x="276" y="134" width="90" height="34" rx="6" class="acc"/>
+<text x="321" y="156" text-anchor="middle">Teach</text>
+<path d="M366 151 L398 151" class="ln" marker-end="url(#a)"/>
+<rect x="400" y="134" width="90" height="34" rx="6" class="acc"/>
+<text x="445" y="156" text-anchor="middle">Check</text>
+<path d="M490 151 L522 151" class="ln lg" marker-end="url(#ag)"/>
+<rect x="524" y="134" width="150" height="34" rx="6" class="good"/>
+<text x="599" y="156" text-anchor="middle">Mastered</text>
+<path d="M599 168 L599 182 L321 182 L321 170" class="ln" marker-end="url(#a)"/>
+<text x="460" y="194" text-anchor="middle" class="m">next unit</text>
+<text x="276" y="218" class="s">Two right in a row on different questions: mastered.</text>
+<text x="276" y="236" class="s">The bar is the same at every gear and for every student.</text>
+<text x="276" y="254" class="s">A miss moves only this unit one gear deeper (next figure).</text>
+<text x="276" y="272" class="m">77 units in Tasks A to F, in course order.</text>
+<path d="M690 185 L728 185" class="ln" marker-end="url(#a)"/>
+
+<rect x="730" y="90" width="200" height="190" rx="8" class="box"/>
+<text x="746" y="114" class="h2">3  Task boundary</text>
+<text x="746" y="138" class="s">Before the course moves</text>
+<text x="746" y="154" class="s">into the next task:</text>
+<text x="746" y="176" class="s">Review up to 3 earlier</text>
+<text x="746" y="192" class="s">units, 1 question each.</text>
+<text x="746" y="208" class="s">A miss sends that unit</text>
+<text x="746" y="224" class="s">back to Guided.</text>
+<text x="746" y="246" class="s">Units set aside come</text>
+<text x="746" y="262" class="s">back with a fresh angle.</text>
+<path d="M830 90 L830 74 L475 74 L475 88" class="ln" marker-end="url(#a)"/>
+<text x="652" y="70" text-anchor="middle" class="m">next task</text>
+
+<path d="M365 280 L365 313" class="ln" marker-end="url(#a)"/>
+<text x="373" y="301" class="m">all units done</text>
+<rect x="260" y="315" width="210" height="145" rx="8" class="box"/>
+<text x="276" y="339" class="h2">4  Practice exam</text>
+<text x="276" y="363" class="s">20 fixed, human-vetted items</text>
+<text x="276" y="379" class="s">in shuffled order, timed.</text>
+<text x="276" y="395" class="s">Scored by lookup against</text>
+<text x="276" y="411" class="s">the key, in code.</text>
+<text x="276" y="437" class="m">Open at any time, from</text>
+<text x="276" y="453" class="m">the button in the top bar.</text>
+<path d="M470 388 L493 388" class="ln" marker-end="url(#a)"/>
+
+<rect x="495" y="315" width="210" height="145" rx="8" class="box"/>
+<text x="511" y="339" class="h2">5  Readiness gate</text>
+<text x="511" y="363" class="s">Decided from the ledger:</text>
+<text x="511" y="383" class="s">• every unit mastered</text>
+<text x="511" y="399" class="s">• none set aside</text>
+<text x="511" y="415" class="s">• 2 passes at 85 percent</text>
+<text x="511" y="441" class="m">Decided in code, never</text>
+<text x="511" y="457" class="m">by the model.</text>
+<path d="M705 388 L728 388" class="ln lg" marker-end="url(#ag)"/>
+<path d="M600 315 L600 282" class="ln lw dash" marker-end="url(#aw)"/>
+<text x="608" y="301" class="m">not yet: back to the units</text>
+
+<rect x="730" y="315" width="200" height="145" rx="8" class="good"/>
+<text x="746" y="339" class="h2">Ready</text>
+<text x="746" y="363" class="s">The student can schedule</text>
+<text x="746" y="379" class="s">the real FAA exam.</text>
+<text x="746" y="405" class="m">Until then, the course says</text>
+<text x="746" y="421" class="m">what is still missing.</text>
+
+<rect x="30" y="490" width="440" height="90" rx="8" class="acc"/>
+<text x="46" y="514" class="h2">Ask the tutor, at any time</text>
+<text x="46" y="536" class="s">A side panel answers any question from the course material,</text>
+<text x="46" y="552" class="s">with citations. If the material does not cover it, it says so.</text>
+<text x="46" y="570" class="m">Paused only during the practice exam.</text>
+<rect x="490" y="490" width="440" height="90" rx="8" class="acc"/>
+<text x="506" y="514" class="h2">Progress map, always visible</text>
+<text x="506" y="536" class="s">Per-unit mastery, current unit, gear in use, gears available,</text>
+<text x="506" y="552" class="s">and units set aside.</text>
+<text x="506" y="570" class="m">Drawn from the ledger, never by the model.</text>
+</svg>

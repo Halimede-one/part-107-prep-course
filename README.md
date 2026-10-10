@@ -7,6 +7,88 @@ than being the authority on the rules.
 Runs from this folder with no packages to install. Python 3.8 or newer is the only
 prerequisite, plus a model backend (below).
 
+## How the course works, in pictures
+
+Five diagrams, drawn by hand from the code and prompts in this folder. They live
+in `docs/diagrams/` as SVG files. Update them when the code they describe changes.
+
+### The student's path
+
+![The student's path through the course](docs/diagrams/student-journey.svg)
+
+The student picks a pace at intake: Fast-track, Guided, or Foundational. That
+choice sets the starting gear for every unit. The course then works through the
+77 tracked units in order. Each unit is taught, then checked with a question.
+Two correct answers in a row, on different questions, master the unit.
+
+At each task boundary the course re-checks up to three mastered units from
+earlier tasks, one question each. A miss sends that unit back for re-teaching
+at the Guided gear. Units that were set aside come back here with a fresh angle.
+
+The practice exam is open at any time. It has 20 fixed, human-vetted items and
+is scored by lookup. The readiness gate is decided from the ledger, in code. It
+needs every unit mastered, none set aside, and two exam passes at 85 percent or
+better. The model never decides readiness.
+
+### Faster or deeper: the gears inside one unit
+
+![Three gears, one bar](docs/diagrams/gears.svg)
+
+A gear is a depth of teaching, not a different standard. Fast-track states the
+point in one or two sentences and goes to the check. Guided gives the full lesson
+with a worked example and the common misreading. Foundational breaks the point
+into its smallest steps with a different representation, such as a picture or a
+memory handle. Foundational exists only where it was authored.
+
+A student who knows the material answers two checks at Fast-track and moves on.
+A miss moves only that unit one gear deeper. There the tutor teaches it a
+different way, never the same explanation slower. At the deepest gear the unit
+offers, the first miss brings a re-teach from a new angle. The second miss in a
+row sets the unit aside. The course moves on and brings the unit back at the next
+task boundary. Readiness stays closed until that unit is mastered.
+
+### Data flow
+
+![Data flow: knowledge base, course content, student data](docs/diagrams/data-flow.svg)
+
+Three kinds of data meet in the server. The knowledge base is built locally from
+FAA and eCFR documents. Its source layer is cut mechanically from the documents.
+A model writes its explanation layer from one chunk at a time. Those chunks are
+tagged as derived, and the source text outranks them. Retrieval searches both
+layers for the Ask box.
+
+The course content is authored by hand and vetted against the source chunks. It
+holds the ACS objectives, the per-unit lessons, the ground-truth facts, and the
+fixed practice exam. Each tutor message carries the current unit's content,
+citation links, and facts.
+
+Student performance data lives in `progress/`, which is per run and not shipped.
+The ledger is Markdown a human can read. Mastery, the current unit, and
+readiness are derived from it in code. The same record feeds the course map
+through `/api/state`.
+
+### How the model teaches
+
+![A teaching turn](docs/diagrams/llm-teaching-turn.svg)
+
+Every model call carries the orchestrator rules, one stage prompt, and the vetted
+material for the unit. The reply is one JSON block that the fixed shell renders.
+The model writes the lesson, the question, and the feedback. The server keeps the
+answer key and scores the student's choice by comparison. It records the attempt
+and decides the next step in code. The feedback call then gives the model the
+result and what happens next. The model explains a decision it did not make.
+
+### How the model answers questions
+
+![Ask the tutor](docs/diagrams/llm-ask-the-tutor.svg)
+
+The chat panel takes any question at any time. The server retrieves the best
+matching chunks from the knowledge base. It adds the unit on screen and recent
+chat turns, and sends them with the question. The model answers from that
+material only, paraphrased and cited with links, and streams the answer as it
+writes. If the material does not cover the question, it says so. Web search is
+an optional fallback on the `anthropic` backend and is off by default.
+
 ## Run it
 
 ```bash
@@ -95,6 +177,9 @@ your machine rather than in the build environment.
    per source chunk, written by the model from the chunk and nothing beyond it,
    tagged `kind: explanation`. Spot-check a handful for added facts; the prompt
    forbids them, and a companion that adds one should be deleted and regenerated.
+   `knowledge-base/EXPLANATION-LAYER.md` describes the layer and the vetting
+   procedure, and `python3 tools/check_companions.py` lists the numbers in each
+   companion that its source chunk does not contain.
 
 5. Check the links and the structure:
    `python3 tools/check_links.py` and `python3 tools/check_integrity.py --allow-incomplete`.
@@ -135,8 +220,9 @@ reference/       the per-unit ground-truth facts the tutor keys answers to
 mock/            the fixed practice exam
 knowledge-base/  the source manifest and the two-layer corpus (built locally)
 sources/         the authoritative references and their precedence
-tools/           fetch_sources, build_kb, enhance_kb, probe_retrieval, check_integrity, check_links, package
+tools/           fetch_sources, build_kb, enhance_kb, check_companions, probe_retrieval, check_integrity, check_links, package
 tests/           the test suite; fixtures live under tests/fixtures
+docs/            the illustrated guide: the SVG diagrams shown at the top of this file
 ```
 
 Design principles behind these choices are in `LLM_COURSEWARE_DESIGN_AND_PRINCIPLES.md`,

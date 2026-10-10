@@ -1,0 +1,29 @@
+---
+source: Explanation of FAA-G-8082-22, Remote Pilot - Small Unmanned Aircraft Systems Study Guide (2016)
+section: Chapter 2 (part 1 of 4)
+url: https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/remote_pilot_study_guide.pdf#page=13
+page: 13
+kind: explanation
+derived_from: faa-g-8082-22-chapter-2-p1.md
+---
+This chunk opens the study guide's airspace chapter. It sorts United States airspace into two categories — regulatory and nonregulatory — and four types within them: controlled, uncontrolled, special use, and other. How a piece of airspace gets classified depends on how complex or dense the aircraft traffic is, what kind of operations happen there, how much safety is required, and national and public interest.
+
+Controlled airspace is the general term for airspace with defined dimensions where air traffic control (ATC) provides service according to the class. The guide says four classes matter to a remote pilot: Class B, Class C, Class D, and Class E.
+
+Class B generally runs from the surface to 10,000 feet mean sea level (MSL) around the nation's busiest airports, measured by airport operations or passenger enplanements. Each Class B area is individually tailored, has a surface area plus two or more layers (sometimes described as an upside-down wedding cake), and is designed to contain all published instrument procedures once an aircraft is inside. A remote pilot must receive authorization from ATC before operating there.
+
+Class C generally runs from the surface to 4,000 feet above the airport elevation (charted in MSL) around airports with an operational control tower, radar approach control service, and a certain number of instrument flight rules (IFR) operations or passenger enplanements. The usual shape is a surface area with a five nautical mile (NM) radius plus an outer circle with a ten NM radius extending from 1,200 feet to 4,000 feet above the airport elevation. A remote pilot must receive authorization before operating in Class C.
+
+Class D generally runs from the surface to 2,500 feet above the airport elevation (charted in MSL) around airports with an operational control tower. Each one is individually tailored and normally designed to contain published instrument procedures. Arrival extensions for instrument approach procedures (IAPs) may be Class D or Class E. A remote pilot must receive ATC authorization before operating in Class D.
+
+Class E is the controlled airspace that is not Class A, B, C, or D, and a large amount of airspace over the United States is Class E. It exists to give room for safe control and separation during IFR operations. Chapter 3 of the Aeronautical Information Manual (AIM) covers the types — see that chapter. Sectional and other charts depict all Class E with bases below 14,500 feet MSL; where no Class E base is charted, Class E begins at 14,500 feet MSL. In most areas the base is 1,200 feet above ground level (AGL); in many other areas it is the surface or 700 feet AGL; some Class E starts at a charted MSL altitude instead of an AGL one. Class E typically extends up to but not including 18,000 feet MSL, the lower limit of Class A. All airspace above FL 600 is Class E. Federal Airways appear as blue lines on a sectional, usually sit inside Class E, and start at 1,200 feet AGL and go up to but not including 18,000 feet MSL. In most cases a remote pilot will not need ATC authorization in Class E.
+
+Uncontrolled airspace is Class G — whatever has not been designated Class A, B, C, D, or E. It extends from the surface up to the base of the overlying Class E. A remote pilot will not need ATC authorization in Class G.
+
+Special use airspace, also called a special area of operation (SAO), is airspace where certain activities must be confined or where limits may be placed on aircraft not taking part in those activities. These areas can limit mixed use of the airspace. On instrument charts, special use airspace is labeled with the area name or number, effective altitude, time and weather conditions of operation, the controlling agency, and the chart panel location. On National Aeronautical Charting Group (NACG) en route charts, that information is on one of the end panels. The guide lists prohibited areas, restricted areas, warning areas, military operation areas (MOAs), alert areas, and controlled firing areas (CFAs).
+
+Gap note: Figure 2-1, the airspace profile diagram, is referenced but not reproduced in this text chunk.
+
+Illustration: You plan a roof inspection in a suburb that sits under the outer ring of a Class C airport, about seven nautical miles from the field. Your sectional shows that outer circle extends from 1,200 feet to 4,000 feet above the airport elevation. You intend to fly at 150 feet AGL. Because the outer ring's floor is 1,200 feet above airport elevation, your low-altitude flight is below the Class C shelf, and the airspace at your altitude there is whatever lies under it — on this chart, Class G. You still check the chart carefully for a Class E surface area or any special use airspace over the site before launching, because the shelf's floor only tells you about the ring above you, not about the airspace you are actually in.
+
+Common misreading: The common error is to treat a class letter as a single block that reaches the ground everywhere inside its charted circle. Class C and Class D are described here as extending from the surface to a height above the airport elevation, but Class C's usual shape has an inner surface area of five nautical miles and an outer circle whose floor is 1,200 feet above airport elevation — so standing under the outer ring is not the same as standing in the surface area. A second slip is reading "in most cases a remote pilot will not need ATC authorization to operate in Class E" as "never," when the chunk says most cases, not all.

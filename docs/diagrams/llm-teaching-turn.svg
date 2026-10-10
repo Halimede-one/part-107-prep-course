@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 810" width="960" height="810" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+<title>A teaching turn: the model explains, the code decides</title>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#5f5f5a"/></marker>
+</defs>
+<style>
+text{fill:#1f1f1d}
+.h1{font-size:18px;font-weight:600}
+.b{font-weight:600}
+.s{font-size:12px}
+.m{font-size:12px;fill:#5f5f5a}
+.box{fill:#fff;stroke:#c9c9c2;stroke-width:1.2}
+.acc{fill:#e7f0f4;stroke:#2f6f8f;stroke-width:1.2}
+.warn{fill:#f7edda;stroke:#b26a12;stroke-width:1.2}
+.ln{fill:none;stroke:#5f5f5a;stroke-width:1.4}
+.life{fill:none;stroke:#c9c9c2;stroke-width:1.2;stroke-dasharray:5 4}
+</style>
+<rect width="960" height="810" rx="12" fill="#f7f7f5"/>
+<text x="30" y="34" class="h1">A teaching turn: the model explains, the code decides</text>
+<text x="30" y="52" class="m">Every call carries the rules, one stage prompt, and the vetted material for the unit. The reply is exactly one JSON block.</text>
+
+<path d="M160 124 L160 710" class="life"/>
+<path d="M480 124 L480 710" class="life"/>
+<path d="M800 124 L800 710" class="life"/>
+
+<rect x="40" y="76" width="240" height="48" rx="8" class="box"/>
+<text x="160" y="96" text-anchor="middle" class="b">Student</text>
+<text x="160" y="114" text-anchor="middle" class="m">the fixed shell in the browser</text>
+<rect x="360" y="76" width="240" height="48" rx="8" class="acc"/>
+<text x="480" y="96" text-anchor="middle" class="b">Server and orchestrator</text>
+<text x="480" y="114" text-anchor="middle" class="m">server.py, orchestrator.py, ledger.py</text>
+<rect x="680" y="76" width="240" height="48" rx="8" class="box"/>
+<text x="800" y="96" text-anchor="middle" class="b">Tutor model</text>
+<text x="800" y="114" text-anchor="middle" class="m">anthropic, claude_code, ollama, or mock</text>
+
+<path d="M480 160 L798 160" class="ln" marker-end="url(#a)"/>
+<text x="640" y="139" text-anchor="middle" class="s">1  teach.md: the unit's vetted content,</text>
+<text x="640" y="153" text-anchor="middle" class="s">its citations and facts, at the current gear</text>
+<path d="M800 206 L482 206" class="ln" marker-end="url(#a)"/>
+<text x="640" y="199" text-anchor="middle" class="s">2  one lesson block, every fact cited</text>
+<path d="M480 246 L162 246" class="ln" marker-end="url(#a)"/>
+<text x="320" y="239" text-anchor="middle" class="s">3  the shell renders the lesson, gear tag shown</text>
+<path d="M160 286 L478 286" class="ln" marker-end="url(#a)"/>
+<text x="320" y="279" text-anchor="middle" class="s">4  Continue</text>
+<path d="M480 332 L798 332" class="ln" marker-end="url(#a)"/>
+<text x="640" y="311" text-anchor="middle" class="s">5  quiz.md: content, facts, and the</text>
+<text x="640" y="325" text-anchor="middle" class="s">questions already asked this session</text>
+<path d="M800 378 L482 378" class="ln" marker-end="url(#a)"/>
+<text x="640" y="371" text-anchor="middle" class="s">6  one question block, with answer and rationale</text>
+<path d="M480 424 L162 424" class="ln" marker-end="url(#a)"/>
+<text x="320" y="403" text-anchor="middle" class="s">7  stem and options only;</text>
+<text x="320" y="417" text-anchor="middle" class="s">the key stays on the server</text>
+<path d="M160 464 L478 464" class="ln" marker-end="url(#a)"/>
+<text x="320" y="457" text-anchor="middle" class="s">8  the selected option, A, B, or C</text>
+
+<rect x="320" y="484" width="330" height="80" rx="8" class="acc"/>
+<text x="336" y="504" class="b">9  Score and decide, in code</text>
+<text x="336" y="522" class="m">compare with the key; write the attempt to the</text>
+<text x="336" y="538" class="m">ledger; pick the next step: ask again, one gear</text>
+<text x="336" y="554" class="m">deeper, set aside, or move on.</text>
+
+<path d="M480 600 L798 600" class="ln" marker-end="url(#a)"/>
+<text x="640" y="579" text-anchor="middle" class="s">10  score_diagnose.md: the result and what</text>
+<text x="640" y="593" text-anchor="middle" class="s">happens next, both already decided</text>
+<path d="M800 646 L482 646" class="ln" marker-end="url(#a)"/>
+<text x="640" y="625" text-anchor="middle" class="s">11  one feedback block: names the misconception,</text>
+<text x="640" y="639" text-anchor="middle" class="s">corrects it from the content, cites</text>
+<path d="M480 692 L162 692" class="ln" marker-end="url(#a)"/>
+<text x="320" y="685" text-anchor="middle" class="s">12  feedback shown; Continue takes step 9's choice</text>
+
+<rect x="40" y="716" width="880" height="74" rx="8" class="warn"/>
+<text x="56" y="738" class="b">On a miss</text>
+<text x="56" y="756" class="m">remediate.md teaches the unit again at the deeper gear with a different representation: a scenario, a picture, or step-by-step pieces.</text>
+<text x="56" y="772" class="m">Never the same explanation, slower. The model never states a rule from memory, judges an answer, picks a gear, or declares readiness.</text>
+</svg>

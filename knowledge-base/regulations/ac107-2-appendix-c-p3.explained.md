@@ -1,0 +1,21 @@
+---
+source: Explanation of AC 107-2A, Small Unmanned Aircraft System (Small UAS), February 1, 2021
+section: APPENDIX C SMALL UAS MAINTENANCE AND INSPECTION BEST PRACTICES (part 3 of 3)
+url: https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf#page=93
+page: 93
+kind: explanation
+derived_from: ac107-2-appendix-c-p3.md
+---
+This is the last block of a two-column table in Appendix C of Advisory Circular (AC) 107-2A, which the FAA titles "Small UAS Maintenance and Inspection Best Practices." The left column names a condition you might find during an inspection; the right column says what to do about it. Three conditions appear here.
+
+Condition 9 is a battery casing that is distorted or bulging. The action is to inspect further to decide whether the battery is still a reliable power source. The chunk explains why: a distorted casing may signal impending failure that could cause abrupt power loss and/or explosion. There may also be an electrical hazard with a risk of fire or extreme heat, which can harm aircraft structures, aircraft performance characteristics, and flight duration. You then assess whether repairs are needed, and how extensive they would be, for continued safe flight operations.
+
+Condition 10 is diminishing flight time capability on electric powered propulsion systems. The action is the same further inspection of battery integrity. Shrinking battery capacity may point to impending failure from exhausted service life or from internal or external damage, with the same electrical hazard, fire, and extreme heat concerns and the same effects on structures, performance, and flight duration. Again, assess the need and extent of repairs.
+
+Condition 11 is loose or missing hardware or fasteners. Here you inspect further to judge the structural integrity of the aircraft and of any component with loose or missing hardware. The chunk lists the risks: degraded flight characteristics, structural failure of the aircraft, dropped objects, loss of the aircraft, and risk to persons and property on the ground. The prescribed actions are concrete: secure loose hardware and fasteners; replace any that cannot be secured; replace missing hardware and fasteners.
+
+Note that each action in this table starts with "further inspect" or a specific fix, not "ground the aircraft." The table tells you to investigate and then judge what continued safe flight operations require.
+
+Illustration: You are preparing for an afternoon roof survey. Your logbook shows the same battery delivering about 18 minutes of flight last spring, but your last three flights all ended at roughly 11 minutes. Nothing looks wrong from the outside. Under condition 10, diminishing flight time capability on an electric powered propulsion system, your next step is not to shrug and plan shorter flights. You inspect the battery further to decide whether it is still a reliable power source, because reduced capacity can mean exhausted service life or internal damage, and that carries a fire or extreme heat risk. While the pack is out, you notice the casing has a slight bulge on one face, which puts you into condition 9 as well. Two conditions, one conclusion: this pack is not a reliable power source, and you assess what repair or replacement continued safe flight operations require before the survey. Separately, when you reseat the battery you find one arm fastener turning freely. Under condition 11 you secure it; if it will not hold, you replace it, because a loose fastener risks a dropped object or structural failure over the rooftop.
+
+Common misreading: Two traps. First, people read an Advisory Circular appendix titled "Best Practices" as if it were a regulation with mandatory steps, or at the other extreme ignore it as optional fluff. It is FAA guidance on good practice, and this chunk does not state it as a rule. Second, people read "further inspect" as a conclusion rather than a step. Finding a bulging battery or shrinking flight times does not end the process; the table asks you to inspect, then assess the need and extent of repairs for continued safe flight operations. Only for loose or missing hardware does the table name the fix outright: secure it, replace it if it will not stay secure, replace it if it is gone.

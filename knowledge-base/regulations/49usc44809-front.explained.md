@@ -1,0 +1,15 @@
+---
+source: Explanation of 49 U.S.C. 44809, Exception for limited recreational operations of unmanned aircraft (United States Code, 2024 edition)
+section: front Front matter
+url: https://www.govinfo.gov/link/uscode/49/44809
+page: 1
+kind: explanation
+derived_from: 49usc44809-front.md
+---
+Gap note: this chunk is a fragment. It carries the § 44809 heading, but the text shown is the tail end of a different statute about carrying property by small unmanned aircraft systems for compensation or hire — paragraphs (4) through (6) with no visible beginning. Nothing about recreational flying appears here.
+
+What is here is direction to the Secretary of Transportation, not a rule aimed at remote pilots. Paragraph (4) says the rulemaking must, at a minimum, address airworthiness of small unmanned aircraft systems, qualifications for operators and the type and nature of the operations, operating specifications governing the type and nature of unmanned aircraft system air carrier operations, and the views of State, local, and tribal officials about potential impacts of carriage of property for compensation or hire in the communities to be served. Paragraph (5) lets the Secretary amend part 298 of title 14, Code of Federal Regulations, to establish economic authority for carrying property by small unmanned aircraft systems for compensation or hire, and says that authority shall only require three things: registration with the Department of Transportation, authorization from the Federal Aviation Administration (FAA) to conduct operations, and compliance with chapters 401, 411, and 417. Paragraph (6) says that while the rulemaking in subsection (a) is still pending, a person may seek an air carrier operating certificate and a certificate of public convenience and necessity — or an exemption from such certificate — using existing processes. The chunk closes with a note that the section was added by Public Law 115-254, division B, title III, section 348(a), October 5, 2018, 132 Stat. 3297, and that the date of enactment of the FAA Reauthorization Act of 2018 referred to in subsection (a) is October 5, 2018. The contents of chapters 401, 411, and 417 and of subsection (a) are not shown — see those provisions.
+
+Illustration: An operator wants to start a paid package-delivery service by drone and finds this text. Reading paragraph (6), she sees that she does not have to wait for the rulemaking to finish: she may apply for an air carrier operating certificate and a certificate of public convenience and necessity, or an exemption from that certificate, through the processes that already exist. That is the path the statute points her to while the rulemaking is pending. What those application processes involve is not described in this chunk.
+
+Common misreading: The § 44809 heading at the top invites the assumption that this is the recreational-flyer exception. It is not. The visible text is about commercial carriage of property for compensation or hire, and it reads as a continuation of some other section. Do not treat any of these paragraphs as conditions for flying recreationally.

@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 650" width="960" height="650" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+<title>Inside one unit: three gears, one bar</title>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#5f5f5a"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#2e7d54"/></marker>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#b26a12"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#b23b3b"/></marker>
+</defs>
+<style>
+text{fill:#1f1f1d}
+.h1{font-size:18px;font-weight:600}
+.h2{font-size:14px;font-weight:600}
+.s{font-size:12px}
+.m{font-size:12px;fill:#5f5f5a}
+.g{fill:#2e7d54}.r{fill:#b23b3b}
+.box{fill:#fff;stroke:#c9c9c2;stroke-width:1.2}
+.good{fill:#e6f2ea;stroke:#2e7d54;stroke-width:1.2}
+.acc{fill:#e7f0f4;stroke:#2f6f8f;stroke-width:1.2}
+.warn{fill:#f7edda;stroke:#b26a12;stroke-width:1.2}
+.ln{fill:none;stroke:#5f5f5a;stroke-width:1.4}
+.lg{stroke:#2e7d54}.lw{stroke:#b26a12}.lb{stroke:#b23b3b}
+</style>
+<rect width="960" height="650" rx="12" fill="#f7f7f5"/>
+<text x="30" y="34" class="h1">Inside one unit: three gears, one bar</text>
+<text x="30" y="52" class="m">A gear changes how the unit is taught. It never changes what is true, or the standard the student must meet.</text>
+
+<path d="M350 84 L350 128" class="ln" marker-end="url(#a)"/>
+<text x="358" y="94" class="m">a new unit starts at the pace chosen at intake, Fast-track by default</text>
+
+<rect x="30" y="100" width="195" height="110" rx="8" class="box"/>
+<text x="46" y="124" class="h2">Gear 1  Fast-track</text>
+<text x="46" y="146" class="s">The point in one or two</text>
+<text x="46" y="162" class="s">sentences, then the check.</text>
+<text x="46" y="186" class="m">The default start.</text>
+
+<rect x="30" y="240" width="195" height="110" rx="8" class="box"/>
+<text x="46" y="264" class="h2">Gear 2  Guided</text>
+<text x="46" y="286" class="s">Full lesson: explanation,</text>
+<text x="46" y="302" class="s">worked example, and the</text>
+<text x="46" y="318" class="s">common misreading.</text>
+
+<rect x="30" y="380" width="195" height="110" rx="8" class="box"/>
+<text x="46" y="404" class="h2">Gear 3  Foundational</text>
+<text x="46" y="426" class="s">Smallest steps and a new</text>
+<text x="46" y="442" class="s">representation: a picture,</text>
+<text x="46" y="458" class="s">analogy, or memory handle.</text>
+<text x="46" y="480" class="m">Only where authored.</text>
+
+<rect x="250" y="130" width="200" height="50" rx="6" class="acc"/>
+<text x="350" y="152" text-anchor="middle">Lesson</text>
+<text x="350" y="169" text-anchor="middle" class="m">from the vetted content, cited</text>
+<path d="M450 155 L478 155" class="ln" marker-end="url(#a)"/>
+<rect x="480" y="130" width="120" height="50" rx="6" class="box"/>
+<text x="540" y="152" text-anchor="middle">Check</text>
+<text x="540" y="169" text-anchor="middle" class="m">one question</text>
+<path d="M600 155 L798 155" class="ln lg" marker-end="url(#ag)"/>
+<text x="699" y="147" text-anchor="middle" class="s g">right twice in a row</text>
+<text x="699" y="173" text-anchor="middle" class="m">(right once: ask again)</text>
+<path d="M540 180 L540 225 L350 225 L350 268" class="ln lb" marker-end="url(#ab)"/>
+<text x="548" y="200" class="s r">wrong</text>
+<text x="445" y="207" text-anchor="middle" class="s">one gear deeper:</text>
+<text x="445" y="221" text-anchor="middle" class="s">taught a different way</text>
+
+<rect x="250" y="270" width="200" height="50" rx="6" class="acc"/>
+<text x="350" y="292" text-anchor="middle">Lesson</text>
+<text x="350" y="309" text-anchor="middle" class="m">from the vetted content, cited</text>
+<path d="M450 295 L478 295" class="ln" marker-end="url(#a)"/>
+<rect x="480" y="270" width="120" height="50" rx="6" class="box"/>
+<text x="540" y="292" text-anchor="middle">Check</text>
+<text x="540" y="309" text-anchor="middle" class="m">one question</text>
+<path d="M600 295 L798 295" class="ln lg" marker-end="url(#ag)"/>
+<text x="699" y="287" text-anchor="middle" class="s g">right twice in a row</text>
+<text x="699" y="313" text-anchor="middle" class="m">(right once: ask again)</text>
+<path d="M540 320 L540 365 L350 365 L350 408" class="ln lb" marker-end="url(#ab)"/>
+<text x="548" y="340" class="s r">wrong</text>
+<text x="445" y="347" text-anchor="middle" class="s">one gear deeper:</text>
+<text x="445" y="361" text-anchor="middle" class="s">taught a different way</text>
+
+<rect x="250" y="410" width="200" height="50" rx="6" class="acc"/>
+<text x="350" y="432" text-anchor="middle">Lesson</text>
+<text x="350" y="449" text-anchor="middle" class="m">from the vetted content, cited</text>
+<path d="M450 435 L478 435" class="ln" marker-end="url(#a)"/>
+<rect x="480" y="410" width="120" height="50" rx="6" class="box"/>
+<text x="540" y="432" text-anchor="middle">Check</text>
+<text x="540" y="449" text-anchor="middle" class="m">one question</text>
+<path d="M600 435 L798 435" class="ln lg" marker-end="url(#ag)"/>
+<text x="699" y="427" text-anchor="middle" class="s g">right twice in a row</text>
+<text x="699" y="453" text-anchor="middle" class="m">(right once: ask again)</text>
+<path d="M540 460 L540 508" class="ln lb" marker-end="url(#ab)"/>
+<text x="548" y="485" class="s r">wrong</text>
+<path d="M350 510 L350 462" class="ln lw" marker-end="url(#aw)"/>
+<text x="358" y="490" class="m">re-teach, new angle</text>
+
+<rect x="800" y="100" width="136" height="390" rx="8" class="good"/>
+<text x="868" y="270" text-anchor="middle" class="h2">Mastered</text>
+<text x="868" y="292" text-anchor="middle" class="s">Two right in a row,</text>
+<text x="868" y="308" text-anchor="middle" class="s">on different</text>
+<text x="868" y="324" text-anchor="middle" class="s">questions.</text>
+<text x="868" y="350" text-anchor="middle" class="m">The same bar in</text>
+<text x="868" y="366" text-anchor="middle" class="m">every gear.</text>
+
+<rect x="250" y="510" width="520" height="116" rx="8" class="warn"/>
+<text x="266" y="534" class="h2">At the deepest gear the unit offers</text>
+<text x="266" y="556" class="s">Most units offer gears 1 and 2; gear 3 exists where it was authored.</text>
+<text x="266" y="574" class="s">First miss: the tutor teaches the unit again from a new angle and asks again.</text>
+<text x="266" y="592" class="s">Second miss in a row: the unit is set aside and the course moves on.</text>
+<text x="266" y="610" class="s">It returns at the next task boundary. Readiness stays closed until mastered.</text>
+<path d="M770 568 L798 568" class="ln lw" marker-end="url(#aw)"/>
+<rect x="800" y="540" width="136" height="56" rx="8" class="box"/>
+<text x="868" y="562" text-anchor="middle">Next unit</text>
+<text x="868" y="580" text-anchor="middle" class="m">set aside, not lost</text>
+
+<rect x="30" y="510" width="195" height="116" rx="8" class="acc"/>
+<text x="46" y="534" class="h2">Speed up, slow down</text>
+<text x="46" y="556" class="s">Knows it: two right at</text>
+<text x="46" y="572" class="s">Fast-track, and move on.</text>
+<text x="46" y="594" class="s">Misses it: only this unit</text>
+<text x="46" y="610" class="s">goes one gear deeper.</text>
+</svg>

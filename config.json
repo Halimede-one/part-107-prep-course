@@ -1,0 +1,45 @@
+{
+  "provider": "claude_code",
+  "providers": {
+    "anthropic": {
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "model": "claude-sonnet-5-5",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "supports_web_search": false,
+      "web_search_tool_type": "web_search_20250305",
+      "web_search_max_uses": 3
+    },
+    "claude_code": {
+      "command": "claude",
+      "model": "",
+      "timeout_seconds": 120,
+      "supports_web_search": false
+    },
+    "ollama": {
+      "endpoint": "http://localhost:11434/api/chat",
+      "model": "gemma3",
+      "supports_web_search": false
+    },
+    "mock": {
+      "supports_web_search": false
+    }
+  },
+  "paths": {
+    "objectives": "curriculum/regulations/objectives.md",
+    "curriculum": "curriculum/regulations",
+    "knowledge_base": "knowledge-base/regulations",
+    "items": "mock/regulations-mock.md",
+    "ledger": "progress/student-ledger.md",
+    "responses": "progress/responses.jsonl",
+    "metrics": "progress/metrics.jsonl",
+    "reference": "reference/regulations-facts.md",
+    "prompts": "prompts"
+  },
+  "area": "Regulations",
+  "port": 8107,
+  "mock": {
+    "pass_mark": 0.85,
+    "passes_needed": 2,
+    "minutes_per_item": 2
+  }
+}

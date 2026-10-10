@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 820" width="960" height="820" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+<title>Data flow: knowledge base, course content, student performance data</title>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#5f5f5a"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#2e7d54"/></marker>
+</defs>
+<style>
+text{fill:#1f1f1d}
+.h1{font-size:18px;font-weight:600}
+.h2{font-size:14px;font-weight:600}
+.b{font-weight:600}
+.m{font-size:12px;fill:#5f5f5a}
+.box{fill:#fff;stroke:#c9c9c2;stroke-width:1.2}
+.good{fill:#e6f2ea;stroke:#2e7d54;stroke-width:1.2}
+.acc{fill:#e7f0f4;stroke:#2f6f8f;stroke-width:1.2}
+.warn{fill:#f7edda;stroke:#b26a12;stroke-width:1.2}
+.run{fill:#fff;stroke:#2f6f8f;stroke-width:1.6}
+.ln{fill:none;stroke:#5f5f5a;stroke-width:1.4}
+.lg{stroke:#2e7d54}
+</style>
+<rect width="960" height="820" rx="12" fill="#f7f7f5"/>
+<text x="30" y="34" class="h1">Data flow: three kinds of data, one runtime</text>
+<rect x="30" y="46" width="12" height="12" rx="2" class="good"/>
+<text x="48" y="56" class="m">authoritative, or authored and vetted by a human</text>
+<rect x="370" y="46" width="12" height="12" rx="2" class="acc"/>
+<text x="388" y="56" class="m">written by a model from one source chunk, tagged as derived</text>
+<rect x="778" y="46" width="12" height="12" rx="2" class="warn"/>
+<text x="796" y="56" class="m">student data, per run</text>
+
+<text x="24" y="90" class="h2">Knowledge base</text>
+<text x="24" y="106" class="m">built locally by the tools, read by retrieval</text>
+<rect x="24" y="116" width="296" height="84" rx="8" class="good"/>
+<text x="40" y="138" class="b">FAA and eCFR documents</text>
+<text x="40" y="156" class="m">the CFR parts and the statute, the ACS,</text>
+<text x="40" y="172" class="m">AC 107-2A, the study guide, handbook</text>
+<text x="40" y="188" class="m">chapters, the AIM, and faa.gov pages</text>
+<path d="M44 200 L44 246" class="ln" marker-end="url(#a)"/>
+<text x="56" y="218" class="m">fetch_sources.py downloads the PDFs</text>
+<text x="56" y="234" class="m">build_kb.py cuts them by section</text>
+<rect x="24" y="248" width="296" height="66" rx="8" class="good"/>
+<text x="40" y="270" class="b">Source layer</text>
+<text x="40" y="288" class="m">one chunk per section, kind: source, with</text>
+<text x="40" y="304" class="m">the citation link. Nothing model-written.</text>
+<path d="M44 314 L44 360" class="ln" marker-end="url(#a)"/>
+<text x="56" y="332" class="m">enhance_kb.py asks the model (enhance.md)</text>
+<text x="56" y="348" class="m">for a companion, from the chunk alone</text>
+<rect x="24" y="362" width="296" height="66" rx="8" class="acc"/>
+<text x="40" y="384" class="b">Explanation layer</text>
+<text x="40" y="402" class="m">one companion per chunk, kind: explanation,</text>
+<text x="40" y="418" class="m">derived_from names the chunk. Source wins.</text>
+<path d="M44 428 L44 474" class="ln" marker-end="url(#a)"/>
+<text x="56" y="446" class="m">knowledge-base/regulations/*.md</text>
+<text x="56" y="462" class="m">retrieval.py: lexical search, top 3 chunks</text>
+<rect x="24" y="476" width="296" height="50" rx="8" class="box"/>
+<text x="40" y="498" class="b">Material for the Ask box</text>
+<text x="40" y="516" class="m">the matching chunks, source text ranked first</text>
+
+<text x="332" y="90" class="h2">Course content</text>
+<text x="332" y="106" class="m">authored by hand, vetted against the chunks</text>
+<rect x="332" y="116" width="296" height="66" rx="8" class="good"/>
+<text x="348" y="138" class="b">objectives.md: the ACS spine</text>
+<text x="348" y="156" class="m">77 knowledge codes, one tracked unit each,</text>
+<text x="348" y="172" class="m">transcribed from FAA-S-ACS-10B.</text>
+<rect x="332" y="194" width="296" height="84" rx="8" class="good"/>
+<text x="348" y="216" class="b">curriculum/&lt;unit&gt;.md</text>
+<text x="348" y="234" class="m">the Guided lesson, with its source links;</text>
+<text x="348" y="250" class="m">&lt;unit&gt;.gear3.md where Foundational exists;</text>
+<text x="348" y="266" class="m">STATUS.md keeps review notes outside it.</text>
+<rect x="332" y="290" width="296" height="66" rx="8" class="good"/>
+<text x="348" y="312" class="b">reference/regulations-facts.md</text>
+<text x="348" y="330" class="m">the ground-truth answer key, by unit; any</text>
+<text x="348" y="346" class="m">keyed question must match it exactly.</text>
+<rect x="332" y="368" width="296" height="66" rx="8" class="good"/>
+<text x="348" y="390" class="b">mock/regulations-mock.md</text>
+<text x="348" y="408" class="m">the 20 fixed practice-exam items with keys;</text>
+<text x="348" y="424" class="m">scored by exact lookup.</text>
+
+<text x="640" y="90" class="h2">Student performance data</text>
+<text x="640" y="106" class="m">posted by the shell, kept by the server</text>
+<rect x="640" y="116" width="296" height="84" rx="8" class="box"/>
+<text x="656" y="138" class="b">The browser shell posts</text>
+<text x="656" y="156" class="m">intake (the chosen pace), advance,</text>
+<text x="656" y="172" class="m">answer (the option id only), question,</text>
+<text x="656" y="188" class="m">and the practice-exam events.</text>
+<rect x="690" y="216" width="246" height="100" rx="8" class="box"/>
+<text x="706" y="238" class="b">The shell renders, never generates</text>
+<text x="706" y="256" class="m">five block types: lesson,</text>
+<text x="706" y="272" class="m">question, feedback, cited_answer,</text>
+<text x="706" y="288" class="m">and mock_result. It never sees</text>
+<text x="706" y="304" class="m">an answer key.</text>
+
+<path d="M172 526 L172 568" class="ln" marker-end="url(#a)"/>
+<path d="M480 434 L480 568" class="ln" marker-end="url(#a)"/>
+<path d="M660 200 L660 568" class="ln" marker-end="url(#a)"/>
+<text x="668" y="440" class="m">every payload</text>
+
+<rect x="24" y="570" width="676" height="106" rx="8" class="run"/>
+<text x="40" y="594" class="h2">At runtime: server.py and orchestrator.py</text>
+<text x="40" y="616" class="m">Teaching turns: the model's message carries the unit's vetted content, citation links, and facts,</text>
+<text x="40" y="632" class="m">at the current gear. Chat questions: it carries the retrieved chunks and the unit on screen.</text>
+<text x="40" y="648" class="m">Answers: scored in code against the key and written to the ledger. The next step (ask again,</text>
+<text x="40" y="664" class="m">deeper gear, set aside, move on) is decided in code. The model explains; it does not decide.</text>
+<path d="M700 606 L738 606" class="ln" marker-end="url(#a)"/>
+<path d="M738 646 L700 646" class="ln lg" marker-end="url(#ag)"/>
+<rect x="740" y="570" width="196" height="106" rx="8" class="box"/>
+<text x="756" y="594" class="h2">Tutor model</text>
+<text x="756" y="614" class="m">llm_client.py: anthropic,</text>
+<text x="756" y="630" class="m">claude_code, ollama, or mock.</text>
+<text x="756" y="650" class="m">One message in,</text>
+<text x="756" y="666" class="m">one JSON block out.</text>
+
+<path d="M220 676 L220 710" class="ln" marker-end="url(#a)"/>
+<text x="228" y="698" class="m">writes every attempt, reads mastery back</text>
+<path d="M690 676 L690 694 L833 694 L833 710" class="ln" marker-end="url(#a)"/>
+<text x="761" y="690" text-anchor="middle" class="m">every request</text>
+<rect x="24" y="712" width="392" height="88" rx="8" class="warn"/>
+<text x="40" y="736" class="b">progress/student-ledger.md</text>
+<text x="40" y="756" class="m">Markdown a human can read. Per unit: gear, gears taken,</text>
+<text x="40" y="772" class="m">needs attention, parked. Each attempt: unit, item, gear,</text>
+<text x="40" y="788" class="m">result. Every practice-exam attempt and score.</text>
+<path d="M416 756 L438 756" class="ln" marker-end="url(#a)"/>
+<rect x="440" y="712" width="260" height="88" rx="8" class="box"/>
+<text x="456" y="736" class="b">/api/state</text>
+<text x="456" y="756" class="m">derived in code from the ledger:</text>
+<text x="456" y="772" class="m">mastery, current unit, readiness.</text>
+<text x="456" y="788" class="m">Feeds the course map, every turn.</text>
+<rect x="730" y="712" width="206" height="88" rx="8" class="warn"/>
+<text x="746" y="736" class="b">Logs, for inspection</text>
+<text x="746" y="756" class="m">responses.jsonl: every</text>
+<text x="746" y="772" class="m">payload. metrics.jsonl:</text>
+<text x="746" y="788" class="m">latency, model, tokens.</text>
+</svg>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 107 course</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Course shell. Served by server.py; start it with ./start.sh.
+     Blocks come from the tutor, state from the ledger, and every payload the
+     shell posts is echoed in the "sent" panel at the bottom for inspection. -->
+
+<header class="topbar">
+  <div class="brand">Part 107 <span class="sep">·</span> Regulations</div>
+  <div class="topbar-right">
+    <button id="mock-btn" class="mock-btn" type="button" hidden>Practice exam</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="content" aria-label="Lesson">
+    <div id="block-root"></div>
+  </section>
+
+  <div class="side">
+    <aside class="map" aria-label="Course progress">
+      <div class="map-head">
+        <span class="map-title">Progress</span>
+        <span id="map-summary" class="map-summary"></span>
+      </div>
+      <div id="course-map"></div>
+      <div id="readiness" class="readiness"></div>
+      <p class="map-note">Placeholder view. The pathway visualization is a separate design pass.</p>
+    </aside>
+
+    <section class="chat" aria-label="Ask the tutor">
+      <div class="chat-head">Ask the tutor</div>
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <label for="chat-input" class="visually-hidden">Ask the tutor a question</label>
+        <textarea id="chat-input" rows="2" placeholder="Ask about anything in the course"></textarea>
+        <button id="chat-send" type="submit">Send</button>
+      </form>
+      <div id="chat-meta" class="chat-meta"></div>
+    </section>
+  </div>
+</main>
+
+<details id="sent" class="sent">
+  <summary>Sent to tutor (Phase 1 log)</summary>
+  <div id="sent-log"></div>
+</details>
+
+<div id="intake" class="intake">
+  <div class="intake-card">
+    <h1>FAA Part 107 remote pilot course</h1>
+    <div class="intake-intro">
+      <p>An adaptive course for the Regulations area of the FAA remote pilot knowledge test (Unmanned Aircraft General). A tutor teaches from the regulations and FAA guidance only, and every statement links to its source.</p>
+      <h2>What it covers</h2>
+      <p>Area of Operation I, Regulations, of the FAA Airman Certification Standards (FAA-S-ACS-10B): six tasks and 77 knowledge units. A, General. B, Operating Rules. C, Remote Pilot Certification. D, Waivers. E, Operations Over People. F, Remote Identification. Regulations is 15 to 25 percent of the 60-question test. The other four areas (Airspace, Weather, Loading and Performance, Operations) are not in this course yet.</p>
+      <h2>What it teaches from</h2>
+      <p>The current text of 14 CFR parts 107, 89, 48, and 47 and the sections they reference; the ACS; AC 107-2A; the FAA study guide and sample questions; the Pilot's Handbook; the AIM; and FAA guidance pages. The tutor does not answer from memory. If the material does not cover a question, it says so.</p>
+      <h2>How it works</h2>
+      <p>Pick a pace below. Each unit is taught, then checked. Two correct answers in a row, on different questions, master it. A miss moves that unit one gear deeper, where it is taught a different way. Mastered units are re-checked at the end of each task. The Ask the tutor box takes any question at any time.</p>
+      <h2>Goals</h2>
+      <ol>
+        <li>Master all 77 units.</li>
+        <li>Pass the fixed 20-question practice exam twice at 85 percent or better. The real test's pass mark is 70 percent; this bar is higher on purpose.</li>
+        <li>Know where each rule lives, so you can check it yourself.</li>
+      </ol>
+      <p>Readiness is decided from the fixed exam and your unit record, never by the tutor's opinion. The FAA test has 60 questions, a two-hour limit, and a 70 percent pass mark. This course is a study aid, not legal advice.</p>
+    </div>
+    <h2>Choose your starting pace</h2>
+    <p>Pick where to begin. You can go deeper on any unit at any time, and units you already know you can move through quickly.</p>
+    <div class="intake-options">
+      <button class="intake-btn" data-gear="1">
+        <span class="intake-name">Fast-track</span>
+        <span class="intake-desc">Recommended. Straight to the checks, deeper only where you miss.</span>
+      </button>
+      <button class="intake-btn" data-gear="2">
+        <span class="intake-name">Guided</span>
+        <span class="intake-desc">Full lessons with worked examples, then the checks.</span>
+      </button>
+      <button class="intake-btn" data-gear="3">
+        <span class="intake-name">Foundational</span>
+        <span class="intake-desc">Smallest steps, most support, for material that is new to you.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

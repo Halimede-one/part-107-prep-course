@@ -1,0 +1,17 @@
+---
+source: Explanation of FAA-G-8082-22, Remote Pilot - Small Unmanned Aircraft Systems Study Guide (2016)
+section: Chapter 5
+url: https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/remote_pilot_study_guide.pdf#page=43
+page: 43
+kind: explanation
+derived_from: faa-g-8082-22-chapter-5.md
+---
+This chunk covers in-flight emergencies. An in-flight emergency is an unexpected event that can have serious consequences for a remote pilot who has not prepared for it. During an emergency, the remote pilot is allowed to deviate from any part of 14 CFR part 107 (Title 14 of the Code of Federal Regulations, part 107) in order to respond to it. If a remote pilot does deviate from a rule because of an emergency, the pilot reports the emergency only if the FAA (Federal Aviation Administration, also called "the Administrator") asks for a report.
+
+The chunk also lays out the preparation that comes before the emergency. The remote pilot is responsible for safe operation of the small unmanned aircraft (UA) at all times. That means making sure the aircraft is in a safe operating condition before flight, making sure there is no hazard to persons or property, and making sure all required crew members are briefed on the operation and on emergency procedures. Before every flight the remote pilot conducts a preflight inspection, and any irregularities found must be corrected before the small UA is operated. Some manufacturers supply preflight inspection items; where there is no manufacturer checklist, the remote pilot should develop one detailed enough to confirm the aircraft will be operated in a safe condition.
+
+Once an in-flight emergency happens, the pilot may take any action to ensure there is no hazard to other people or property. The crew briefing requirement extends to any visual observers (VO) used and to any non-certificated person allowed to manipulate the flight controls. The chunk points to 14 CFR part 107 and AC 107-2 for more on emergencies.
+
+Illustration: You are flying a quadcopter over an empty industrial yard with a visual observer beside you. Mid-flight you see smoke and then flame from the battery compartment. The only clear landing spot is across a row of parked trucks, and reaching it means climbing above 400 feet above ground level (AGL). You climb, cross, and set the aircraft down on the open gravel away from people and vehicles. That is the right call: the emergency authority lets you deviate from part 107 to keep the burning aircraft away from people and property, and the study guide uses exactly this example. You do not file anything on your own initiative; you keep notes and produce a report only if the FAA asks you for one. The briefing you gave your visual observer before takeoff is what let her keep her eyes on the aircraft and call out the truck row while you flew.
+
+Common misreading: Two traps. First, people read "deviate from any part of 107" as a blanket excuse and apply it to inconvenience rather than emergency — a low battery warning on a routine flight is not an emergency, and climbing above 400 feet AGL to save a few minutes of flying is not a deviation this chunk protects. Second, people flip the reporting rule around and assume any deviation triggers an automatic report to the FAA. The chunk says the report is made only if the FAA asks for it. Also note the briefing obligation does not stop at certificated crew: it covers visual observers and any non-certificated person you let handle the controls.

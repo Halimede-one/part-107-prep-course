@@ -1,0 +1,11 @@
+# student state, generated per run
+progress/
+
+# source PDFs for the knowledge base (download them; not committed)
+knowledge-base/pdfs/
+
+# packaging output and caches
+dist/
+__pycache__/
+*.pyc
+.DS_Store

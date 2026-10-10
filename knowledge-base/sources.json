@@ -1,0 +1,394 @@
+{
+  "_about": "Manifest for tools/fetch_sources.py and tools/build_kb.py. fetch_sources.py materializes each entry's `fetch` block as the PDF named in `pdf` (under knowledge-base/pdfs/, not committed); build_kb.py cuts that PDF into chunks. Each entry names a source, how its sections are headed, and how to link to a section. Entries are listed in precedence order: statute and CFR, the ACS, FAA guidance, then rulemaking preambles.",
+
+  "output": "knowledge-base/regulations",
+
+  "sources": [
+    {
+      "id": "14cfr107",
+      "title": "14 CFR Part 107, Small Unmanned Aircraft Systems (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr107.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-107",
+      "fetch": {"kind": "ecfr", "part": "107"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr89",
+      "title": "14 CFR Part 89, Remote Identification of Unmanned Aircraft (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr89.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-89",
+      "fetch": {"kind": "ecfr", "part": "89"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr48",
+      "title": "14 CFR Part 48, Registration and Marking Requirements for Small Unmanned Aircraft (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr48.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-48",
+      "fetch": {"kind": "ecfr", "part": "48"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr47",
+      "title": "14 CFR Part 47, Aircraft Registration (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr47.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-47",
+      "fetch": {"kind": "ecfr", "part": "47"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr3",
+      "title": "14 CFR Part 3, General Requirements, including subpart D on falsification, reproduction, alteration, omission, or incorrect statements (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr3.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-3",
+      "fetch": {"kind": "ecfr", "part": "3"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr1",
+      "title": "14 CFR Part 1, Definitions and Abbreviations (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr1.pdf",
+      "url": "https://www.ecfr.gov/current/title-14/part-1",
+      "fetch": {"kind": "ecfr", "part": "1"},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "14cfr-referenced",
+      "title": "14 CFR parts 61, 91, and 99, sections that part 107 incorporates by reference: 61.56, 91.17, 91.19, 91.137 to 91.145, and 99.7 (eCFR, current text)",
+      "pdf": "knowledge-base/pdfs/14cfr-referenced.pdf",
+      "url": "https://www.ecfr.gov/current/title-14",
+      "fetch": {"kind": "ecfr", "sections": ["61.56", "91.17", "91.19", "91.137", "91.138", "91.139", "91.141", "91.143", "91.144", "91.145", "99.7"]},
+      "heading": "cfr",
+      "section_url": "https://www.ecfr.gov/current/title-14/section-{section}"
+    },
+    {
+      "id": "49usc44809",
+      "title": "49 U.S.C. 44809, Exception for limited recreational operations of unmanned aircraft (United States Code, 2024 edition)",
+      "pdf": "knowledge-base/pdfs/49usc44809.pdf",
+      "url": "https://www.govinfo.gov/link/uscode/49/44809",
+      "fetch": {"kind": "pdf", "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title49/pdf/USCODE-2024-title49-subtitleVII-partA-subpartiii-chap448-sec44809.pdf"},
+      "layout": false,
+      "heading": "^\\s*§\\s*(?P<section>448\\d\\d)\\.\\s+(?P<title>.*)$",
+      "section_url": "https://www.govinfo.gov/link/uscode/49/{section}"
+    },
+    {
+      "id": "faa-s-acs-10b",
+      "title": "FAA-S-ACS-10B, Remote Pilot - Small Unmanned Aircraft Systems Airman Certification Standards (April 2021)",
+      "pdf": "knowledge-base/pdfs/faa-s-acs-10b.pdf",
+      "url": "https://www.faa.gov/training_testing/testing/acs/uas_acs.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/training_testing/testing/acs/uas_acs.pdf"},
+      "heading": "^\\s*(?P<section>Task [A-F]|Appendix \\d)[.:]\\s+(?P<title>.*)$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "ac107-2",
+      "title": "AC 107-2A, Small Unmanned Aircraft System (Small UAS), February 1, 2021",
+      "pdf": "knowledge-base/pdfs/ac107-2.pdf",
+      "url": "https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf"},
+      "heading": "^(?=\\s{0,4}\\d|\\s*APPENDIX)\\s*(?P<section>\\d{1,2}\\.\\d{1,2}|APPENDIX [A-E])\\.?\\s+(?P<title>(?!.*\\.{3})[A-Z].*)$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "faa-g-8082-22",
+      "title": "FAA-G-8082-22, Remote Pilot - Small Unmanned Aircraft Systems Study Guide (2016)",
+      "pdf": "knowledge-base/pdfs/faa-g-8082-22.pdf",
+      "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/remote_pilot_study_guide.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/remote_pilot_study_guide.pdf"},
+      "heading": "^\\s*(?P<section>Chapter \\d+[ab]?):\\s*$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "uag-questions",
+      "title": "FAA Unmanned Aircraft General (UAG) sample questions, August 10, 2021 (official examples keyed to ACS codes; no answer key is published)",
+      "pdf": "knowledge-base/pdfs/uag-questions.pdf",
+      "url": "https://www.faa.gov/sites/faa.gov/files/training_testing/testing/test_questions/uag_questions.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/sites/faa.gov/files/training_testing/testing/test_questions/uag_questions.pdf"},
+      "heading": "^\\s*(?P<section>\\d{1,2})\\.\\s+(?P<title>\\S.{10,})$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "phak-ch14",
+      "title": "FAA-H-8083-25C, Pilot's Handbook of Aeronautical Knowledge, Chapter 14: Airport Operations",
+      "pdf": "knowledge-base/pdfs/phak-ch14.pdf",
+      "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/16_phak_ch14.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/16_phak_ch14.pdf"},
+      "layout": false,
+      "heading": "^(?P<section>Chapter \\d{1,2})$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "phak-ch15",
+      "title": "FAA-H-8083-25C, Pilot's Handbook of Aeronautical Knowledge, Chapter 15: Airspace",
+      "pdf": "knowledge-base/pdfs/phak-ch15.pdf",
+      "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/17_phak_ch15.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/17_phak_ch15.pdf"},
+      "layout": false,
+      "heading": "^(?P<section>Chapter \\d{1,2})$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "phak-ch17",
+      "title": "FAA-H-8083-25C, Pilot's Handbook of Aeronautical Knowledge, Chapter 17: Aeromedical Factors",
+      "pdf": "knowledge-base/pdfs/phak-ch17.pdf",
+      "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/19_phak_ch17.pdf",
+      "fetch": {"kind": "pdf", "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/phak/19_phak_ch17.pdf"},
+      "layout": false,
+      "heading": "^(?P<section>Chapter \\d{1,2})$",
+      "section_url": "{url}#page={page}"
+    },
+    {
+      "id": "aim-3-1",
+      "title": "Aeronautical Information Manual (AIM), Chapter 3 Airspace, Section 1: General",
+      "pdf": "knowledge-base/pdfs/aim-3-1.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_1.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_1.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-3-2",
+      "title": "Aeronautical Information Manual (AIM), Chapter 3 Airspace, Section 2: Controlled Airspace",
+      "pdf": "knowledge-base/pdfs/aim-3-2.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_2.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_2.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-3-3",
+      "title": "Aeronautical Information Manual (AIM), Chapter 3 Airspace, Section 3: Class G Airspace",
+      "pdf": "knowledge-base/pdfs/aim-3-3.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_3.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_3.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-3-4",
+      "title": "Aeronautical Information Manual (AIM), Chapter 3 Airspace, Section 4: Special Use Airspace",
+      "pdf": "knowledge-base/pdfs/aim-3-4.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_4.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_4.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-3-5",
+      "title": "Aeronautical Information Manual (AIM), Chapter 3 Airspace, Section 5: Other Airspace Areas",
+      "pdf": "knowledge-base/pdfs/aim-3-5.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_5.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap3_section_5.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-1",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 1: General",
+      "pdf": "knowledge-base/pdfs/aim-11-1.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_1.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_1.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-2",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 2: Small Unmanned Aircraft System (sUAS)",
+      "pdf": "knowledge-base/pdfs/aim-11-2.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_2.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_2.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-3",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 3: Large UAS (MGOW 55 Pounds or More)",
+      "pdf": "knowledge-base/pdfs/aim-11-3.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_3.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_3.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-4",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 4: Airspace Access for UAS",
+      "pdf": "knowledge-base/pdfs/aim-11-4.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_4.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_4.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-5",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 5: UAS Pilot Testing, Certification and Responsibilities",
+      "pdf": "knowledge-base/pdfs/aim-11-5.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_5.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_5.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-6",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 6: Advanced Air Mobility",
+      "pdf": "knowledge-base/pdfs/aim-11-6.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_6.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_6.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-7",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 7: UAS Operations on Airports",
+      "pdf": "knowledge-base/pdfs/aim-11-7.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_7.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_7.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "aim-11-8",
+      "title": "Aeronautical Information Manual (AIM), Chapter 11 Unmanned Aircraft Systems (UAS), Section 8: Other Information and Best Practices",
+      "pdf": "knowledge-base/pdfs/aim-11-8.pdf",
+      "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_8.html",
+      "fetch": {"kind": "html", "title_line": false, "url": "https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap11_section_8.html"},
+      "heading": "^\\s*(?P<section>\\d{1,2}-\\d{1,2}-\\d{1,2}|Chapter \\d+|Section \\d+)\\.\\s+(?P<title>.*)$",
+      "section_url": "{url}#{section}"
+    },
+    {
+      "id": "faa-web-oop",
+      "title": "FAA web guidance (faa.gov/uas): Operations Over People General Overview",
+      "pdf": "knowledge-base/pdfs/faa-web-oop.pdf",
+      "url": "https://www.faa.gov/uas/commercial_operators/operations_over_people",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/commercial_operators/operations_over_people"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-remote-id",
+      "title": "FAA web guidance (faa.gov/uas): Remote Identification of Drones",
+      "pdf": "knowledge-base/pdfs/faa-web-remote-id.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/remote_id",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/remote_id"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-waivers",
+      "title": "FAA web guidance (faa.gov/uas): Part 107 Waivers",
+      "pdf": "knowledge-base/pdfs/faa-web-waivers.pdf",
+      "url": "https://www.faa.gov/uas/commercial_operators/part_107_waivers",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/commercial_operators/part_107_waivers"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-laanc",
+      "title": "FAA web guidance (faa.gov/uas): LAANC, Low Altitude Authorization and Notification Capability",
+      "pdf": "knowledge-base/pdfs/faa-web-laanc.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/laanc",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/laanc"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-airspace-restrictions",
+      "title": "FAA web guidance (faa.gov/uas): Airspace Restrictions",
+      "pdf": "knowledge-base/pdfs/faa-web-airspace-restrictions.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_restrictions",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_restrictions"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-airspace-101",
+      "title": "FAA web guidance (faa.gov/uas): Airspace 101, Rules of the Sky",
+      "pdf": "knowledge-base/pdfs/faa-web-airspace-101.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_101",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly/airspace_101"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-where-can-i-fly",
+      "title": "FAA web guidance (faa.gov/uas): Where Can I Fly?",
+      "pdf": "knowledge-base/pdfs/faa-web-where-can-i-fly.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/where_can_i_fly"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-register",
+      "title": "FAA web guidance (faa.gov/uas): How to Register Your Drone",
+      "pdf": "knowledge-base/pdfs/faa-web-register.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/register_drone",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/register_drone"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-become-a-pilot",
+      "title": "FAA web guidance (faa.gov/uas): Become a Certificated Remote Pilot",
+      "pdf": "knowledge-base/pdfs/faa-web-become-a-pilot.pdf",
+      "url": "https://www.faa.gov/uas/commercial_operators/become_a_drone_pilot",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/commercial_operators/become_a_drone_pilot"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-b4ufly",
+      "title": "FAA web guidance (faa.gov/uas): B4UFLY",
+      "pdf": "knowledge-base/pdfs/faa-web-b4ufly.pdf",
+      "url": "https://www.faa.gov/uas/getting_started/b4ufly",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/getting_started/b4ufly"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    },
+    {
+      "id": "faa-web-recreational",
+      "title": "FAA web guidance (faa.gov/uas): Recreational Flyers and Community-Based Organizations",
+      "pdf": "knowledge-base/pdfs/faa-web-recreational.pdf",
+      "url": "https://www.faa.gov/uas/recreational_flyers",
+      "fetch": {"kind": "html", "url": "https://www.faa.gov/uas/recreational_flyers"},
+      "heading": "^TITLE:\\s+(?P<section>.+)$",
+      "section_url": "{url}"
+    }
+  ],
+
+  "_withheld_why": "Tried on October 9, 2026 and withdrawn: the two 2021 Federal Register preambles added 353 chunks (39 percent of the corpus) and the lexical retriever ranked preamble pages above the regulation for several typical questions. The entries are kept here so they can be moved back into `sources` if retrieval changes; their PDFs stay in knowledge-base/pdfs/.",
+  "sources_withheld": [
+    {
+      "id": "fr-2021-oop",
+      "title": "Federal Register, 86 FR 4314 (January 15, 2021): Operation of Small Unmanned Aircraft Systems Over People, final rule with preamble (dated; chunks are Federal Register pages)",
+      "pdf": "knowledge-base/pdfs/fr-2021-oop.pdf",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2021-01-15/pdf/2020-28947.pdf",
+      "fetch": {"kind": "html", "url": "https://www.govinfo.gov/content/pkg/FR-2021-01-15/html/2020-28947.htm"},
+      "heading": "^\\s*\\[\\[Page (?P<section>\\d+)\\]\\]\\s*$",
+      "section_url": "https://www.govinfo.gov/link/fr/86/{section}"
+    },
+    {
+      "id": "fr-2021-rid",
+      "title": "Federal Register, 86 FR 4390 (January 15, 2021): Remote Identification of Unmanned Aircraft, final rule with preamble (dated; chunks are Federal Register pages)",
+      "pdf": "knowledge-base/pdfs/fr-2021-rid.pdf",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2021-01-15/pdf/2020-28948.pdf",
+      "fetch": {"kind": "html", "url": "https://www.govinfo.gov/content/pkg/FR-2021-01-15/html/2020-28948.htm"},
+      "heading": "^\\s*\\[\\[Page (?P<section>\\d+)\\]\\]\\s*$",
+      "section_url": "https://www.govinfo.gov/link/fr/86/{section}"
+    }
+  ],
+
+  "_notes": [
+    "The ecfr.gov section links are the canonical citation for a CFR section and do not depend on the PDF. The CFR PDFs are printed from the eCFR renderer at fetch time, so they carry the current text; the annual edition on govinfo.gov is two-column and lags.",
+    "The AC, study-guide, ACS, sample-question, and handbook links point at the PDF and a page; confirm the URLs against faa.gov when you fetch, since FAA moves files.",
+    "heading presets: cfr matches '§ 107.41 Title.'; numbered matches '5.2 Title' at the top level; chapter matches 'Chapter 3' headings. A custom regex with a (?P<section>...) group, and optionally a (?P<title>...) group, is accepted in place of a preset. The whole line is consumed by the heading, so a title group should run to the end of the line when body text follows the heading on the same line (AC 107-2A).",
+    "A heading that repeats within a source (a running header, a task letter reused across ACS areas) gets a numbered file name instead of overwriting the earlier chunk; the builder reports how many, so a regex that matches running headers is visible.",
+    "layout: false reads a PDF in reading order instead of physical layout. Use it for two-column documents (the handbook chapters, the U.S. Code); layout mode interleaves their columns.",
+    "The FAA web pages change without notice; the fetch log records when each was read. The Federal Register preambles are chunked by Federal Register page so that each chunk cites as 86 FR <page>."
+  ]
+}
