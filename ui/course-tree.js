@@ -39,6 +39,17 @@
   // The gears a unit can be taught at today: none while its content is unwritten.
   function writtenGears(u) { return u.written === false ? [] : u.available_gears; }
 
+  // Where a gear's lesson comes from, read from the state's gear_files: the
+  // unit's own file with its version, a draft the tutor wrote, or the Guided
+  // lesson, which the tutor builds Fast-track and Foundational from.
+  function gearSource(u, g) {
+    if (u.written === false) { return "not written yet"; }
+    var f = (u.gear_files || {})[String(g)], v = f && f.version ? ", version " + f.version : "";
+    if (f && f.draft) { return "a draft the tutor wrote" + v + ", not yet reviewed"; }
+    if (f) { return (g === 2 ? "the unit's lesson" : "its own lesson") + v; }
+    return "built by the tutor from the Guided lesson";
+  }
+
   function layout(state, m) {
     var units = state.units, rows = [], y = m.padTop;
     rows.push({ kind: "gate", key: "ready", h: m.gateH });
@@ -142,8 +153,8 @@
     var taken = (u.gears_taken || []).map(function (g) {
       var p = attemptCount(u, g); return "gear " + g + " " + gearName(g) + (p ? " (" + p + (p === 1 ? " attempt" : " attempts") + ")" : "");
     });
-    var written = writtenGears(u).map(function (g) { return gearName(g); }).join(", ") || "none yet";
-    return u.id + ": " + titleOf(u) + ". " + words + ". Speeds written: " + written + (taken.length ? ". Taken: " + taken.join(", ") : "") +
+    var sources = [1, 2, 3].map(function (g) { return gearName(g) + ": " + gearSource(u, g); }).join("; ");
+    return u.id + ": " + titleOf(u) + ". " + words + ". " + sources + (taken.length ? ". Taken: " + taken.join(", ") : "") +
       ". Lane color is the unit's state; weight is attempts at that gear." + (u.mastery === "unseen" ? " Click to start." : " Click to review.");
   }
 
@@ -164,7 +175,7 @@
       var d = lanePath(m, g, lane.from, lane.to), cls = laneClass(u, g), isTaken = cls !== "lane";
       var written = writtenGears(u).indexOf(g) >= 0, p = attemptCount(u, g);
       var tip = u.id + ", gear " + g + " (" + gearName(g) + "): " + (isTaken ? "taken" + (p ? ", " + p + (p === 1 ? " attempt" : " attempts") : "") : "not taken") +
-        (written ? ". Click to " + (u.mastery === "unseen" ? "start" : "review") + " at this speed." : ". Not written yet for this unit.");
+        ". Lesson: " + gearSource(u, g) + (written ? ". Click to " + (u.mastery === "unseen" ? "start" : "review") + " at this speed." : ".");
       var group = '<g class="lane-g" data-unit="' + esc(u.id) + '" data-gear="' + g + '"><title>' + esc(tip) + '</title>' +
         '<path class="' + cls + '" d="' + d + '"/><path class="hit" d="' + d + '"/></g>';
       (isTaken ? taken : parts.lanes).push(group);
@@ -391,5 +402,6 @@
   }
 
   window.CourseTree = { laneGlyph: laneGlyph, METRICS: METRICS, layout: layout, svg: svg, render: render, scrollToCurrent: scrollToCurrent,
-                        offCurrent: offCurrent, lanePath: lanePath, onSelect: onSelect, markSelected: markSelected, gearName: gearName, titleOf: titleOf, writtenGears: writtenGears };
+                        offCurrent: offCurrent, lanePath: lanePath, onSelect: onSelect, markSelected: markSelected, gearName: gearName, titleOf: titleOf, writtenGears: writtenGears,
+                        gearSource: gearSource };
 })();

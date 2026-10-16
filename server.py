@@ -6,11 +6,15 @@ gear, and stage come next are decided in orchestrator.py; how to teach and what
 to ask are decided by the model through the stage prompts.
 """
 
+import argparse
+import difflib
 import json
 import os
 import re
+import tempfile
 import threading
 import time
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import items as items_module
@@ -18,6 +22,7 @@ import ledger as ledger_module
 import mockexam
 import orchestrator
 import retrieval
+import status
 from llm_client import LLMClient, LLMError, load_config
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -30,6 +35,7 @@ _MOCK_STAGE = {
     "score_diagnose": "feedback",
     "mock_gate": "debrief",
     "qa": "qa",
+    "author": "revision",
 }
 
 # Earlier chat messages sent with each new question, so follow-ups make sense.
@@ -38,6 +44,121 @@ CHAT_MEMORY = 6
 # Responses that move the teaching flow. A prefetch started while handling one
 # of them is used by the next one, or not at all.
 _FLOW = ("intake", "advance", "goto", "answer")
+
+# Foundational drafts being written on background threads, by file path.
+_DRAFTING = {}
+_DRAFTING_LOCK = threading.Lock()
+
+
+def wait_for_drafts(timeout=10):
+    """Wait until every background draft has been written (for tests)."""
+    with _DRAFTING_LOCK:
+        threads = list(_DRAFTING.values())
+    for thread in threads:
+        thread.join(timeout)
+
+
+def replace_file(path, text):
+    """Write a file in one step, so a reader never sees half of it."""
+    handle, temporary = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".save-")
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8") as out:
+            out.write(text)
+        os.replace(temporary, path)
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
+
+
+def _header(text):
+    """Split a lesson file into its header lines and the rest, which starts at
+    the closing ---. A file without a complete header gives (None, text)."""
+    if text.startswith("---"):
+        head, found, rest = text[3:].partition("\n---")
+        if found:
+            return [line for line in head.split("\n") if line.strip()], "\n---" + rest
+    return None, text
+
+
+def _course_line(line):
+    return line.split(":", 1)[0].strip().lower() in ("version", "draft")
+
+
+def editor_text(path):
+    """A lesson file as the instructor edits it: the source lines and the body.
+    The version and the draft mark are the course's to keep; "" when there is
+    no file."""
+    if not os.path.isfile(path):
+        return ""
+    with open(path, "r", encoding="utf-8") as handle:
+        lines, rest = _header(handle.read())
+    if lines is None:
+        return rest
+    return "---\n" + "".join(line + "\n" for line in lines if not _course_line(line)) + rest.lstrip("\n")
+
+
+def with_version(text, version):
+    """The editor text with the course's header lines: the version, and no
+    draft mark, since an instructor has now saved it."""
+    lines, rest = _header(text)
+    if lines is None:
+        return "---\nversion: %d\n---\n%s" % (version, text)
+    kept = [line for line in lines if not _course_line(line)] + ["version: %d" % version]
+    return "---\n" + "".join(line + "\n" for line in kept) + rest.lstrip("\n")
+
+
+# A drawing the assistant made: a fenced block that starts ```svg <description>.
+_DRAWING = re.compile(r"^```svg[ \t]*(?P<description>[^\n]*)\n(?P<svg><svg\b.*?</svg>)\s*\n```[ \t]*$",
+                      re.S | re.M | re.I)
+_UNSAFE_SVG = re.compile(r"<script|<foreignObject|\son\w+\s*=|javascript:|(?:xlink:)?href\s*=\s*['\"](?!#)", re.I)
+
+
+def store_drawings(text, unit, folder):
+    """Move each drawing into its own SVG file in the curriculum's images folder
+    and put a Markdown image in its place, so the tutor shows the same reviewed
+    picture every time. Returns the new text and the files written. Raises
+    ValueError for a drawing that could run code."""
+    drawings = list(_DRAWING.finditer(text))
+    for match in drawings:
+        if _UNSAFE_SVG.search(match.group("svg")):
+            raise ValueError("A drawing holds a script, an event handler, or a link, so it was not saved. "
+                             "Ask the assistant to draw it again with shapes and text only.")
+    if not drawings:
+        return text, []
+    os.makedirs(folder, exist_ok=True)
+    taken = [int(m.group(1)) for m in (re.match(r"%s-(\d+)\.svg$" % re.escape(unit), n) for n in os.listdir(folder)) if m]
+    number, written = max(taken or [0]), []
+
+    def store(match):
+        nonlocal number
+        number += 1
+        name = "%s-%d.svg" % (unit, number)
+        svg = match.group("svg")
+        if "xmlns=" not in svg.split(">", 1)[0]:
+            svg = svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"', 1)
+        replace_file(os.path.join(folder, name), svg + "\n")
+        written.append("images/" + name)
+        description = match.group("description").strip().replace("]", "") or "Diagram"
+        return "![%s](images/%s)" % (description, name)
+
+    return _DRAWING.sub(store, text), written
+
+
+def write_new(path, text):
+    """Write a file that must not exist yet. The file appears complete or not at
+    all, and an existing file is left alone. Returns whether it was written."""
+    folder = os.path.dirname(path)
+    handle, temporary = tempfile.mkstemp(dir=folder, prefix=".new-")
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8") as out:
+            out.write(text)
+        os.link(temporary, path)
+        return True
+    except FileExistsError:
+        return False
+    finally:
+        os.unlink(temporary)
 
 # Pictures the curriculum may show, served from its images folder at /images/.
 IMAGE_TYPES = {
@@ -55,6 +176,7 @@ _STREAMED = {
     "score_diagnose": ("message",),
     "mock_gate": ("body",),
     "qa": ("answer",),
+    "author": ("note", "text"),
 }
 _STATUS = {
     "teach": "Writing your lesson",
@@ -63,6 +185,7 @@ _STATUS = {
     "score_diagnose": "Explaining the answer",
     "mock_gate": "Writing your exam debrief",
     "qa": "Writing the answer",
+    "author": "Revising the lesson",
 }
 # The status once a streamed field is complete and the model writes the rest.
 _STATUS_AFTER = {
@@ -71,6 +194,7 @@ _STATUS_AFTER = {
     ("quiz", "stem"): "Writing the answer options",
     ("score_diagnose", "message"): "Adding the sources",
     ("qa", "answer"): "Adding the sources",
+    ("author", "note"): "Writing the revised file",
 }
 # The status while the chat tutor runs a tool, by the tool's name.
 _SEARCHING = {
@@ -106,8 +230,11 @@ class Course:
     # lesson, so the per-request record of model calls is kept per thread.
     _local = threading.local()
 
-    def __init__(self, config_path=os.path.join(ROOT, "config.json")):
+    def __init__(self, config_path=os.path.join(ROOT, "config.json"), instructor=False):
         self.config = load_config(config_path)
+        # The instructor workspace edits the course material, so it exists only
+        # when the course is started for an instructor.
+        self.instructor = bool(instructor or self.config.get("instructor"))
         self.paths = {key: os.path.join(ROOT, value) for key, value in self.config["paths"].items()}
         self.client = LLMClient(self.config)
         self.items = items_module.load_items(self.paths["items"])
@@ -186,8 +313,9 @@ class Course:
                 if begin and job.chunks:
                     begin()
         if job is None or job.error is not None:
-            # Only the chat may search, and only on a backend that runs its own tools.
-            research = self.research_dirs() if stage == "qa" and self.client.supports_course_search else None
+            # Only the chat and the authoring assistant may search, and only on a
+            # backend that runs its own tools.
+            research = self.research_dirs() if stage in ("qa", "author") and self.client.supports_course_search else None
             try:
                 raw = self.client.complete(
                     self.tutor.system(stage), context, stage=_MOCK_STAGE.get(stage, "lesson"), on_text=forward,
@@ -264,8 +392,9 @@ class Course:
         returning = unit in self.session.returning
         if stage == "remediate" or returning:
             context = self.tutor.remediate_context(unit, gear, content, self.session.misconception, returning=returning)
-            return {"stage": "remediate", "gear": gear, "context": context}
-        return {"stage": "teach", "gear": gear, "context": self.tutor.teach_context(unit, gear, content, chosen=chosen)}
+            return {"stage": "remediate", "gear": gear, "context": context, "form": content["form"]}
+        return {"stage": "teach", "gear": gear, "context": self.tutor.teach_context(unit, gear, content, chosen=chosen),
+                "form": content["form"]}
 
     def quiz_call(self, unit, review=False):
         """The model call that asks a question on a unit, or None when there is
@@ -319,8 +448,62 @@ class Course:
         self.prefetch(self.quiz_call(unit))
         block = self.generate(call["stage"], call["context"],
                               preview={"type": "lesson", "unit": unit, "gear": call["gear"]})
+        if call["gear"] == 3 and call["form"] == "derived":
+            # The unit has no Foundational file yet. A lesson the student picked
+            # is general and becomes the draft; a re-teach starts from one
+            # student's mistake, so a general draft is written separately.
+            if call["stage"] == "teach":
+                self.save_draft(unit, block)
+            else:
+                self.draft_in_background(unit)
         self.session.stage = "teach"
         return block
+
+    # ---- Foundational drafts ----------------------------------------------
+    def save_draft(self, unit, block):
+        """Keep the tutor's first Foundational lesson for a unit as its
+        .gear3.md, marked as a draft, so later students and instructors start
+        from it. An existing file is never replaced."""
+        if block.get("type") != "lesson" or not (block.get("body") or "").strip():
+            return
+        cited = [(c.get("source", ""), c.get("url", "")) for c in block.get("citations") or [] if c.get("url")]
+        if not cited:
+            guided = self.tutor.content(unit, 2) or {"sources": []}
+            cited = [(s["source"], s["url"]) for s in guided["sources"]]
+        header = "".join("source: %s | %s\n" % (name.replace("|", "/"), url) for name, url in cited)
+        text = ("---\n%sversion: 1\ndraft: written by the tutor on %s from the Guided lesson; "
+                "no instructor has reviewed it\n---\nObjective: %s\n\n%s\n") % (
+            header, time.strftime("%Y-%m-%d"), self.tutor.objectives.get(unit, ""), block["body"].strip())
+        if write_new(orchestrator.lesson_path(self.paths["curriculum"], unit, 3), text):
+            status.record(os.path.join(self.paths["curriculum"], "STATUS.md"), unit, 3, "tutor draft v1",
+                          note="Foundational draft written by the tutor; review it in the instructor interface.")
+            log_metrics(self.paths["metrics"], {"source": "server", "kind": "draft", "unit": unit, "gear": 3})
+
+    def draft_in_background(self, unit):
+        """Write a general Foundational lesson for the unit on a background
+        thread and save it as the draft, once per unit."""
+        path = orchestrator.lesson_path(self.paths["curriculum"], unit, 3)
+        content = self.tutor.content(unit, 3)
+        if content is None or content["form"] != "derived":
+            return
+        with _DRAFTING_LOCK:
+            if path in _DRAFTING:
+                return
+            context = self.tutor.teach_context(unit, 3, content)
+
+            def run():
+                try:
+                    block = _parse_json_block(self.client.complete(self.tutor.system("teach"), context, stage="lesson"))
+                    if block:
+                        self.save_draft(unit, block)
+                except (LLMError, OSError):
+                    pass  # a draft is a convenience; without one the tutor keeps building Foundational from Guided
+                finally:
+                    with _DRAFTING_LOCK:
+                        _DRAFTING.pop(path, None)
+
+            _DRAFTING[path] = threading.Thread(target=run, daemon=True)
+            _DRAFTING[path].start()
 
     def goto(self, payload):
         """The student picked a unit and a gear from the course tree. Teach it
@@ -693,6 +876,85 @@ class Course:
         })
         return block
 
+    # ---- instructor -----------------------------------------------------
+    # Instructor mode only (see Handler). The page names a unit and a gear,
+    # never a path, so nothing but a unit's lesson files and its images can
+    # be written.
+    def author_target(self, unit, gear):
+        """The unit and gear of a lesson file, or None when either is not real."""
+        try:
+            gear = int(gear)
+        except (TypeError, ValueError):
+            return None
+        if unit not in self.tutor.objectives or gear not in orchestrator.LESSON_FILES:
+            return None
+        return unit, gear
+
+    def author_file(self, unit, gear):
+        """What the instructor workspace shows for one lesson file."""
+        path = orchestrator.lesson_path(self.paths["curriculum"], unit, gear)
+        guided = orchestrator.lesson_path(self.paths["curriculum"], unit, 2)
+        return {
+            "unit": unit,
+            "gear": gear,
+            "title": self.tutor.objectives.get(unit, ""),
+            "text": editor_text(path),
+            "guided": editor_text(guided),
+            "files": {str(g): f for g, f in orchestrator.lesson_files(self.paths["curriculum"], unit).items()},
+            "status": status.row(os.path.join(self.paths["curriculum"], "STATUS.md"), unit),
+        }
+
+    def author_ask(self, unit, gear, text, request, history=(), emit=None):
+        """The authoring assistant's revision of the file in the editor. Returns
+        the final stream event: the note, the revised text, and the diff."""
+        self._local.emit = emit
+        found = retrieval.search(self.chunks, request + " " + self.tutor.objectives.get(unit, ""))
+        context = self.tutor.author_context(
+            unit, gear, text, request, chunks=found, history=list(history)[-CHAT_MEMORY:],
+            can_search=self.client.supports_course_search,
+        )
+        block = self.generate("author", context, preview={"type": "revision", "unit": unit, "gear": gear})
+        if block.get("type") != "revision" or not isinstance(block.get("text"), str):
+            return {"error": block.get("message", "The assistant returned no revision.")}
+        revised = block["text"].rstrip("\n") + "\n"
+        diff = list(difflib.unified_diff(text.splitlines(), revised.splitlines(), "editor", "proposal", lineterm="", n=2))
+        return {"done": True, "note": block.get("note", ""), "text": revised, "diff": diff}
+
+    def author_save(self, unit, gear, text, note="", vetted=False):
+        """Save a lesson file from the workspace: move new drawings into image
+        files, raise the version, drop the draft mark, and record the save in
+        STATUS.md. Returns the outcome, with warnings for the instructor."""
+        images = os.path.join(self.paths["curriculum"], "images")
+        try:
+            text, saved_images = store_drawings(text, unit, images)
+        except ValueError as error:
+            return {"error": str(error)}
+        path = orchestrator.lesson_path(self.paths["curriculum"], unit, gear)
+        old = None
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8") as handle:
+                old = orchestrator.parse_content(handle.read())
+        version = (old["version"] or 1) + 1 if old else 1
+        replace_file(path, with_version(text, version))
+
+        cell = "v%d %s" % (version, "vetted" if vetted else "edited")
+        status.record(os.path.join(self.paths["curriculum"], "STATUS.md"), unit, gear, cell,
+                      status=None if vetted else "draft",
+                      note="%s lesson v%d, %s: %s" % (orchestrator.GEAR_NAMES[gear], version,
+                                                     "vetted" if vetted else "not yet vetted",
+                                                     note.strip() or "edited in the instructor interface"))
+        parsed = orchestrator.parse_content(with_version(text, version))
+        warnings = []
+        if not any(s["url"] for s in parsed["sources"]):
+            warnings.append("The file has no source line with a link. Add one: source: <name> | <link>.")
+        for name in re.findall(r"\]\((images/[^)\s]+)\)", parsed["body"]):
+            if not os.path.isfile(os.path.join(self.paths["curriculum"], name)):
+                warnings.append("The image %s does not exist." % name)
+        if gear != 2 and orchestrator.lesson_files(self.paths["curriculum"], unit)[2] is None:
+            warnings.append("This unit has no Guided lesson, so the tutor cannot teach it yet.")
+        return {"saved": True, "version": version, "images": saved_images, "warnings": warnings,
+                "file": self.author_file(unit, gear)}
+
     # ---- persistence ----------------------------------------------------
     def log_response(self, payload):
         path = self.paths["responses"]
@@ -708,6 +970,7 @@ class Course:
         state["readiness"] = mockexam.readiness(self.ledger, self.ledger.mock_attempts)
         state["mock_available"] = bool(mockexam.mock_items(self.items))
         state["mock_in_progress"] = self.session.mock is not None
+        state["instructor"] = getattr(self, "instructor", False)
         return state
 
 
@@ -899,6 +1162,8 @@ def _metrics_line(r):
                 parts.append("draw " + _ms(r["draw_ms"]))
             return "[browser] %-14s %s%s" % (r.get("what"), ", ".join(parts), hidden)
         return "[browser] %s" % json.dumps(r)
+    if r.get("kind") == "draft":
+        return "[server]  draft    %s gear %s saved as a tutor draft" % (r.get("unit"), r.get("gear"))
     if r.get("kind") == "prefetch":
         state = ("written in " if r.get("finished") else "still writing after ") + _ms(r.get("ms") or 0)
         if r.get("output_tokens"):
@@ -936,6 +1201,10 @@ class Handler(BaseHTTPRequestHandler):
     def course(self):
         return self.server.course
 
+    def instructor(self):
+        """Whether the instructor endpoints exist: only when the course was started for an instructor."""
+        return getattr(self.course, "instructor", False)
+
     def do_GET(self):
         self.started = time.perf_counter()
         if self.path in ("/", "/index.html"):
@@ -944,6 +1213,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(self.course.state())
         if self.path == "/api/chat":
             return self.send_json({"messages": self.course.chat, "meta": self.course.chat_meta})
+        if self.path.startswith("/api/author?") and self.instructor():
+            query = urllib.parse.parse_qs(self.path.split("?", 1)[1])
+            target = self.course.author_target((query.get("unit") or [""])[0], (query.get("gear") or [""])[0])
+            if target is None:
+                return self.send_json({"error": "Unknown unit or gear."}, status=400)
+            return self.send_json(self.course.author_file(*target))
         if self.path.startswith("/images/"):
             # A unit file writes images/x.png, which the page asks for as /images/x.png.
             name = os.path.basename(self.path)
@@ -963,7 +1238,8 @@ class Handler(BaseHTTPRequestHandler):
         self.started = time.perf_counter()
         if self.path == "/api/metrics":
             return self.receive_metrics()
-        if self.path not in ("/api/respond", "/api/ask"):
+        authoring = self.path in ("/api/author/ask", "/api/author/save")
+        if not (self.path in ("/api/respond", "/api/ask") or (authoring and self.instructor())):
             return self.send_error(404, "Not found")
         length = int(self.headers.get("content-length") or 0)
         try:
@@ -972,6 +1248,18 @@ class Handler(BaseHTTPRequestHandler):
             payload = None
         if not isinstance(payload, dict):
             return self.send_json({"type": "error", "message": "Malformed request."}, status=400)
+
+        if authoring:
+            target = self.course.author_target(payload.get("unit"), payload.get("gear"))
+            if target is None:
+                return self.send_json({"error": "Unknown unit or gear."}, status=400)
+            text = payload.get("text") if isinstance(payload.get("text"), str) else ""
+            if self.path == "/api/author/save":
+                return self.send_json(self.course.author_save(
+                    *target, text=text, note=str(payload.get("note") or ""), vetted=payload.get("vetted") is True))
+            history = [m for m in payload.get("history") or [] if isinstance(m, dict) and "role" in m and "text" in m]
+            return self.stream_events("author", lambda emit: self.course.author_ask(
+                *target, text=text, request=str(payload.get("request") or ""), history=history, emit=emit))
 
         if self.path == "/api/ask":
             def ask(emit):
@@ -1079,10 +1367,15 @@ class CourseServer(ThreadingHTTPServer):
 
 
 def main():
-    course = Course()
+    parser = argparse.ArgumentParser(description="The Part 107 course server.")
+    parser.add_argument("--instructor", action="store_true",
+                        help="add the instructor workspace, which edits the course material")
+    course = Course(instructor=parser.parse_args().instructor)
     port = int(course.config.get("port", 8107))
     print("Part 107 course running at http://localhost:%d" % port)
     print("Provider: %s. Press Ctrl+C to stop." % course.client.name)
+    if course.instructor:
+        print("Instructor mode: on. The Instructor button edits the course material.")
     server = CourseServer(("127.0.0.1", port), course)
     try:
         server.serve_forever()

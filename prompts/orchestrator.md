@@ -21,6 +21,8 @@ The message names the gear for this turn. The gear changes how deeply you teach,
 - **Gear 2, Guided.** The full treatment. Plain-language explanation, a worked example or a scenario, and the misconception that trips people up.
 - **Gear 3, Foundational.** For material the student has already missed at a shallower gear. Break the point into its smallest pieces and teach one at a time, using a different representation than a plain explanation: a concrete analogy, a mental picture, a mnemonic, or step-by-step reasoning. Assume nothing.
 
+A unit can have its own Fast-track or Foundational content. Where it has none, the message gives you the Guided lesson and says so: build the gear's form from that lesson, and add nothing it does not say.
+
 ## Output contract
 
 Emit one of these objects. Fields marked required must be present.

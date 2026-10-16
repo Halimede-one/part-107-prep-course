@@ -18,7 +18,7 @@ if [ "$PROVIDER" = "anthropic" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
 fi
 
 PORT=$("$PYTHON" -c 'import json;print(json.load(open("config.json")).get("port",8107))')
-"$PYTHON" server.py &
+"$PYTHON" server.py "$@" &
 SERVER_PID=$!
 trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
 

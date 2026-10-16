@@ -33,25 +33,61 @@ def load_objectives(path):
 
 
 def parse_content(text):
-    """Split a content file into its sources and body.
+    """Split a content file into its sources, body, version, and draft mark.
 
-    Header format, one line per source, repeated as needed:
+    Header format, one line per source, repeated as needed, then an optional
+    version and an optional draft mark:
 
         ---
         source: 14 CFR 107.41 | https://www.ecfr.gov/current/title-14/part-107
+        version: 3
+        draft: written by the tutor on 2026-10-16 from the Guided lesson
         ---
+
+    Only the sources and the body reach the model; the version and the draft
+    mark are for instructors and the course map.
     """
-    sources, body = [], text
+    sources, body, version, draft = [], text, None, None
     if text.startswith("---"):
         parts = text.split("---", 2)
         if len(parts) == 3:
             for line in parts[1].strip().splitlines():
-                if line.lower().startswith("source:"):
-                    value = line.split(":", 1)[1].strip()
+                key, _, value = line.partition(":")
+                key, value = key.strip().lower(), value.strip()
+                if key == "source":
                     name, _, url = value.partition("|")
                     sources.append({"source": name.strip(), "url": url.strip()})
+                elif key == "version" and value.isdigit():
+                    version = int(value)
+                elif key == "draft":
+                    draft = value
             body = parts[2].strip()
-    return {"sources": sources, "body": body}
+    return {"sources": sources, "body": body, "version": version, "draft": draft}
+
+
+# The lesson file for each gear. Guided is the unit's main lesson. Fast-track
+# and Foundational have their own file only where one is written; otherwise
+# the tutor builds that gear from the Guided lesson.
+LESSON_FILES = {1: "%s.gear1.md", 2: "%s.md", 3: "%s.gear3.md"}
+
+
+def lesson_path(curriculum_dir, unit, gear):
+    return os.path.join(curriculum_dir, LESSON_FILES[gear] % unit)
+
+
+def lesson_files(curriculum_dir, unit):
+    """For each gear, the unit's own lesson file: its version and whether it is
+    a tutor draft, or None where the gear has no file."""
+    files = {}
+    for gear in LESSON_FILES:
+        path = lesson_path(curriculum_dir, unit, gear)
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8") as handle:
+                parsed = parse_content(handle.read())
+            files[gear] = {"version": parsed["version"], "draft": bool(parsed["draft"])}
+        else:
+            files[gear] = None
+    return files
 
 
 def load_facts(path):
@@ -199,14 +235,28 @@ class Orchestrator:
     def system(self, stage):
         return self.prompt("orchestrator") + "\n\n---\n\n" + self.prompt(stage)
 
-    def content(self, unit, gear):
-        """Vetted content for a unit at a gear, or None if it is not authored yet."""
-        name = "%s.gear3.md" % unit if gear >= 3 else "%s.md" % unit
-        path = os.path.join(self.paths["curriculum"], name)
+    def _read(self, unit, gear):
+        path = lesson_path(self.paths["curriculum"], unit, gear)
         if not os.path.isfile(path):
             return None
         with open(path, "r", encoding="utf-8") as handle:
             return parse_content(handle.read())
+
+    def content(self, unit, gear):
+        """The content for a unit at a gear, or None when the unit has no
+        Guided lesson yet. `form` says where it came from: "written" (the
+        gear's own file), "draft" (a Foundational lesson the tutor wrote and no
+        instructor has reviewed; the Guided lesson comes with it as `guided`),
+        or "derived" (the Guided lesson, for the tutor to build the gear from)."""
+        guided = self._read(unit, 2)
+        if guided is None:
+            return None
+        own = guided if gear == 2 else self._read(unit, gear)
+        if own is None:
+            return dict(guided, gear=gear, form="derived")
+        if own["draft"] and gear != 2:
+            return dict(own, gear=gear, form="draft", guided=guided)
+        return dict(own, gear=gear, form="written")
 
     # ---- per-stage context ----------------------------------------------
     def _header(self, unit, gear):
@@ -217,10 +267,22 @@ class Orchestrator:
         ]
 
     def _material(self, unit, content):
-        lines = ["", "VETTED CONTENT:", content["body"]]
-        if content["sources"]:
+        form, name = content.get("form", "written"), GEAR_NAMES.get(content.get("gear", 2), "Guided")
+        sources = list(content["sources"])
+        if form == "derived" and content.get("gear", 2) != 2:
+            lines = ["", "VETTED CONTENT (the Guided lesson; no %s version is written for this unit, so build "
+                         "the %s form from it and add nothing it does not say):" % (name, name), content["body"]]
+        elif form == "draft":
+            lines = ["", "%s DRAFT (written by the tutor from the Guided lesson; no instructor has reviewed it "
+                         "yet. Follow its form, but take facts only from the Guided lesson and the vetted facts "
+                         "below, which win on any conflict):" % name.upper(), content["body"],
+                     "", "THE GUIDED LESSON (vetted; the ground truth for the draft above):", content["guided"]["body"]]
+            sources += [s for s in content["guided"]["sources"] if s not in sources]
+        else:
+            lines = ["", "VETTED CONTENT:", content["body"]]
+        if sources:
             lines += ["", "CITATIONS AVAILABLE (use these exactly):"]
-            lines += ["- %s | %s" % (s["source"], s["url"]) for s in content["sources"]]
+            lines += ["- %s | %s" % (s["source"], s["url"]) for s in sources]
         unit_facts = self.facts.get(unit, [])
         if unit_facts:
             lines += ["", "VETTED FACTS (ground truth; a keyed answer must match these):"]
@@ -290,6 +352,39 @@ class Orchestrator:
         elif outcome == "review_ok":
             lines.append("WHAT HAPPENS NEXT: review check passed; the unit stays mastered. Keep it brief.")
         return "\n".join(lines + self._material(unit, content))
+
+    def author_context(self, unit, gear, text, request, chunks=(), history=(), can_search=False):
+        """The authoring assistant's message: the instructor's request, the file
+        in their editor, and the material that grounds it. Earlier turns carry
+        the requests and the notes, not every earlier version of the file."""
+        lines = [
+            "UNIT: %s" % unit,
+            "OBJECTIVE: %s" % self.objectives.get(unit, "(not listed)"),
+            "FILE: the %s lesson (gear %d)" % (GEAR_NAMES.get(gear, "Guided"), gear),
+        ]
+        if history:
+            lines += ["", "EARLIER IN THIS CONVERSATION:"]
+            lines += ["%s: %s" % (m["role"].upper(), m["text"]) for m in history]
+        lines += ["", "INSTRUCTOR REQUEST: %s" % request, "",
+                  "THE FILE IN THE EDITOR (unsaved changes included):",
+                  text.strip() or "(empty: this gear has no file yet)"]
+        guided = self.content(unit, 2)
+        if gear != 2 and guided is not None:
+            lines += ["", "THE GUIDED LESSON (vetted; the ground truth for this file):", guided["body"]]
+            if guided["sources"]:
+                lines += ["", "ITS SOURCES:"] + ["- %s | %s" % (s["source"], s["url"]) for s in guided["sources"]]
+        unit_facts = self.facts.get(unit, [])
+        if unit_facts:
+            lines += ["", "VETTED FACTS (ground truth):"]
+            lines += ["- %s -> %s [%s | %s]" % (f.get("fact"), f.get("answer"), f.get("source"), f.get("link", ""))
+                      for f in unit_facts]
+        if chunks:
+            lines += ["", "RETRIEVED MATERIAL (source text outranks course explanations on any conflict):"]
+            lines += ["[%s | %s | %s | %s]\n%s" % (
+                "SOURCE TEXT" if c.get("kind", "source") == "source" else "COURSE EXPLANATION",
+                c["source"], c["section"], c["url"], c["text"]) for c in chunks]
+        lines += ["", "COURSE SEARCH AVAILABLE: %s" % ("yes" if can_search else "no")]
+        return "\n".join(lines)
 
     def mock_gate_context(self, result, ready):
         lines = [

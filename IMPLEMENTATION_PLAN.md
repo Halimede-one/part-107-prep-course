@@ -1,8 +1,16 @@
-# Part 107 Course: Implementation Plan (v3.1)
+# Part 107 Course: Implementation Plan (v3.2)
 
-Status: construction complete through Phase 6; content authored for Task A and the gear-3 exemplars; the rest of the content and all vetting happen locally. Supersedes v3.
+Status: construction complete through Phase 6; content authored for Task A and the gear-3 exemplars; the rest of the content and all vetting happen locally. Supersedes v3.1.
 
 This version implements the principles in LLM_COURSEWARE_DESIGN_AND_PRINCIPLES.md against Part 107.
+
+## Changelog, v3.1 to v3.2 (October 16, 2026)
+
+Decisions taken (plan and as-built record: `docs/plans/instructor-interface.md`):
+1. Every unit with a Guided lesson offers all three gears. A unit's own `<unit>.gear1.md` or `<unit>.gear3.md` takes priority; without one, the tutor builds that gear from the Guided lesson. (Section 12.4, amended.)
+2. The tutor's first Foundational lesson for a unit is saved as that unit's `.gear3.md`, marked as a draft in its header. Later students get it; while it is a draft, the tutor also gets the Guided lesson and the reference facts as the ground truth. An instructor's first save removes the draft mark.
+3. Lesson files carry a version number in their header. The version and the draft mark never reach the model.
+4. The instructor workspace, on only when the course starts with `--instructor`: edit a lesson file by hand or with an authoring assistant, save with a vetting answer recorded in `STATUS.md`, and store diagrams as image files. The README section "Improving the tutor" is the guide for instructors.
 
 ## Changelog, v3 to v3.1 (October 9, 2026)
 
@@ -257,10 +265,10 @@ Gear is a per-unit state, not one global setting. The ledger gains, per unit, a 
 ### 12.4 Content per gear, and the v1 cost
 
 - Gear 2 is the authored curriculum content already planned (Section 9).
-- Gear 1 is a compressed, assessment-first view the model generates from the Gear 2 source. No extra authoring.
-- Gear 3 is additional authored scaffolding per unit, a different representation broken into the finest pieces (often the sub-elements). This is the real cost, which is why it is built where the material warrants it rather than everywhere.
+- Gear 1 is a compressed, assessment-first view the model generates from the Gear 2 source. No extra authoring. A unit may have its own `<unit>.gear1.md`, which then takes priority (v3.2).
+- Gear 3 is a different representation broken into the finest pieces (often the sub-elements). Authored scaffolding is the real cost, so it is written where the material warrants it rather than everywhere. Since v3.2, a unit without a `<unit>.gear3.md` gets Gear 3 built by the model from the Gear 2 source, and the first such lesson is saved as a draft `.gear3.md` for instructors to review and improve.
 
-For v1: build the full three-gear mechanism, ship Gears 1 and 2 for all 77 units, and author Gear 3 for a small exemplar set of hard units to prove the mechanism, expanding Gear-3 coverage later from real failure data. Exemplar set, decided: UA.I.B.K16 prior authorization in controlled airspace, and UA.I.E.K3 categories of operations over people (gear 3 on the parent, which decomposes into K3a to K3d). Gear-3 content lives alongside the unit as `curriculum/regulations/<unit>.gear3.md`, and a unit offers gear 3 exactly when that file exists.
+For v1: build the full three-gear mechanism, ship Gears 1 and 2 for all 77 units, and author Gear 3 for a small exemplar set of hard units to prove the mechanism, expanding Gear-3 coverage later from real failure data. Exemplar set, decided: UA.I.B.K16 prior authorization in controlled airspace, and UA.I.E.K3 categories of operations over people (gear 3 on the parent, which decomposes into K3a to K3d). Gear-3 content lives alongside the unit as `curriculum/regulations/<unit>.gear3.md`. Until v3.1 a unit offered gear 3 exactly when that file existed; since v3.2 every unit with a Guided lesson offers it.
 
 ### 12.5 The course map
 
@@ -287,7 +295,7 @@ Readiness is computed from the ledger in one place (`mockexam.readiness`): every
 ### 12.6 Amendments to earlier sections
 
 - Ledger (Section 9 and principle 16): add per-unit current gear, the sequence of gears traversed per unit (the path the map draws), and a session default gear.
-- Coverage rule (Section 9): all 77 units have Gear 1 and Gear 2; the exemplar set has Gear 3.
+- Coverage rule (Section 9): all 77 units have Gear 1 and Gear 2; the exemplar set has Gear 3. Since v3.2, every unit with a Guided lesson has all three gears; hand-written Gear 1 and Gear 3 files are added as students show the need.
 - Tests (Section 10): fast-track speeds through when checks are aced; a miss downshifts only the specific unit; Gear 3 presents a distinct decomposition, not merely a slower one; the terminal policy fires after two cycles and flags needs-attention; the mastery bar and the mock are identical across gears; the course map renders per-unit mastery and gear from `/state` and updates each turn.
 - Phases (Section 11): the intake step, the course map, and consuming `/state` land in Phase 1 (UI); the `/state` endpoint in Phase 2; gear-aware teach and remediate prompts and the transition and terminal logic in the orchestrator in Phase 3; the Gear-3 exemplar content in Phase 4b.
 

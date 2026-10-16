@@ -5,6 +5,7 @@ Run from the course folder:  python3 -m unittest discover -s tests -v
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -26,9 +27,13 @@ UNITS = ["UA.I.B.K16", "UA.I.B.K21c", "UA.I.C.K4", "UA.I.D.K1"]
 
 
 def stub_paths(tmp):
+    # A copy, because teaching at Foundational saves a draft lesson file into the curriculum.
+    curriculum = os.path.join(tmp, "curriculum")
+    if not os.path.isdir(curriculum):
+        shutil.copytree(STUB_CURRICULUM, curriculum)
     return {
         "objectives": STUB_OBJECTIVES,
-        "curriculum": STUB_CURRICULUM,
+        "curriculum": curriculum,
         "knowledge_base": os.path.join(FIXTURES, "kb"),
         "items": os.path.join(FIXTURES, "items.md"),
         "reference": os.path.join(FIXTURES, "facts-stub.md"),
@@ -81,11 +86,16 @@ class TestVettedContentLoading(unittest.TestCase):
             self.assertTrue(content["sources"][0]["url"].startswith("https://"))
             self.assertIn("controlled airspace", content["body"])
 
-    def test_gear_three_loads_its_own_scaffolding(self):
+    def test_gear_three_uses_its_own_file_or_else_the_guided_lesson(self):
         with tempfile.TemporaryDirectory() as tmp:
             tutor = orchestrator.Orchestrator(stub_paths(tmp))
-            self.assertIn("Step one", tutor.content("UA.I.B.K16", 3)["body"])
-            self.assertIsNone(tutor.content("UA.I.B.K21c", 3))
+            written = tutor.content("UA.I.B.K16", 3)
+            self.assertIn("Step one", written["body"])
+            self.assertEqual(written["form"], "written")
+            derived = tutor.content("UA.I.B.K21c", 3)
+            self.assertEqual(derived["form"], "derived")
+            self.assertEqual(derived["body"], tutor.content("UA.I.B.K21c", 2)["body"])
+            self.assertIsNone(tutor.content("UA.I.F.K1", 3))  # no Guided lesson, so nothing to build from
 
     def test_facts_are_grouped_by_unit(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -269,7 +279,7 @@ class TestLoop(unittest.TestCase):
             for unit in ("UA.I.B.K16", "UA.I.B.K21c"):
                 course.ledger.record_attempt(unit, "a", 1, True, "t")
                 course.ledger.record_attempt(unit, "b", 1, True, "t")
-            live = os.path.join(STUB_CURRICULUM, "UA.I.C.K4.md")
+            live = os.path.join(course.paths["curriculum"], "UA.I.C.K4.md")
             hidden = live + ".hidden"
             os.rename(live, hidden)
             try:
@@ -505,13 +515,14 @@ class TestGoto(unittest.TestCase):
             self.assertEqual(course.ledger.units["UA.I.C.K4"]["gears_taken"], [2])
             self.assertTrue(next(u for u in course.state()["units"] if u["id"] == "UA.I.C.K4")["current"])
 
-    def test_the_gear_is_capped_at_the_deepest_written_one(self):
+    def test_foundational_without_a_file_is_built_from_the_guided_lesson(self):
         with tempfile.TemporaryDirectory() as tmp:
             course = self.start(tmp)
             seen = self.capture(course)
             course.handle({"type": "goto", "unit": "UA.I.B.K21c", "gear": 3, "timestamp": "t"})
-            self.assertEqual(seen[-1][2]["gear"], 2)
-            self.assertEqual(course.ledger.units["UA.I.B.K21c"]["current_gear"], 2)
+            self.assertEqual(seen[-1][2]["gear"], 3)
+            self.assertIn("no Foundational version is written for this unit", seen[-1][1])
+            self.assertEqual(course.ledger.units["UA.I.B.K21c"]["current_gear"], 3)
 
     def test_the_chosen_unit_stays_in_play_until_mastered_then_the_course_resumes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -562,7 +573,7 @@ class TestGoto(unittest.TestCase):
             course.session.mock = {}
             self.assertEqual(course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"})["type"], "error")
             course.session.mock = None
-            live = os.path.join(STUB_CURRICULUM, "UA.I.D.K1.md")
+            live = os.path.join(course.paths["curriculum"], "UA.I.D.K1.md")
             hidden = live + ".hidden"
             os.rename(live, hidden)
             try:

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Instructor workspace check</title>
+<link rel="stylesheet" href="../../ui/styles.css">
+</head>
+<body>
+
+<!-- Loaded by tests/test_instructor_page.py. Runs ui/instructor.js over the
+     course page's own markup, with the server's replies and the functions
+     app.js shares stubbed here, and writes PASS, or one line per failed check,
+     into #result. -->
+<pre id="result">NOT RUN</pre>
+
+<script>
+// The course page's markup: index.html's body up to its scripts.
+var page = new XMLHttpRequest();
+page.open("GET", "../../ui/index.html", false);
+page.send();
+document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
+</script>
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script src="../../ui/instructor.js"></script>
+<script>
+(function () {
+  "use strict";
+  var UNIT = "UA.I.B.K21b";
+  var GUIDED = "---\nsource: 14 CFR 107.51 | https://www.ecfr.gov/current/title-14/section-107.51\n---\nThe Guided lesson.\n";
+  var REVISION = "---\nsource: 14 CFR 107.51 | https://www.ecfr.gov/current/title-14/section-107.51\n---\nStep 1, the limit.\n\n" +
+                 "```svg Altitude above a tower\n<svg viewBox='0 0 10 10' width='10' height='10'><rect width='10' height='10'/></svg>\n```\n";
+  var sent = [], asked = [], tried = [], refreshed = 0, failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+  function $(id) { return document.getElementById(id); }
+
+  // The server's replies.
+  function info(gear, text) {
+    return { unit: UNIT, gear: gear, title: "b. Altitude limitations.", text: text, guided: GUIDED,
+             files: { "1": null, "2": { version: null, draft: false }, "3": text ? { version: 1, draft: false } : null },
+             status: { "gear 3": text ? "v1 edited" : "" } };
+  }
+  window.confirm = function () { return true; };
+  window.fetch = function (url, options) {
+    var body = options && options.body ? JSON.parse(options.body) : null, reply;
+    sent.push({ url: url, body: body });
+    if (url.indexOf("/api/author?") === 0) {
+      var gear = Number(/gear=(\d)/.exec(url)[1]);
+      reply = info(gear, gear === 2 ? GUIDED : "");
+    } else if (url === "/api/author/save") {
+      reply = { saved: true, version: 1, images: ["images/" + UNIT + "-1.svg"], warnings: [],
+                file: info(body.gear, body.text.replace(/```svg[\s\S]*?```/, "![Altitude above a tower](images/" + UNIT + "-1.svg)")) };
+    }
+    return Promise.resolve({ json: function () { return Promise.resolve(reply); } });
+  };
+
+  // What app.js shares, in small.
+  function el(tag, attrs, kids) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k === "class" ? "class" : k, attrs[k]); });
+    [].concat(kids == null ? [] : kids).forEach(function (c) {
+      if (c != null) { node.appendChild(typeof c === "string" ? document.createTextNode(c) : c); }
+    });
+    return node;
+  }
+  Instructor.init({
+    el: el,
+    citations: function (cites) { return cites.length ? el("div", { class: "citations" }, cites.map(function (c) { return el("a", { href: c.url }, c.source); })) : null; },
+    indicator: function () { return { node: el("div", { class: "status" }), status: function () {}, writing: function () {}, stop: function () {} }; },
+    streamInto: function (target, text) { target.textContent += text; },
+    streamRequest: function (what, url, payload, onEvent) {
+      asked.push(payload);
+      onEvent({ start: { stage: "author", status: "Revising the lesson", model: "mock", block: {} } });
+      onEvent({ delta: "I added a diagram.", field: "note" });
+      onEvent({ delta: REVISION, field: "text" });
+      return Promise.resolve({ done: true, note: "I added a diagram.", text: REVISION,
+                               diff: ["--- editor", "+++ proposal", "@@ -1,4 +1,6 @@", "-The Guided lesson.", "+Step 1, the limit."] });
+    },
+    units: function () { return [{ id: "UA.I.B.K21a", title: "a. Maximum groundspeed." }, { id: UNIT, title: "b. Altitude limitations." }]; },
+    here: function () { return { unit: UNIT, gear: 3 }; },
+    refresh: function () { refreshed++; },
+    tryIt: function (unit, gear) { tried.push([unit, gear]); }
+  });
+
+  // The steps, each after the last one's requests have settled.
+  var steps = [
+    function () { $("instructor-btn").hidden = false; $("instructor-btn").click(); },
+    function () {
+      check("the workspace opens", !$("author").hidden);
+      check("on the unit on screen", $("author-unit").value === UNIT);
+      check("at the gear on screen", document.querySelector(".author-gears [aria-selected=true]").getAttribute("data-gear") === "3");
+      check("the unit list has every unit", $("author-unit").options.length === 2);
+      check("a gear with no file says so", $("author-file").textContent.indexOf("No file") === 0);
+      check("and offers a start", !$("author-empty").hidden && !$("author-from-guided").hidden);
+      $("author-from-guided").click();
+      check("the Guided lesson fills the editor", $("author-text").value === GUIDED);
+      check("as an unsaved change", !$("author-dirty").hidden);
+      check("the preview shows it", $("author-preview").textContent.indexOf("The Guided lesson.") >= 0);
+      check("with its sources", $("author-preview").querySelector(".citations a").textContent === "14 CFR 107.51");
+      $("author-request").value = "Add a diagram of the altitude limit.";
+      $("author-form").requestSubmit();
+    },
+    function () {
+      check("the request carries the editor text", asked[0] && asked[0].text === GUIDED && asked[0].gear === 3);
+      check("and the request", asked[0] && asked[0].request === "Add a diagram of the altitude limit.");
+      check("the proposal shows in the preview", !$("author-proposal").hidden && $("author-preview").classList.contains("proposal"));
+      check("with its drawing", $("author-preview").querySelectorAll("img.drawn").length === 1);
+      check("the editor is not changed yet", $("author-text").value === GUIDED);
+      check("the note is in the assistant column", $("author-log").textContent.indexOf("I added a diagram.") >= 0);
+      check("with the changes counted", $("author-log").querySelector("summary").textContent === "Changes: 1 lines added, 1 removed");
+      $("author-apply").click();
+      check("Apply puts the proposal in the editor", $("author-text").value === REVISION && $("author-proposal").hidden);
+      $("author-save").click();
+      check("Save asks first", $("author-save-dialog").open);
+      $("author-note").value = "Added a diagram.";
+      document.querySelector("#author-save-dialog button[value=edited]").click();
+      check("the dialog closes", !$("author-save-dialog").open);
+    },
+    function () {
+      var save = sent.filter(function (s) { return s.url === "/api/author/save"; })[0];
+      check("the save sends the file", save && save.body.text === REVISION && save.body.unit === UNIT && save.body.gear === 3);
+      check("with the note, not vetted", save && save.body.note === "Added a diagram." && save.body.vetted === false);
+      check("the editor shows the saved file", $("author-text").value.indexOf("](images/" + UNIT + "-1.svg)") >= 0);
+      check("with no unsaved change", $("author-dirty").hidden);
+      check("the message says so", $("author-message").textContent.indexOf("Saved as version 1, not yet vetted.") === 0);
+      check("the course map is drawn again", refreshed === 1);
+      check("the file state is updated", $("author-file").textContent.indexOf("version 1") >= 0);
+      $("author-try").click();
+      check("Try it closes the workspace", $("author").hidden);
+      check("and teaches the unit at that gear", tried.length === 1 && tried[0][0] === UNIT && tried[0][1] === 3);
+      $("instructor-btn").click();
+    },
+    function () {
+      document.querySelector(".author-gears button[data-gear='2']").click();
+    },
+    function () {
+      check("a tab loads that gear's file", $("author-text").value === GUIDED && $("author-empty").hidden);
+      $("author").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      check("Escape closes the workspace", $("author").hidden);
+    }
+  ];
+  function run(i) {
+    if (i === steps.length) {
+      $("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
+      return;
+    }
+    try { steps[i](); } catch (e) { failures.push("ERROR in step " + i + ": " + e.message); }
+    setTimeout(function () { run(i + 1); }, 200);
+  }
+  window.addEventListener("load", function () { run(0); });
+}());
+</script>
+</body>
+</html>

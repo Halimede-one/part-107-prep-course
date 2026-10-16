@@ -16,6 +16,7 @@
   <div class="brand">Part 107 <span class="sep">·</span> Regulations</div>
   <div class="topbar-right">
     <button id="mock-btn" class="mock-btn" type="button" hidden>Practice exam</button>
+    <button id="instructor-btn" class="mock-btn" type="button" hidden>Instructor</button>
   </div>
 </header>
 
@@ -141,10 +142,79 @@
   </aside>
 </div>
 
+<!-- The instructor workspace (instructor.js): only when the course runs with
+     --instructor. It edits one lesson file at a time, by hand or with the
+     authoring assistant, and shows it as a student would see it. -->
+<div id="author" class="author" hidden role="dialog" aria-modal="true" aria-labelledby="author-title">
+  <div class="author-head">
+    <h1 id="author-title" class="author-title">Instructor</h1>
+    <label class="visually-hidden" for="author-unit">Unit</label>
+    <select id="author-unit"></select>
+    <div class="author-gears" role="tablist" aria-label="Speed">
+      <button type="button" role="tab" data-gear="1">Fast-track</button>
+      <button type="button" role="tab" data-gear="2">Guided</button>
+      <button type="button" role="tab" data-gear="3">Foundational</button>
+    </div>
+    <span id="author-file" class="author-file"></span>
+    <button type="button" id="author-close" class="btn secondary">Close</button>
+  </div>
+  <div class="author-body">
+    <section class="author-col" aria-label="Editor">
+      <div class="author-col-head">Lesson file <span id="author-dirty" class="author-dirty" hidden>unsaved changes</span></div>
+      <div id="author-empty" class="author-empty" hidden>
+        <p>This speed has no lesson file yet. The tutor builds it from the Guided lesson.</p>
+        <button type="button" id="author-from-guided" class="btn secondary">Start from the Guided lesson</button>
+        <button type="button" id="author-first" class="btn secondary">Ask the tutor for a first version</button>
+      </div>
+      <label class="visually-hidden" for="author-text">Lesson file</label>
+      <textarea id="author-text" spellcheck="true"></textarea>
+    </section>
+    <section class="author-col" aria-label="Preview">
+      <div class="author-col-head">
+        <span id="author-preview-label">Preview</span>
+        <span id="author-proposal" class="author-proposal" hidden>
+          <button type="button" id="author-apply" class="btn">Apply</button>
+          <button type="button" id="author-discard" class="btn secondary">Discard</button>
+        </span>
+      </div>
+      <div id="author-preview" class="author-preview block-body"></div>
+    </section>
+    <section class="author-col author-assistant" aria-label="Assistant">
+      <div class="author-col-head">Assistant</div>
+      <div id="author-log" class="chat-log" aria-live="polite"></div>
+      <form id="author-form" class="chat-form" autocomplete="off">
+        <label class="visually-hidden" for="author-request">Ask the assistant for a change</label>
+        <textarea id="author-request" rows="3" placeholder="Ask for a change, for example: add a diagram of this scenario"></textarea>
+        <button id="author-send" type="submit">Send</button>
+      </form>
+    </section>
+  </div>
+  <div class="author-foot">
+    <span id="author-message" class="author-message" role="status"></span>
+    <button type="button" id="author-revert" class="btn secondary">Revert</button>
+    <button type="button" id="author-try" class="btn secondary">Try it as a student</button>
+    <button type="button" id="author-save" class="btn">Save</button>
+  </div>
+  <dialog id="author-save-dialog" class="author-dialog">
+    <form method="dialog">
+      <h2>Save this lesson</h2>
+      <label for="author-note">What changed?</label>
+      <input id="author-note" type="text" placeholder="For example: added a diagram of the altitude limit">
+      <p>Is this content vetted against the source text?</p>
+      <div class="author-dialog-actions">
+        <button value="edited" class="btn">Not yet</button>
+        <button value="vetted" class="btn secondary">Yes, vetted</button>
+        <button value="cancel" class="btn secondary">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+
 <script src="marked.min.js"></script>
 <script src="markdown.js"></script>
 <script src="course-tree.js"></script>
 <script src="panels.js"></script>
+<script src="instructor.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

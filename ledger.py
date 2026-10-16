@@ -14,6 +14,8 @@ orchestrator reports; the transition and terminal logic arrives in Phase 3.
 import os
 import re
 
+from orchestrator import lesson_files
+
 MASTERY_STREAK = 2
 
 _UNIT = re.compile(r"^\|\s*(UA\.I\.[A-F]\.K\d+[a-d]?)\s*\|")
@@ -39,11 +41,10 @@ def load_units(objectives_path):
 
 
 def available_gears(unit, curriculum_dir):
-    """Gears 1 and 2 always; gear 3 where authored scaffolding exists for the unit."""
-    gears = [1, 2]
-    if os.path.isfile(os.path.join(curriculum_dir, "%s.gear3.md" % unit)):
-        gears.append(3)
-    return gears
+    """All three gears, for every unit. Fast-track and Foundational use their own
+    lesson file where one is written; otherwise the tutor builds them from the
+    Guided lesson (see orchestrator.content)."""
+    return [1, 2, 3]
 
 
 def _entry(gear):
@@ -256,6 +257,7 @@ class Ledger:
                 "current": unit == self.current_unit,
                 "available_gears": available_gears(unit, curriculum_dir),
                 "written": os.path.isfile(os.path.join(curriculum_dir, "%s.md" % unit)),
+                "gear_files": {str(g): f for g, f in lesson_files(curriculum_dir, unit).items()},
                 "gears_taken": entry["gears_taken"],
                 "attempts": attempts.get(unit, {}),
                 "current_gear": entry["current_gear"],

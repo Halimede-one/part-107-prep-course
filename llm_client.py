@@ -176,11 +176,14 @@ class LLMClient:
         command = self.settings.get("command", "claude")
         web = ["WebSearch", "WebFetch"] if research_dirs and self.supports_web_search else []
         tools = ["Read", "Grep", "Glob"] + web if research_dirs else []
-        # Only the tools above, none of the user's settings or CLAUDE.md files, and
-        # no session transcript left behind for each tutor turn.
+        # Only the tools above, none of the user's settings or CLAUDE.md files, no
+        # MCP servers (the user's claude.ai connectors and plugins would otherwise
+        # load into every call, about 21k tokens of tool definitions), and no
+        # session transcript left behind for each tutor turn.
         output = ["stream-json", "--verbose", "--include-partial-messages"] if on_text else ["json"]
         argv = [command, "-p", "--output-format"] + output + [
-            "--system-prompt", system, "--tools", ",".join(tools), "--setting-sources", "", "--no-session-persistence"]
+            "--system-prompt", system, "--tools", ",".join(tools), "--setting-sources", "", "--strict-mcp-config",
+            "--no-session-persistence"]
         if research_dirs:
             # Claude Code reads freely in its working directory and the added ones,
             # and dontAsk refuses everything else. Allow rules cannot narrow reads
@@ -415,6 +418,15 @@ _MOCK = {
         "answer": "Sample answer from the mock provider, grounded in the retrieved chunk.",
         "in_corpus": True,
         "citations": [{"source": "Mock source", "url": "https://www.ecfr.gov/current/title-14/part-107"}],
+    },
+    "revision": {
+        "type": "revision",
+        "note": "Sample revision from the mock provider, with a diagram.",
+        "text": "---\nsource: Mock source | https://www.ecfr.gov/current/title-14/part-107\n---\n"
+                "Sample revised lesson from the mock provider.\n\n"
+                "```svg A sample box\n<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' width='120' "
+                "height='40'><rect x='1' y='1' width='118' height='38' fill='none' stroke='black'/>"
+                "<text x='10' y='25'>Sample</text></svg>\n```\n",
     },
 }
 

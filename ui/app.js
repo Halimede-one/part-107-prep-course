@@ -617,6 +617,7 @@
   function renderMap(state, animate) {
     lastState = state;
     renderReadiness(state);
+    document.getElementById("instructor-btn").hidden = !state.instructor;
     chat.paused = !!state.mock_in_progress;
     setChatState();
     document.getElementById("map-summary").textContent =
@@ -642,11 +643,14 @@
   function picker(box, tree, onStart) {
     var title = box.querySelector(".tree-pick-title"), words = box.querySelector(".tree-pick-state");
     var gears = box.querySelectorAll(".tree-pick-gears button"), start = box.querySelector(".tree-pick-start");
-    var chosen = null;
+    var chosen = null, said = "";
     function press() {
       Array.prototype.forEach.call(gears, function (b) {
         b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gear")) === chosen.gear));
       });
+      // The state, then where the chosen speed's lesson comes from.
+      var u = unitById(lastState, chosen.unit);
+      words.textContent = said + " " + gearName(chosen.gear) + ": " + CourseTree.gearSource(u, chosen.gear) + ".";
       CourseTree.markSelected(tree, chosen.unit, chosen.gear);
     }
     function show(sel) {
@@ -655,9 +659,8 @@
       var written = CourseTree.writtenGears(u);
       chosen = { unit: u.id, gear: sel.gear && written.indexOf(sel.gear) >= 0 ? sel.gear : u.current_gear };
       title.textContent = u.id + " \u00b7 " + CourseTree.titleOf(u);
-      words.textContent = (u.mastery === "unseen" ? "Not started"
-        : (u.mastery === "mastered" ? "Mastered at gear " : "Learning at gear ") + u.current_gear + (u.parked ? ", set aside" : "")) +
-        ". Speeds written: " + (written.map(gearName).join(", ") || "none yet") + ".";
+      said = (u.mastery === "unseen" ? "Not started"
+        : (u.mastery === "mastered" ? "Mastered at gear " : "Learning at gear ") + u.current_gear + (u.parked ? ", set aside" : "")) + ".";
       Array.prototype.forEach.call(gears, function (b) {
         var g = Number(b.getAttribute("data-gear"));
         b.disabled = written.indexOf(g) < 0;
@@ -765,6 +768,18 @@
         pickers.intake.show(sel);
         document.querySelector("#intake-pick .tree-pick-state").textContent = block.message;
       });
+    });
+    // The instructor workspace (instructor.js) shares the streamed request, the
+    // indicator, and the course state, and teaches a unit through the tree's goto.
+    Instructor.init({
+      streamRequest: streamRequest, indicator: indicator, streamInto: streamInto, el: el, citations: citations,
+      units: function () { return (lastState && lastState.units) || []; },
+      here: function () {
+        var u = lastState && (unitById(lastState, currentUnit) || currentOf(lastState));
+        return u ? { unit: u.id, gear: u.current_gear || 2 } : null;
+      },
+      refresh: function () { api.getState().then(renderMap); },
+      tryIt: function (unit, gear) { goTo({ unit: unit, gear: gear }); }
     });
     api.getState().then(renderMap);
     loadChat();

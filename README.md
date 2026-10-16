@@ -38,7 +38,10 @@ A gear is a depth of teaching, not a different standard. Fast-track states the
 point in one or two sentences and goes to the check. Guided gives the full lesson
 with a worked example and the common misreading. Foundational breaks the point
 into its smallest steps with a different representation, such as a picture or a
-memory handle. Foundational exists only where it was authored.
+memory handle. Every unit with a Guided lesson offers all three. A unit's own
+Fast-track or Foundational file comes first; without one, the tutor builds that
+gear from the Guided lesson. The tutor's first Foundational lesson for a unit is
+saved as that unit's file, marked as a draft for an instructor to review.
 
 A student who knows the material answers two checks at Fast-track and moves on.
 A miss moves only that unit one gear deeper. There the tutor teaches it a
@@ -98,10 +101,13 @@ answer as it writes. If no material covers the question, it says so. On the
 ```bash
 export ANTHROPIC_API_KEY=your-key   # for the default backend
 ./start.sh                          # or: python3 server.py
+./start.sh --instructor             # adds the Instructor button, which edits the course material
 ```
 
 Then open http://localhost:8107. If `./start.sh` reports a permission error, run
-`chmod +x start.sh` once.
+`chmod +x start.sh` once. Without `--instructor` (or `"instructor": true` in
+`config.json`), the instructor workspace does not exist, so a student's copy
+cannot change its course material. See "Improving the tutor" below.
 
 ## Choosing a backend
 
@@ -118,10 +124,12 @@ Your API key is read from the environment and is never stored in this folder.
 
 Two notes on the `claude_code` backend. It runs `claude -p` with all tools disabled
 for lessons, questions, and feedback, because the course has no business reading or
-writing your files. The chat gets read-only tools instead. It runs in the
-knowledge-base folder, may also read the lessons and the reference facts, and nothing
-else; with `supports_web_search` it may also search the web. No tutor call loads your
-Claude Code memory. And setting
+writing your files. The chat and the instructor's authoring assistant get read-only
+tools instead. They run in the knowledge-base folder, may also read the lessons and
+the reference facts, and nothing else; with `supports_web_search` they may also search
+the web. No tutor call loads your Claude Code memory, settings, or MCP servers, so
+your claude.ai connectors and plugins stay out of the tutor's reach and its context.
+And setting
 `ANTHROPIC_API_KEY` in your shell makes Claude Code bill to the API instead of your
 plan, so keep that variable out of your shell profile if you use this backend.
 
@@ -129,6 +137,56 @@ Web search on the `anthropic` backend is off by default. The tool format is wire
 but was not verified against the current API from the build environment. Turn it on
 by setting `supports_web_search` to true, ask the tutor something outside the course
 material, and confirm the answer carries a web link before leaving it on.
+
+## Estimated AI costs
+
+Estimated October 16, 2026, for one student working through all 77 units on the
+`anthropic` backend or an equivalent Bedrock endpoint. The call counts follow the
+course rules: one lesson per unit, two correct checks in a row to master it, one
+re-teach per miss, 15 spaced reviews, and one debrief per practice exam. Prompt
+sizes were measured from the authored Task A units. Output sizes come from the
+recorded runs in `progress/metrics.jsonl`.
+
+| Scenario | Model calls | Input tokens | Output tokens | Total tokens |
+|---|---|---|---|---|
+| Low: Fast-track, 10 percent miss rate, 5 chat questions | 530 | 1.4M | 0.34M | 1.7M |
+| Mid: Guided, 25 percent miss rate, 15 chat questions | 760 | 2.1M | 0.68M | 2.8M |
+| High: 40 percent miss rate, 30 chat questions | 1,180 | 3.5M | 1.37M | 4.8M |
+
+Each teaching call sends about 1.8k tokens of system prompt and 0.7k to 0.9k tokens
+of unit material. Each miss adds three calls. Output tokens are 55 to 66 percent of
+the cost.
+
+Cost per student on Amazon Bedrock, in US dollars. Global endpoints bill at the
+first-party rate. Regional endpoints add 10 percent. The cached columns assume the
+system prompt is cached, which needs a `cache_control` marker that `llm_client.py`
+does not send yet.
+
+| Scenario | Opus 5.5 global | Opus 5.5 regional | Opus 5.5 cached | Sonnet 5.5 global | Sonnet 5.5 regional | Sonnet 5.5 cached |
+|---|---|---|---|---|---|---|
+| Low | $12 | $14 | $9 | $6 | $7 | $5 |
+| Mid | $22 | $24 | $18 | $11 | $12 | $9 |
+| High | $41 | $45 | $34 | $21 | $23 | $17 |
+
+Rates used, per million tokens: Opus 5.5 at $4 input, $20 output, $0.20 cache read,
+$5 cache write. Sonnet 5.5 at $2 input, $10 output, $0.10 cache read, $2.50 cache
+write. Opus 5 and Opus 4.8 cost about 25 percent more than Opus 5.5. Sonnet 4.6
+costs 50 percent more than Sonnet 5.5.
+
+Assumptions:
+
+- Tasks B to F are not authored yet. Their units are assumed to match the Task A
+  sizes, plus 10 to 25 percent in the mid and high scenarios.
+- Both models think by default, and thinking bills as output. The output sizes were
+  measured on Opus 5. The mid and high scenarios add 25 and 50 percent for thinking.
+  Sending effort `low` holds output near the measured values.
+- The chat on this backend is one call over three retrieved chunks and the unit on
+  screen. It is cheaper than the recorded `claude_code` chat calls, which also
+  searched the course and the web.
+- The `context_tokens` recorded by the `claude_code` backend include Claude Code's
+  own overhead. The API path sends 2.4k to 2.9k tokens per teaching call.
+- The rates come from Anthropic's pricing page and its Bedrock endpoint rule.
+  Confirm them on the AWS Bedrock pricing page before budgeting.
 
 ## Running the tests
 
@@ -154,9 +212,164 @@ guide, the FAA sample questions, three handbook chapters, the AIM airspace and
 UAS chapters, and the faa.gov guidance pages). `knowledge-base/BUILD.md` records
 the build, its decisions, and two currency findings for the vetting step.
 
+Built on October 16, 2026: all three speeds for every unit with a Guided lesson,
+with the tutor's first Foundational lesson saved as a draft file, and the
+instructor workspace (`./start.sh --instructor`). The plan and its as-built record
+are in `docs/plans/instructor-interface.md`.
+
 Not yet done, all local: content for Tasks B to F, vetting of everything against
 the source text, and a run with a real model. Until a unit has content, the tutor
 declines to teach it, by design.
+
+## Improving the tutor
+
+This section is for instructors who know the subject, such as remote pilots and
+flight instructors. You do not need to program to improve the course.
+
+### What the tutor teaches from
+
+The tutor knows only what is in the course files. It never teaches from memory.
+Four kinds of file decide what it says:
+
+| File | What it holds | Where |
+|---|---|---|
+| Lesson files | One Guided lesson per unit, and optional Fast-track and Foundational lessons | `curriculum/regulations/` |
+| Reference facts | The exact facts that the tutor's questions are keyed to, each with its source | `reference/regulations-facts.md` |
+| Knowledge base | The regulations and FAA guidance in chunks, for the "Ask the tutor" panel | `knowledge-base/regulations/` (built by a script; do not edit by hand) |
+| Practice exam | 20 fixed questions with their keys | `mock/regulations-mock.md` |
+
+The prompts in `prompts/` set how the tutor teaches, not what is true. Change them
+only together with the course maintainer.
+
+### Find what needs work
+
+- **The course tree.** A unit that students reach at Foundational, set aside, or
+  mark "needs attention" is not getting through. Hover a unit to see which lesson
+  file each speed uses.
+- **The student record,** `progress/student-ledger.md`. Its Attempts table lists
+  each miss by unit and speed.
+- **The chat questions,** in `progress/responses.jsonl` (the lines with
+  `"type": "question"`). A question that students ask often shows a gap in the lesson.
+- **Tutor drafts.** A Foundational lesson that the tutor wrote waits for your
+  review. The course tree calls it "a draft the tutor wrote", and `STATUS.md`
+  shows `tutor draft v1` in its Gear 3 column.
+- **Open questions** in the Notes column of `STATUS.md`.
+
+### Where each fix goes
+
+| Problem | Fix it in | How |
+|---|---|---|
+| A fact is wrong or out of date | The lesson file and the reference facts | Correct both against the CFR. Questions are keyed to the reference facts, so a fix in the lesson alone is not enough. |
+| A lesson does not get through | The lesson file for that speed | Rewrite the explanation or the worked example, or add a diagram. |
+| Students keep missing a unit | Its Foundational file | Review the tutor draft, or write the file. |
+| A quiz question is weak or wrong | The lesson file and the reference facts | The tutor writes a new question each time, from the lesson and the facts. Make the fact exact, and name the common misreading in the lesson. |
+| A practice-exam item is wrong | `mock/regulations-mock.md` | Correct the row. Keep one keyed answer, distinct wrong options, a rationale, and a link. |
+| A chat answer is wrong | Tell the course maintainer | Chat answers come from the knowledge base, which the maintainer corrects or rebuilds. |
+
+### Edit in the instructor workspace
+
+1. Start the course with `./start.sh --instructor`. The top bar then shows an
+   **Instructor** button. Without the flag, the button and all editing are gone,
+   so a student's copy of the course cannot change its material.
+2. Click **Instructor** on any screen. The workspace opens on the unit and the
+   speed on screen. To edit another file, pick a unit from the list and a tab:
+   **Fast-track**, **Guided**, or **Foundational**. The line next to the tabs
+   says what that file is: a lesson file with its version, a tutor draft, or no
+   file yet.
+3. Edit the file in the left column. The middle column shows it as a student
+   sees it, with its images and its sources.
+4. Or ask the assistant in the right column. Write what you want as you would to
+   a colleague, for example: "This looks good, but can we add a diagram that
+   shows how the authorized altitude applies in the worked example?" The
+   assistant replies with a note on what it changed and a proposal for the whole
+   file. The proposal shows in the middle column. Under the note, **Changes**
+   lists each line that it adds or removes.
+5. Read the proposal. **Apply** puts it into the editor, and **Discard** drops
+   it. Ask again to adjust it, for example "make the labels larger". You can also
+   edit by hand at any time. Nothing is saved until you click Save.
+6. Click **Save**. Write a short note on what changed, then answer the question
+   "Is this content vetted against the source text?" Choose **Yes, vetted** only
+   after you have checked every fact, number, and diagram label in the file
+   against the source text. The save raises the file's version, records your
+   answer in `STATUS.md`, and stores each new diagram as an image file in
+   `curriculum/regulations/images/`.
+7. Click **Try it as a student** to see the tutor teach the unit at that speed
+   from your file.
+
+For a speed with no file, the workspace offers **Start from the Guided lesson**
+and **Ask the tutor for a first version**. A unit with no Guided lesson cannot be
+taught at all, so write that file first.
+
+The assistant follows the tutor's rules: facts come only from the course material,
+and every source is cited. When the material does not support a request, it says
+so in its note. Check its work all the same: a diagram can carry a wrong label as
+easily as a sentence can carry a wrong fact. One request takes about 30 to 80
+seconds, because the assistant writes the whole file again.
+
+### The speeds and their files
+
+| Speed | File | Without the file |
+|---|---|---|
+| Fast-track | `<unit>.gear1.md` | The tutor shortens the Guided lesson. |
+| Guided | `<unit>.md` | The unit cannot be taught. |
+| Foundational | `<unit>.gear3.md` | The tutor builds it from the Guided lesson and saves its first version as a tutor draft. |
+
+A tutor draft is a real lesson file that later students get. While it is a draft,
+the tutor also receives the Guided lesson and the reference facts, and those win
+on any conflict. Your first save of the file removes the draft mark.
+
+Write a Foundational file when students keep missing a unit, or when the tutor
+draft does not teach it well. Write a Fast-track file only when the tutor's short
+version misses the point.
+
+### Write a lesson file by hand
+
+A lesson file is plain text in Markdown:
+
+```
+---
+source: 14 CFR 107.51 | https://www.ecfr.gov/current/title-14/section-107.51
+source: AC 107-2A | https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf
+version: 3
+---
+Objective: know the altitude limit and its exception for structures.
+
+The plain-language explanation, then the worked example, then the common misreading.
+```
+
+- Write one `source:` line for each source the lesson uses, with its link. For a
+  CFR section, use its eCFR section link.
+- The course writes the `version:` line and the `draft:` line. Leave them as they are.
+- **Guided:** the objective, a plain-language explanation, a worked example, and
+  the common misreading.
+- **Fast-track:** the point in one or two sentences.
+- **Foundational:** the point in numbered steps, each taught a different way (a
+  picture, an analogy, or step-by-step reasoning), a memory handle, then the
+  worked example step by step.
+- Keep every number exactly as the source states it.
+- Do not put review notes or status words in the file. The tutor reads the file
+  as it is, so a note there reaches a student. Notes go in `STATUS.md`.
+- Put an image in `curriculum/regulations/images/`, and show it in the lesson as
+  `![What it shows](images/name.svg)`.
+
+### Vet
+
+To vet a file, check every fact in it against the source text in the knowledge
+base. The CFR outranks the Advisory Circular and the study guide. If two sources
+disagree, follow the CFR and write the conflict in the Notes column of
+`STATUS.md`; do not smooth it over in the lesson. Each save records your answer
+in the unit's row, for example `v3 vetted` or `v3 edited`. A unit is vetted when
+all its lesson files and its reference facts are vetted.
+
+### Check and hand over your change
+
+1. Run `python3 tools/check_integrity.py --allow-incomplete`. It finds a lesson
+   without a source line, a fact without a link, and a broken exam item. It
+   cannot check whether a fact is true; that part is yours.
+2. Start the course and try the unit at the speed you changed.
+3. Hand the change over. If you use git, commit the changed files and any new
+   images, with a message that names the unit, the speed, and the change. If you
+   do not use git, send the same files to the course maintainer.
 
 ## Building the content locally
 
@@ -203,7 +416,8 @@ your machine rather than in the build environment.
    and `progress/student-ledger.md` for the state.
 
 8. Author Tasks B to F against the knowledge base, one task per batch, following
-   the conventions at the bottom of `STATUS.md`. Add reference facts for each unit.
+   the conventions at the bottom of `STATUS.md`, by hand or in the instructor
+   workspace (see "Improving the tutor"). Add reference facts for each unit.
    Re-run the integrity check after each batch; drop `--allow-incomplete` once all
    77 units have content.
 
@@ -214,15 +428,19 @@ your machine rather than in the build environment.
 ## How it fits together
 
 ```
-ui/              the fixed shell: renders blocks, posts responses, draws the map and readiness
-server.py        serves the shell, routes responses, scores answers, calls the model
+ui/              the fixed shell: renders blocks, posts responses, draws the map and readiness;
+                 instructor.js is the instructor workspace
+server.py        serves the shell, routes responses, scores answers, calls the model,
+                 saves tutor drafts and instructor edits
+status.py        changes one unit's row of STATUS.md when a lesson file is saved
 orchestrator.py  which unit, which gear, which stage comes next; task boundaries and review
 mockexam.py      practice-exam attempts, lookup scoring, readiness
 llm_client.py    provider adapters (anthropic, claude_code, ollama, mock)
 retrieval.py     lexical search over the knowledge base, for free-form questions
 items.py         table parsing, vetted items, deterministic lookup scoring
 ledger.py        the student ledger: mastery, gears, parking, attempts, exam attempts
-prompts/         the tutor: global rules, one prompt per stage, the block and response schemas
+prompts/         the tutor: global rules, one prompt per stage, the block and response schemas;
+                 author.md is the instructor's authoring assistant
 curriculum/      objectives, per-unit teaching content, vetting status
 reference/       the per-unit ground-truth facts the tutor keys answers to
 mock/            the fixed practice exam

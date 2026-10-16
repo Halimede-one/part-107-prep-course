@@ -7,6 +7,7 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import sys
 import tempfile
 import threading
@@ -30,6 +31,10 @@ OBJECTIVES = os.path.join(ROOT, "curriculum", "regulations", "objectives.md")
 
 
 def mock_config(tmp, provider="mock"):
+    # A copy, because teaching at Foundational saves a draft lesson file into the curriculum.
+    curriculum = os.path.join(tmp, "curriculum")
+    if not os.path.isdir(curriculum):
+        shutil.copytree(os.path.join(FIXTURES, "curriculum"), curriculum)
     return {
         "provider": provider,
         "providers": {
@@ -50,7 +55,7 @@ def mock_config(tmp, provider="mock"):
         },
         "paths": {
             "objectives": os.path.join(FIXTURES, "objectives-stub.md"),
-            "curriculum": os.path.join(FIXTURES, "curriculum"),
+            "curriculum": curriculum,
             "knowledge_base": os.path.join(FIXTURES, "kb"),
             "items": os.path.join(FIXTURES, "items.md"),
             "reference": os.path.join(FIXTURES, "facts-stub.md"),
@@ -234,6 +239,7 @@ class TestClaudeCodeAdapter(unittest.TestCase):
             argv = out["argv"]
             self.assertEqual(argv[argv.index("--tools") + 1], "")
             self.assertEqual(argv[argv.index("--setting-sources") + 1], "")
+            self.assertIn("--strict-mcp-config", argv)  # no MCP servers: no connectors, no plugins
             self.assertIn("-p", out["argv"])
             self.assertNotIn("--add-dir", argv)
             self.assertNotIn("--permission-mode", argv)
