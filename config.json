@@ -32,6 +32,8 @@
     "ledger": "progress/student-ledger.md",
     "responses": "progress/responses.jsonl",
     "metrics": "progress/metrics.jsonl",
+    "questions_log": "progress/questions.jsonl",
+    "questions": "questions/regulations",
     "reference": "reference/regulations-facts.md",
     "prompts": "prompts"
   },

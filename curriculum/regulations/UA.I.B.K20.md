@@ -1,0 +1,15 @@
+---
+source: 14 CFR 107.49 | https://www.ecfr.gov/current/title-14/section-107.49
+source: 14 CFR 107.7 | https://www.ecfr.gov/current/title-14/section-107.7
+source: AC 107-2A | https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf
+version: 1
+---
+Objective: know what the remote pilot in command must do before every flight.
+
+Section 107.49 lists the preflight actions. First, assess the operating environment, considering risks to persons and property on the surface and in the air. The assessment must include local weather conditions; local airspace and any flight restrictions; the location of persons and property on the surface; and other ground hazards. Second, ensure that everyone directly participating in the operation is informed about the operating conditions, emergency procedures, contingency procedures, roles and responsibilities, and potential hazards. Third, ensure that all control links between the control station and the aircraft are working properly. Fourth, if the aircraft is powered, ensure there is enough power for the intended operational time. Fifth, ensure that any object attached to or carried by the aircraft is secure and does not adversely affect flight characteristics or controllability. Sixth, if the flight will be over people under subpart D, ensure the aircraft meets the requirements of the category being used.
+
+AC 107-2A expands the list. The environment assessment should also consider people and moving vehicles that are not participating, the chance that they will enter the operating area during the flight, and whether the flight will be over an open-air assembly. Checking the control links includes confirming that the control surfaces move correctly in response to the control station; if one does not, there is no flight until it does. The power check can follow the manufacturer's consumption tables. The anti-collision light must be checked before a civil twilight or night flight, and its power draw may shorten the planned flight. Documents must be available for inspection under 107.7: the remote pilot certificate, identification, the aircraft registration, and any certificate of waiver. The AC's chapter 7 gives a detailed inspection list, from the airframe and propellers to GPS acquisition, battery levels, and compass calibration. The remote pilot in command, not the manufacturer or the owner, is responsible for determining that the aircraft will perform as the flight requires.
+
+Worked example: before a roof inspection the pilot reads the local aviation weather report for visibility and cloud height, checks the airspace and NOTAMs, walks the site to note people and power lines, briefs the visual observer, powers up and confirms the control link, GPS, and enough battery for a 15-minute flight with a reserve, and confirms the camera is secured.
+
+Common misreading: equating preflight with a hardware check. The rule begins with the environment and the crew briefing; the equipment checks are only part of it.

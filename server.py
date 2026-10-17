@@ -254,7 +254,6 @@ class Session:
         self.stage = None          # teach, quiz, feedback, review_quiz, review_feedback, done
         self.pending = None        # the question awaiting an answer, with its key
         self.next_action = None    # (action, gear) decided when the answer was scored
-        self.asked = {}            # unit -> question ids already used this session
         self.misconception = None  # what the last wrong choice suggests, for remediation
         self.review_queue = []     # units awaiting a spaced-review check at a task boundary
         self.reviewing = None      # the unit whose review question is on screen
@@ -450,15 +449,30 @@ class Course:
 
     def quiz_call(self, unit, review=False):
         """The model call that asks a question on a unit, or None when there is
-        no unit or no content at its gear."""
-        if unit is None:
+        no unit, no content at its gear, or an instructor question is due, which
+        needs no call."""
+        if unit is None or self.instructor_question(unit):
             return None
         gear = self.unit_gear(unit)
         content = self.content(unit, gear)
         if content is None:
             return None
-        context = self.tutor.quiz_context(unit, gear, content, self.session.asked.get(unit, []), review=review)
+        stems = [question["stem"] for question in self.asked(unit)]
+        guidance = items_module.load_questions(self.questions_path(unit))["guidance"]
+        context = self.tutor.quiz_context(unit, gear, content, stems, review=review, guidance=guidance)
         return {"stage": "quiz", "gear": gear, "context": context}
+
+    def questions_path(self, unit):
+        return os.path.join(self.paths["questions"], "%s.md" % unit)
+
+    def instructor_question(self, unit):
+        """The first of the instructor's questions on a unit that this student
+        has not been shown, as a question block, or None."""
+        shown = {question["question_id"] for question in self.asked(unit)}
+        for item in items_module.load_questions(self.questions_path(unit))["items"]:
+            if item["item"] not in shown:
+                return items_module.item_question(item)
+        return None
 
     def call_after_answer(self, review):
         """The model call that Continue will make after this answer's feedback,
@@ -612,25 +626,56 @@ class Course:
         unit = unit or self.session.chosen or orchestrator.current_unit(self.ledger)
         if unit is None:
             return self.done_block()
-        call = self.quiz_call(unit, review)
-        if call is None:
+        gear = self.unit_gear(unit)
+        if self.content(unit, gear) is None:
             return self.missing_content(unit)
 
-        block = self.generate(
-            "quiz", call["context"],
-            preview={"type": "question", "unit": unit, "gear": call["gear"], "review": review},
-        )
+        # The instructor's own questions come first, and need no model call.
+        block, origin = self.instructor_question(unit), "instructor"
+        if block is None:
+            block, origin = self.tutor_question(unit, review), "tutor"
         if block.get("type") == "question":
             # The key stays on the server. The browser never sees it.
-            block["unit"], block["gear"] = unit, call["gear"]
+            block["unit"], block["gear"] = unit, gear
+            if origin == "tutor":
+                # The course names the question, so no id is used twice on a unit.
+                block["question_id"] = "%s-q%d" % (unit, len(self.asked(unit)) + 1)
             self.session.pending = dict(block)
-            self.session.asked.setdefault(unit, []).append(block.get("question_id", ""))
-            block = {k: v for k, v in block.items() if k not in ("answer", "rationale")}
+            self.log_question(block, origin, review)
+            block = {k: v for k, v in block.items() if k not in ("answer", "rationale", "fact")}
             if review:
                 block["review"] = True
         self.session.stage = "review_quiz" if review else "quiz"
         self.session.reviewing = unit if review else None
         return block
+
+    def tutor_question(self, unit, review):
+        """A question the tutor writes. One that fails the course's checks is
+        written once more; one that fails twice becomes an error block."""
+        call = self.quiz_call(unit, review)
+        preview = {"type": "question", "unit": unit, "gear": call["gear"], "review": review}
+        block = self.generate("quiz", call["context"], preview=preview)
+        problems = self.question_problems(unit, block)
+        if problems:
+            # Ask once more, naming the problems, rather than show a question
+            # whose key cannot be trusted.
+            block = self.generate("quiz", call["context"] + "\n\nYOUR QUESTION DID NOT PASS THE COURSE'S CHECKS: %s. "
+                                  "Write the question again." % "; ".join(problems), preview=preview)
+            problems = self.question_problems(unit, block)
+            if problems:
+                block = {"type": "error", "message": "The tutor wrote a question that did not pass the course's "
+                                                     "checks: %s. Try again for a new question." % "; ".join(problems)}
+        return block
+
+    def question_problems(self, unit, block):
+        """The course's checks on a question the tutor wrote, flagged in the
+        metrics when it fails them. An error block passes as it is."""
+        if block.get("type") == "error":
+            return []
+        problems = items_module.question_problems(block, self.tutor.facts.get(unit, []))
+        if problems:
+            self.calls[-1].update(error="failed checks", problems=problems)
+        return problems
 
     def missing_content(self, unit):
         """Content is missing only when the unit has no Guided lesson, so no
@@ -766,6 +811,10 @@ class Course:
             # Try again after a question that failed to arrive, or Back to the
             # course after an exam taken with a question on screen: ask again.
             return self.quiz()
+
+        if stage == "review_quiz":
+            # The same for a review question: ask again on the unit under review.
+            return self.quiz(unit=self.session.reviewing, review=True)
 
         if stage == "feedback" and self.session.next_action:
             action, gear = self.session.next_action
@@ -1027,7 +1076,78 @@ class Course:
         return {"saved": True, "version": version, "images": saved_images, "warnings": warnings,
                 "file": self.author_file(unit, gear)}
 
+    def author_questions(self, unit):
+        """What the workspace's Questions tab shows for a unit: the guidance for
+        the tutor, the instructor's questions, and the sources a question can cite."""
+        found = items_module.load_questions(self.questions_path(unit))
+        guided = self.tutor.content(unit, 2)
+        sources = list(guided["sources"]) if guided else []
+        for fact in self.tutor.facts.get(unit, []):
+            source = {"source": fact.get("source", ""), "url": fact.get("link", "")}
+            if source not in sources:
+                sources.append(source)
+        return {"unit": unit, "title": self.tutor.objectives.get(unit, ""), "guidance": found["guidance"],
+                "items": found["items"], "sources": sources}
+
+    def author_questions_save(self, unit, guidance, questions):
+        """Save a unit's guidance and questions from the workspace. Every question
+        is checked first, and nothing is written when one fails. A question with
+        no known id is new and gets the next number; numbers only grow."""
+        found = items_module.load_questions(self.questions_path(unit))
+        known = {item["item"] for item in found["items"]}
+        numbers = [int(i.rsplit("-i", 1)[1]) for i in known if re.fullmatch(re.escape(unit) + r"-i\d+", i)]
+        last = max([found["last"]] + numbers)
+        problems = []
+        if any(line.startswith("## ") for line in guidance.splitlines()):
+            problems.append("Guidance: a line cannot start with ## because it would end the guidance.")
+        saved = []
+        for number, question in enumerate(questions, 1):
+            fields = {key: str(question.get(key) or "") for key in items_module.QUESTION_COLUMNS[2:]}
+            item = {key: " ".join(value.split()) for key, value in fields.items()}
+            item["answer"] = item["answer"].upper()
+            question_id = str(question.get("item") or "")
+            if question_id not in known or question_id in [s["item"] for s in saved]:
+                last += 1
+                question_id = "%s-i%d" % (unit, last)
+            item = dict(item, item=question_id, unit=unit)
+            found_problems = items_module.question_problems(items_module.item_question(item))
+            if any("|" in value for value in fields.values()):
+                found_problems.append("the | character cannot be used")
+            if not item["source"]:
+                found_problems.append("there is no source")
+            if not re.match(r"https?://", item["url"]):
+                found_problems.append("the link is not an http link")
+            problems += ["Question %d: %s" % (number, problem) for problem in found_problems]
+            saved.append(item)
+        if problems:
+            return {"error": "Nothing was saved. Fix these first.", "problems": problems}
+        os.makedirs(self.paths["questions"], exist_ok=True)
+        replace_file(self.questions_path(unit), items_module.questions_text(unit, guidance, saved, last))
+        return dict(self.author_questions(unit), saved=True)
+
     # ---- persistence ----------------------------------------------------
+    def asked(self, unit):
+        """The questions shown on a unit, oldest first, from the question log.
+        Read fresh each time, so a prefetch and the call it stands in for see
+        the same list, and the list outlasts the session and the server."""
+        path = self.paths["questions_log"]
+        if not os.path.isfile(path):
+            return []
+        with open(path, "r", encoding="utf-8") as handle:
+            records = [json.loads(line) for line in handle if line.strip()]
+        return [record for record in records if record.get("unit") == unit]
+
+    def log_question(self, block, origin, review):
+        """Add a question shown to the student to the log, with its key. The log
+        is kept with the student's progress, which the chat tutor cannot read."""
+        record = {"timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"), "origin": origin, "review": review}
+        for key in ("unit", "gear", "question_id", "stem", "options", "answer", "rationale", "citations", "fact"):
+            record[key] = block.get(key)
+        path = self.paths["questions_log"]
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record) + "\n")
+
     def log_response(self, payload):
         path = self.paths["responses"]
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1285,6 +1405,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(self.course.state())
         if self.path == "/api/chat":
             return self.send_json({"messages": self.course.chat, "meta": self.course.chat_meta})
+        if self.path.startswith("/api/author/questions?") and self.instructor():
+            unit = (urllib.parse.parse_qs(self.path.split("?", 1)[1]).get("unit") or [""])[0]
+            if unit not in self.course.tutor.objectives:
+                return self.send_json({"error": "Unknown unit."}, status=400)
+            return self.send_json(self.course.author_questions(unit))
         if self.path.startswith("/api/author?") and self.instructor():
             query = urllib.parse.parse_qs(self.path.split("?", 1)[1])
             target = self.course.author_target((query.get("unit") or [""])[0], (query.get("gear") or [""])[0])
@@ -1310,7 +1435,7 @@ class Handler(BaseHTTPRequestHandler):
         self.started = time.perf_counter()
         if self.path == "/api/metrics":
             return self.receive_metrics()
-        authoring = self.path in ("/api/author/ask", "/api/author/save")
+        authoring = self.path in ("/api/author/ask", "/api/author/save", "/api/author/questions")
         if not (self.path in ("/api/respond", "/api/ask") or (authoring and self.instructor())):
             return self.send_error(404, "Not found")
         length = int(self.headers.get("content-length") or 0)
@@ -1320,6 +1445,14 @@ class Handler(BaseHTTPRequestHandler):
             payload = None
         if not isinstance(payload, dict):
             return self.send_json({"type": "error", "message": "Malformed request."}, status=400)
+
+        if self.path == "/api/author/questions":
+            unit = str(payload.get("unit") or "")
+            if unit not in self.course.tutor.objectives or not isinstance(payload.get("items"), list):
+                return self.send_json({"error": "Unknown unit, or no list of questions."}, status=400)
+            guidance = payload.get("guidance") if isinstance(payload.get("guidance"), str) else ""
+            return self.send_json(self.course.author_questions_save(
+                unit, guidance.strip(), [q for q in payload["items"] if isinstance(q, dict)]))
 
         if authoring:
             target = self.course.author_target(payload.get("unit"), payload.get("gear"))

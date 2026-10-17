@@ -76,7 +76,11 @@ through `/api/state`.
 
 Every model call carries the orchestrator rules, one stage prompt, and the vetted
 material for the unit. The reply is one JSON block that the fixed shell renders.
-The model writes the lesson, the question, and the feedback. The server keeps the
+The model writes the lesson, the question, and the feedback. The server checks
+each question before it shows it: three distinct options, one key, and a
+rationale. Where the question names a vetted fact, the keyed option must state
+that fact. A question that fails is written once more. An instructor's own
+questions on a unit come first and need no model call. The server keeps the
 answer key and scores the student's choice by comparison. It records the attempt
 and decides the next step in code. The feedback call then gives the model the
 result and what happens next. The model explains a decision it did not make.
@@ -211,9 +215,10 @@ the adaptive tutor (teach, quiz, downshift on a miss, park after repeated misses
 the deepest gear, spaced review at task boundaries), the practice exam and the
 readiness gate, and the build tools.
 
-Authored but not vetted: teaching content and reference facts for Task A (8 units)
-and for the gear-3 exemplars (UA.I.B.K16 and UA.I.E.K3 with K3a to K3d), and the
-20-item practice exam. See `curriculum/regulations/STATUS.md`.
+Authored but not vetted: teaching content and reference facts for Task A (8 units),
+Task B (36 units, written October 17, 2026 against the knowledge base), and the
+gear-3 exemplars (UA.I.B.K16 and UA.I.E.K3 with K3a to K3d), and the 20-item
+practice exam. See `curriculum/regulations/STATUS.md`.
 
 Built on October 9, 2026: the knowledge base, both layers, from 39 sources (the
 current eCFR text of the CFR parts, the statute, the ACS, AC 107-2A, the study
@@ -226,8 +231,14 @@ with the tutor's first Foundational lesson saved as a draft file, and the
 instructor workspace (`./start.sh --instructor`). The plan and its as-built record
 are in `docs/plans/instructor-interface.md`.
 
-Not yet done, all local: content for Tasks B to F, vetting of everything against
-the source text, and a run with a real model. Until a unit has content, the tutor
+Built on October 17, 2026: the server checks each question the tutor writes, and
+logs every question asked, so the tutor does not repeat one across sessions. The
+workspace's Questions tab takes an instructor's guidance and own questions per
+unit. The plan and its as-built record are in `docs/plans/check-questions.md`.
+
+Not yet done, all local: content for Tasks C to F (28 units; the plan is
+`docs/plans/content-tasks-b-to-f.md`), vetting of everything against the source
+text, and a run with a real model. Until a unit has content, the tutor
 declines to teach it, by design.
 
 ## Improving the tutor
@@ -238,12 +249,13 @@ flight instructors. You do not need to program to improve the course.
 ### What the tutor teaches from
 
 The tutor knows only what is in the course files. It never teaches from memory.
-Four kinds of file decide what it says:
+Five kinds of file decide what it says:
 
 | File | What it holds | Where |
 |---|---|---|
 | Lesson files | One Guided lesson per unit, and optional Fast-track and Foundational lessons | `curriculum/regulations/` |
 | Reference facts | The exact facts that the tutor's questions are keyed to, each with its source | `reference/regulations-facts.md` |
+| Questions files | Per unit: your guidance for the tutor who writes the questions, and your own questions with their keys | `questions/regulations/` (edit them in the Questions tab) |
 | Knowledge base | The regulations and FAA guidance in chunks, for the "Ask the tutor" panel | `knowledge-base/regulations/` (built by a script; do not edit by hand) |
 | Practice exam | 20 fixed questions with their keys | `mock/regulations-mock.md` |
 
@@ -259,6 +271,8 @@ only together with the course maintainer.
   each miss by unit and speed.
 - **The chat questions,** in `progress/responses.jsonl` (the lines with
   `"type": "question"`). A question that students ask often shows a gap in the lesson.
+- **The check questions asked,** in `progress/questions.jsonl`, each with its key
+  and rationale. Look here for a weak question or a wrong key.
 - **Tutor drafts.** A Foundational lesson that the tutor wrote waits for your
   review. The course tree calls it "a draft the tutor wrote", and `STATUS.md`
   shows `tutor draft v1` in its Gear 3 column.
@@ -272,6 +286,7 @@ only together with the course maintainer.
 | A lesson does not get through | The lesson file for that speed | Rewrite the explanation or the worked example, or add a diagram. |
 | Students keep missing a unit | Its Foundational file | Review the tutor draft, or write the file. |
 | A quiz question is weak or wrong | The lesson file and the reference facts | The tutor writes a new question each time, from the lesson and the facts. Make the fact exact, and name the common misreading in the lesson. |
+| The questions miss a point that matters | The unit's questions file | In the Questions tab, write guidance such as "make sure the student understands X", or write the question yourself. |
 | A practice-exam item is wrong | `mock/regulations-mock.md` | Correct the row. Keep one keyed answer, distinct wrong options, a rationale, and a link. |
 | A chat answer is wrong | Tell the course maintainer | Chat answers come from the knowledge base, which the maintainer corrects or rebuilds. |
 
@@ -305,6 +320,22 @@ only together with the course maintainer.
    `curriculum/regulations/images/`.
 7. Click **Try it as a student** to see the tutor teach the unit at that speed
    from your file.
+
+The **Questions** tab, next to the speeds, edits the unit's check questions:
+
+- **Guidance** goes to the tutor each time it writes a question on the unit, for
+  example "make sure the student understands that LAANC covers controlled
+  airspace only". The tutor makes its questions cover each point you name.
+- **Add a question** writes your own question: the stem, three options with the
+  answer marked, why the answer is right, and a source with its link. The tutor
+  uses the "why" in its feedback. The course asks your questions first, in
+  order, before the tutor writes its own. Each student sees each one once.
+- **Save** checks every question and saves nothing while one has a problem. The
+  problems show above the questions. A new question gets its id on save, and a
+  deleted question's id is never used again. Do not use the `|` character.
+
+Your own progress counts the questions you see as asked, so the Questions tab
+has no **Try it as a student** button.
 
 For a speed with no file, the workspace offers **Start from the Guided lesson**
 and **Ask the tutor for a first version**. A unit with no Guided lesson cannot be

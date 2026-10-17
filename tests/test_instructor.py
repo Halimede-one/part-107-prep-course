@@ -75,8 +75,11 @@ class TestInstructorMode(unittest.TestCase):
                 self.assertEqual(request(base + "/api/author?unit=%s&gear=2" % UNIT)[0], 404)
                 self.assertEqual(request(base + "/api/author/save", {"unit": UNIT, "gear": 2, "text": "x"})[0], 404)
                 self.assertEqual(request(base + "/api/author/ask", {"unit": UNIT, "gear": 2, "request": "x"})[0], 404)
+                self.assertEqual(request(base + "/api/author/questions?unit=%s" % UNIT)[0], 404)
+                self.assertEqual(request(base + "/api/author/questions", {"unit": UNIT, "items": []})[0], 404)
                 self.assertFalse(json.loads(request(base + "/api/state")[1])["instructor"])
             self.assertEqual(files_in(course.paths["curriculum"]), before)
+            self.assertFalse(os.path.exists(course.paths["questions"]))
 
     def test_with_the_flag_the_workspace_reads_a_lesson_file(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -101,6 +104,37 @@ class TestInstructorMode(unittest.TestCase):
                                              {"unit": unit, "gear": gear, "text": "x"})[0], 400, (unit, gear))
                 self.assertEqual(request(base + "/api/author?unit=..%2F..%2Fconfig&gear=2")[0], 400)
             self.assertEqual(files_in(course.paths["curriculum"]), before)
+
+    def test_only_real_units_are_accepted_for_questions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            with serving(course) as base:
+                self.assertEqual(request(base + "/api/author/questions?unit=..%2F..%2Fconfig")[0], 400)
+                for payload in ({"unit": "../../config", "items": []}, {"unit": ["x"], "items": []},
+                                {"unit": UNIT, "items": "x"}, {"unit": UNIT}):
+                    self.assertEqual(request(base + "/api/author/questions", payload)[0], 400, payload)
+            self.assertFalse(os.path.exists(course.paths["questions"]))
+
+    def test_read_and_save_the_questions_over_http(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            question = {"stem": "How far must you see?", "a": "1 statute mile", "b": "3 statute miles",
+                        "c": "5 statute miles", "answer": "b", "rationale": "107.51 sets 3 statute miles.",
+                        "source": "Fixture 107.51", "url": "https://example.invalid/fixture/107-51"}
+            with serving(course) as base:
+                empty = json.loads(request(base + "/api/author/questions?unit=%s" % UNIT)[1])
+                code, body = request(base + "/api/author/questions",
+                                     {"unit": UNIT, "guidance": "  Make sure they know it is flight visibility.\n",
+                                      "items": [question]})
+                again = json.loads(request(base + "/api/author/questions?unit=%s" % UNIT)[1])
+            self.assertEqual((empty["guidance"], empty["items"]), ("", []))
+            # The lesson and the fact cite the same source, so it is offered once.
+            self.assertEqual(empty["sources"], [{"source": "Fixture 107.51", "url": "https://example.invalid/fixture/107-51"}])
+            saved = json.loads(body)
+            self.assertEqual((code, saved["saved"]), (200, True))
+            self.assertEqual(again["guidance"], "Make sure they know it is flight visibility.")
+            self.assertEqual(again["items"], [dict(question, item=UNIT + "-i1", unit=UNIT, answer="B")])
+            self.assertEqual(saved["items"], again["items"])
 
 
 class TestSaving(unittest.TestCase):

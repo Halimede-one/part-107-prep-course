@@ -282,7 +282,9 @@ class Orchestrator:
             "GEAR: %d (%s)" % (gear, GEAR_NAMES.get(gear, "Guided")),
         ]
 
-    def _material(self, unit, content):
+    def _material(self, unit, content, labelled=False):
+        """The unit's vetted material. `labelled` numbers the facts F1, F2, ...
+        for the quiz, where a question names the fact its key rests on."""
         form, name = content.get("form", "written"), GEAR_NAMES.get(content.get("gear", 2), "Guided")
         sources = list(content["sources"])
         if form == "derived" and content.get("gear", 2) != 2:
@@ -303,8 +305,9 @@ class Orchestrator:
         if unit_facts:
             lines += ["", "VETTED FACTS (ground truth; a keyed answer must match these):"]
             lines += [
-                "- %s -> %s [%s | %s]" % (f.get("fact"), f.get("answer"), f.get("source"), f.get("link", ""))
-                for f in unit_facts
+                "- %s%s -> %s [%s | %s]" % ("F%d: " % number if labelled else "", f.get("fact"), f.get("answer"),
+                                            f.get("source"), f.get("link", ""))
+                for number, f in enumerate(unit_facts, 1)
             ]
         return lines
 
@@ -331,7 +334,7 @@ class Orchestrator:
             lines.append("THEIR LIKELY MISCONCEPTION: %s" % misconception)
         return "\n".join(lines + self._material(unit, content))
 
-    def quiz_context(self, unit, gear, content, already_asked=(), review=False):
+    def quiz_context(self, unit, gear, content, already_asked=(), review=False, guidance=""):
         lines = self._header(unit, gear)
         if review:
             lines.append(
@@ -339,8 +342,13 @@ class Orchestrator:
                 "question that checks the knowledge still holds. No lesson precedes it."
             )
         if already_asked:
-            lines.append("ALREADY ASKED (ask something different): %s" % ", ".join(already_asked))
-        return "\n".join(lines + self._material(unit, content))
+            lines.append("ALREADY ASKED (ask something different):")
+            lines += ["- %s" % " ".join(stem.split()) for stem in already_asked]
+        if guidance:
+            lines.append("INSTRUCTOR GUIDANCE (what this unit's questions must make sure the student "
+                         "understands; it never overrides the vetted facts):")
+            lines.append(guidance)
+        return "\n".join(lines + self._material(unit, content, labelled=True))
 
     def feedback_context(self, unit, gear, content, question, selected, correct, outcome=None):
         options = "; ".join("%s. %s" % (o["id"], o["text"]) for o in question.get("options", []))

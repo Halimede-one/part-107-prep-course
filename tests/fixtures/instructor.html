@@ -10,7 +10,8 @@
 <!-- Loaded by tests/test_instructor_page.py. Runs ui/instructor.js over the
      course page's own markup, with the server's replies and the functions
      app.js shares stubbed here, and writes PASS, or one line per failed check,
-     into #result. -->
+     into #result. Loaded with ?questions, it checks the Questions tab instead
+     of a lesson file. -->
 <pre id="result">NOT RUN</pre>
 
 <script>
@@ -31,7 +32,11 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
   var GUIDED = "---\nsource: 14 CFR 107.51 | https://www.ecfr.gov/current/title-14/section-107.51\n---\nThe Guided lesson.\n";
   var REVISION = "---\nsource: 14 CFR 107.51 | https://www.ecfr.gov/current/title-14/section-107.51\n---\nStep 1, the limit.\n\n" +
                  "```svg Altitude above a tower\n<svg viewBox='0 0 10 10' width='10' height='10'><rect width='10' height='10'/></svg>\n```\n";
-  var sent = [], asked = [], tried = [], refreshed = 0, failures = [];
+  var SOURCE = { source: "14 CFR 107.51", url: "https://www.ecfr.gov/current/title-14/section-107.51" };
+  var ITEM = { item: UNIT + "-i1", unit: UNIT, stem: "What is the highest you may fly?", a: "200 feet", b: "400 feet",
+               c: "500 feet", answer: "B", rationale: "107.51 sets 400 feet.", source: SOURCE.source, url: SOURCE.url };
+  var GUIDANCE = "Make sure the student understands the structure exception.";
+  var sent = [], asked = [], tried = [], refreshed = 0, failures = [], questionSaves = 0, confirmAnswer = true;
   function check(name, ok) { if (!ok) { failures.push(name); } }
   function $(id) { return document.getElementById(id); }
 
@@ -41,11 +46,18 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
              files: { "1": null, "2": { version: null, draft: false }, "3": text ? { version: 1, draft: false } : null },
              status: { "gear 3": text ? "v1 edited" : "" } };
   }
-  window.confirm = function () { return true; };
+  window.confirm = function () { return confirmAnswer; };
   window.fetch = function (url, options) {
     var body = options && options.body ? JSON.parse(options.body) : null, reply;
     sent.push({ url: url, body: body });
-    if (url.indexOf("/api/author?") === 0) {
+    if (url.indexOf("/api/author/questions?") === 0) {
+      reply = { unit: UNIT, title: "b. Altitude limitations.", guidance: GUIDANCE, items: [ITEM], sources: [SOURCE] };
+    } else if (url === "/api/author/questions") {
+      // The first save is refused, as the server refuses a question with no answer.
+      reply = ++questionSaves === 1 ? { error: "Nothing was saved. Fix these first.", problems: ["Question 2: the answer must be A, B or C"] }
+        : { saved: true, unit: UNIT, title: "b. Altitude limitations.", guidance: body.guidance.trim(), sources: [SOURCE],
+            items: body.items.map(function (q, i) { return Object.assign({}, q, { unit: UNIT, item: q.item || UNIT + "-i" + (i + 1) }); }) };
+    } else if (url.indexOf("/api/author?") === 0) {
       var gear = Number(/gear=(\d)/.exec(url)[1]);
       reply = info(gear, gear === 2 ? GUIDED : "");
     } else if (url === "/api/author/save") {
@@ -189,12 +201,99 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       check("and stops listening", listening.calls.join() === "start,abort");
     }
   ];
+
+  // The Questions tab, with ?questions.
+  function fieldOf(node, name) { return node.querySelector("[data-field=" + name + "]"); }
+  function type(input, value) { input.value = value; input.dispatchEvent(new Event("input", { bubbles: true })); }
+  function shown(node) { return getComputedStyle(node).display !== "none"; }
+  var listening = null;
+  var questionSteps = [
+    function () {
+      $("instructor-btn").hidden = false;
+      $("instructor-btn").click();
+    },
+    function () {
+      check("the Questions tab is not a speed", !$("author-questions-tab").hasAttribute("data-gear"));
+      $("author-mic").click();
+      listening = latest();
+      $("author-questions-tab").click();
+    },
+    function () {
+      var cards = $("questions-list").children;
+      check("the Questions tab hides the lesson columns", !shown(document.querySelector(".author-body")));
+      check("and shows the questions", shown($("author-questions")));
+      check("and hides Try it", !shown($("author-try")));
+      check("opening it stops listening", listening.calls.join() === "start,abort");
+      check("the tab is selected, and no speed", $("author-questions-tab").getAttribute("aria-selected") === "true" &&
+            !document.querySelector(".author-gears button[data-gear][aria-selected=true]"));
+      check("it asks for the unit on screen", sent[sent.length - 1].url === "/api/author/questions?unit=" + encodeURIComponent(UNIT));
+      check("the guidance loads", $("questions-guidance").value === GUIDANCE);
+      check("one card per question, with its id", cards.length === 1 &&
+            cards[0].querySelector("legend").textContent === "Question 1 · " + UNIT + "-i1");
+      check("and its fields", fieldOf(cards[0], "stem").value === ITEM.stem && fieldOf(cards[0], "b").value === "400 feet" &&
+            fieldOf(cards[0], "source").value === SOURCE.source && fieldOf(cards[0], "url").value === SOURCE.url);
+      check("and its answer marked", cards[0].querySelector("input[type=radio]:checked").value === "B");
+      check("no unsaved change yet", $("questions-dirty").hidden);
+      check("the file state counts the questions", $("author-file").textContent.indexOf("1 question, asked before the tutor writes its own") === 0);
+      $("questions-add").click();
+      $("questions-add").click();
+      check("Add puts a new card at the end", cards.length === 3 && cards[2].querySelector("legend").textContent === "Question 3 · new");
+      check("as an unsaved change", !$("questions-dirty").hidden);
+      cards[1].querySelector(".question-delete").click();
+      check("Delete removes a card and numbers the rest again", cards.length === 2 &&
+            cards[1].querySelector("legend").textContent === "Question 2 · new");
+      var fresh = cards[1], source = fieldOf(fresh, "source");
+      type(fieldOf(fresh, "stem"), "How far from a structure may you fly above 400 feet?");
+      type(fieldOf(fresh, "a"), "Within a 400-foot radius");
+      type(fieldOf(fresh, "b"), "Within a 1,000-foot radius");
+      type(fieldOf(fresh, "c"), "At any distance");
+      type(fieldOf(fresh, "rationale"), "107.51 allows it within a 400-foot radius of the structure.");
+      check("the source list offers the unit's sources", source.options.length === 2 && source.options[1].value === SOURCE.source);
+      source.value = SOURCE.source;
+      source.dispatchEvent(new Event("change", { bubbles: true }));
+      check("choosing a source fills its link", fieldOf(fresh, "url").value === SOURCE.url);
+      confirmAnswer = false;
+      document.querySelector(".author-gears button[data-gear='2']").click();
+      check("a refused discard keeps the questions", shown($("author-questions")) && cards.length === 2);
+      confirmAnswer = true;
+      $("author-save").click();  // the new card has no answer marked
+    },
+    function () {
+      check("a refusal lists its problems", !$("questions-problems").hidden &&
+            $("questions-problems").textContent === "Question 2: the answer must be A, B or C");
+      check("and says nothing was saved", $("author-message").textContent === "Nothing was saved. Fix these first.");
+      check("and keeps the edits", $("questions-list").children.length === 2 && !$("questions-dirty").hidden);
+      $("questions-list").children[1].querySelector("input[type=radio][value=A]").click();
+      $("author").dispatchEvent(new KeyboardEvent("keydown", { key: "s", ctrlKey: true, bubbles: true }));
+    },
+    function () {
+      var post = sent.filter(function (s) { return s.url === "/api/author/questions"; })[1];
+      var cards = $("questions-list").children;
+      check("Ctrl+S saves the questions", !!post);
+      check("with the unit and the guidance", post && post.body.unit === UNIT && post.body.guidance === GUIDANCE);
+      check("the known question keeps its id and answer", post && post.body.items[0].item === UNIT + "-i1" && post.body.items[0].answer === "B");
+      check("the new one has no id, and has its answer and link", post && post.body.items[1].item === "" &&
+            post.body.items[1].answer === "A" && post.body.items[1].url === SOURCE.url);
+      check("no lesson save is sent", !sent.some(function (s) { return s.url === "/api/author/save"; }));
+      check("after the save the new card shows its id", cards[1].querySelector("legend").textContent === "Question 2 · " + UNIT + "-i2");
+      check("with no unsaved change and no problems", $("questions-dirty").hidden && $("questions-problems").hidden);
+      check("the message says so", $("author-message").textContent === "Saved the guidance and 2 questions.");
+      document.querySelector(".author-gears button[data-gear='3']").click();
+    },
+    function () {
+      check("the speed it came from brings the lesson back", shown(document.querySelector(".author-body")) && !shown($("author-questions")));
+      check("with Try it", shown($("author-try")));
+      check("and its tab selected", document.querySelector(".author-gears [aria-selected=true]").getAttribute("data-gear") === "3");
+    }
+  ];
+
+  var flow = location.search === "?questions" ? questionSteps : steps;
   function run(i) {
-    if (i === steps.length) {
+    if (i === flow.length) {
       $("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
       return;
     }
-    try { steps[i](); } catch (e) { failures.push("ERROR in step " + i + ": " + e.message); }
+    try { flow[i](); } catch (e) { failures.push("ERROR in step " + i + ": " + e.message); }
     setTimeout(function () { run(i + 1); }, 200);
   }
   window.addEventListener("load", function () { run(0); });

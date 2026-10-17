@@ -63,6 +63,8 @@ def mock_config(tmp, provider="mock"):
             "ledger": os.path.join(tmp, "ledger.md"),
             "responses": os.path.join(tmp, "responses.jsonl"),
             "metrics": os.path.join(tmp, "metrics.jsonl"),
+            "questions_log": os.path.join(tmp, "questions.jsonl"),
+            "questions": os.path.join(tmp, "questions"),
         },
         "area": "Regulations",
         "port": 8107,
@@ -774,7 +776,8 @@ class TestCourse(unittest.TestCase):
                 course.paths = {k: os.path.join(ROOT, v) for k, v in json.load(handle)["paths"].items()}
             folders = [os.path.realpath(f) + os.sep for f in course.research_dirs()]
             self.assertEqual(folders[0], os.path.realpath(course.paths["knowledge_base"]) + os.sep)
-            closed = [course.paths[key] for key in ("items", "ledger", "responses", "metrics", "prompts")]
+            closed = [course.paths[key] for key in ("items", "ledger", "responses", "metrics", "prompts",
+                                                     "questions", "questions_log")]
             for path in closed + [os.path.join(ROOT, "config.json")]:
                 inside = [f for f in folders if os.path.realpath(path).startswith(f)]
                 self.assertEqual(inside, [], path)

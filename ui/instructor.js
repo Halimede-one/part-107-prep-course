@@ -2,13 +2,15 @@
   "use strict";
 
   // The instructor workspace: one lesson file at a time, edited by hand or with
-  // the authoring assistant, and previewed as a student would see it. It exists
+  // the authoring assistant, and previewed as a student would see it. Its
+  // Questions tab edits a unit's guidance and questions instead. It exists
   // only when the course runs with --instructor. app.js hands in what the two
   // share: the streamed request, the status indicator, the DOM helpers, the
   // course state, and the way to teach a unit.
   var deps = null;
   var GEARS = { 1: "Fast-track", 2: "Guided", 3: "Foundational" };
   var my = { unit: null, gear: null, file: null, saved: "", proposal: null, history: [], busy: false };
+  var qs = { on: false, saved: "", sources: [], cards: 0 };  // the Questions tab
   var timer = null;
 
   function $(id) { return document.getElementById(id); }
@@ -75,7 +77,7 @@
   }
 
   function keepOrDiscard() {
-    return !changed() || window.confirm("Discard the unsaved changes to this file?");
+    return !(qs.on ? questionsChanged() : changed()) || window.confirm("Discard the unsaved changes to this file?");
   }
 
   // ---- loading a file -----------------------------------------------------
@@ -86,9 +88,7 @@
         if (info.error) { say(info.error, true); return; }
         my.unit = unit; my.gear = gear; my.file = info; my.saved = info.text; my.history = [];
         $("author-unit").value = unit;
-        Array.prototype.forEach.call(document.querySelectorAll(".author-gears button"), function (b) {
-          b.setAttribute("aria-selected", String(Number(b.getAttribute("data-gear")) === gear));
-        });
+        showQuestions(false);
         $("author-text").value = info.text;
         $("author-file").textContent = describe(info);
         $("author-empty").hidden = !!info.text;
@@ -212,6 +212,141 @@
     }).catch(function () { say("Could not reach the course server. Nothing was saved.", true); });
   }
 
+  // ---- the questions ------------------------------------------------------
+  // The Questions tab edits one unit's questions file: guidance for the tutor
+  // who writes the unit's questions, and the instructor's own questions, which
+  // the course asks first. The server checks them and gives new ones their ids.
+  var FIELDS = ["stem", "a", "b", "c", "rationale", "source", "url"];
+
+  // The lesson columns or the Questions tab, with its tab marked.
+  function showQuestions(on) {
+    qs.on = on;
+    document.querySelector(".author-body").hidden = on;
+    $("author-questions").hidden = !on;
+    $("author-try").hidden = on;  // the instructor's own progress would count the questions as asked
+    $("author-questions-tab").setAttribute("aria-selected", String(on));
+    Array.prototype.forEach.call(document.querySelectorAll(".author-gears button[data-gear]"), function (b) {
+      b.setAttribute("aria-selected", String(!on && Number(b.getAttribute("data-gear")) === my.gear));
+    });
+  }
+
+  // One question as a card of fields. A new question has no id until it is saved.
+  function card(item) {
+    var el = deps.el, n = ++qs.cards, node;
+    function control(tag, name, attrs) {
+      var c = el(tag, attrs);
+      c.id = "q" + n + "-" + name;
+      c.setAttribute("data-field", name);
+      return c;
+    }
+    function labelled(c, label) {
+      return el("div", { class: "question-field" }, [el("label", { for: c.id }, label), c]);
+    }
+    var stem = control("textarea", "stem", { rows: "2" });
+    var options = ["a", "b", "c"].map(function (key) {
+      var letter = key.toUpperCase();
+      var radio = el("input", { type: "radio", name: "q" + n + "-key", value: letter, "aria-label": letter + " is the answer" });
+      var text = control("input", key, { type: "text" });
+      radio.checked = item.answer === letter;
+      text.value = item[key] || "";
+      return el("div", { class: "question-option" }, [radio, el("label", { for: text.id }, letter), text]);
+    });
+    var rationale = control("textarea", "rationale", { rows: "2" });
+    var source = control("select", "source", {}), url = control("input", "url", { type: "text" });
+    var listed = qs.sources.slice();
+    if (item.source && !listed.some(function (s) { return s.source === item.source; })) {
+      listed.push({ source: item.source, url: item.url });
+    }
+    source.appendChild(el("option", { value: "" }, "Choose a source"));
+    listed.forEach(function (s) { source.appendChild(el("option", { value: s.source }, s.source)); });
+    stem.value = item.stem || "";
+    rationale.value = item.rationale || "";
+    source.value = item.source || "";
+    url.value = item.url || "";
+    source.addEventListener("change", function () {
+      var chosen = listed.filter(function (s) { return s.source === source.value; })[0];
+      if (chosen) { url.value = chosen.url; }
+    });
+    var remove = el("button", { type: "button", class: "btn secondary question-delete" }, "Delete");
+    node = el("fieldset", { class: "question-card" }, [
+      el("legend", null, ""),
+      labelled(stem, "Question"),
+      el("div", { class: "question-field" }, [el("span", { class: "question-hint" }, "Options, with the answer marked")].concat(options)),
+      labelled(rationale, "Why the answer is right, for the tutor's feedback"),
+      el("div", { class: "question-source" }, [labelled(source, "Source"), labelled(url, "Link")]),
+      remove
+    ]);
+    node.setAttribute("data-item", item.item || "");
+    remove.addEventListener("click", function () { node.remove(); renumber(); markQuestions(); });
+    return node;
+  }
+
+  function renumber() {
+    Array.prototype.forEach.call($("questions-list").children, function (node, i) {
+      var id = node.getAttribute("data-item");
+      node.querySelector("legend").textContent = "Question " + (i + 1) + " · " + (id || "new");
+    });
+  }
+
+  function collect() {
+    return Array.prototype.map.call($("questions-list").children, function (node) {
+      var item = { item: node.getAttribute("data-item") }, key = node.querySelector("input[type=radio]:checked");
+      FIELDS.forEach(function (name) { item[name] = node.querySelector("[data-field=" + name + "]").value; });
+      item.answer = key ? key.value : "";
+      return item;
+    });
+  }
+
+  function snapshot() { return JSON.stringify([$("questions-guidance").value, collect()]); }
+  function questionsChanged() { return snapshot() !== qs.saved; }
+  function markQuestions() { $("questions-dirty").hidden = !questionsChanged(); }
+
+  function fillQuestions(info) {
+    qs.sources = info.sources || [];
+    $("questions-guidance").value = info.guidance;
+    $("questions-list").innerHTML = "";
+    info.items.forEach(function (item) { $("questions-list").appendChild(card(item)); });
+    renumber();
+    qs.saved = snapshot();
+    markQuestions();
+    var n = info.items.length;
+    $("author-file").textContent = (n ? n + (n === 1 ? " question" : " questions") + ", asked before the tutor writes its own"
+      : "No questions of your own: the tutor writes them all") + (info.guidance ? ", with guidance." : ", no guidance.");
+  }
+
+  function loadQuestions(unit) {
+    Dictation.cancel();  // the request box goes out of reach
+    return fetch("/api/author/questions?unit=" + encodeURIComponent(unit))
+      .then(function (r) { return r.json(); })
+      .then(function (info) {
+        if (info.error) { say(info.error, true); return; }
+        my.unit = unit;
+        $("author-unit").value = unit;
+        $("questions-problems").hidden = true;
+        fillQuestions(info);
+        showQuestions(true);
+        say("");
+      });
+  }
+
+  // The server checks every question and saves nothing if one fails; the
+  // problems show above the cards, and the edits stay.
+  function saveQuestions() {
+    fetch("/api/author/questions", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ unit: my.unit, guidance: $("questions-guidance").value, items: collect() })
+    }).then(function (r) { return r.json(); }).then(function (result) {
+      var list = $("questions-problems"), problems = result.problems || [];
+      list.innerHTML = "";
+      problems.forEach(function (p) { list.appendChild(deps.el("li", null, p)); });
+      list.hidden = !problems.length;
+      if (!result.saved) { say(result.error, true); return; }
+      fillQuestions(result);
+      say("Saved the guidance and " + result.items.length + (result.items.length === 1 ? " question." : " questions."));
+    }).catch(function () { say("Could not reach the course server. Nothing was saved.", true); });
+  }
+
   // ---- opening and closing ------------------------------------------------
   function open() {
     Dictation.cancel();  // the workspace covers the chat
@@ -237,18 +372,29 @@
     $("author-close").addEventListener("click", close);
     $("author").addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !$("author-save-dialog").open) { e.preventDefault(); close(); }
-      if (e.key === "s" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+      if (e.key === "s" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (qs.on) { saveQuestions(); } else { save(); } }
     });
     $("author-unit").addEventListener("change", function () {
       var unit = this.value;
-      if (keepOrDiscard()) { load(unit, my.gear); } else { this.value = my.unit; }
+      if (!keepOrDiscard()) { this.value = my.unit; } else if (qs.on) { loadQuestions(unit); } else { load(unit, my.gear); }
     });
-    Array.prototype.forEach.call(document.querySelectorAll(".author-gears button"), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll(".author-gears button[data-gear]"), function (b) {
       b.addEventListener("click", function () {
         var gear = Number(b.getAttribute("data-gear"));
-        if (gear !== my.gear && keepOrDiscard()) { load(my.unit, gear); }
+        if ((gear !== my.gear || qs.on) && keepOrDiscard()) { load(my.unit, gear); }
       });
     });
+    $("author-questions-tab").addEventListener("click", function () {
+      if (!qs.on && keepOrDiscard()) { loadQuestions(my.unit); }
+    });
+    $("questions-add").addEventListener("click", function () {
+      var node = card({});
+      $("questions-list").appendChild(node);
+      renumber();
+      markQuestions();
+      node.querySelector("textarea").focus();
+    });
+    ["input", "change"].forEach(function (kind) { $("author-questions").addEventListener(kind, markQuestions); });
     $("author-text").addEventListener("input", function () {
       markChanged();
       $("author-empty").hidden = true;
@@ -293,14 +439,15 @@
       $("author-log").appendChild(deps.el("div", { class: "msg tutor error" }, message));
       scrollLog();
     });
-    $("author-save").addEventListener("click", function () { save(); });
+    $("author-save").addEventListener("click", function () { if (qs.on) { saveQuestions(); } else { save(); } });
     Array.prototype.forEach.call(document.querySelectorAll("#author-save-dialog button"), function (b) {
       b.addEventListener("click", function () {
         if (b.value === "vetted" || b.value === "edited") { saveAs(b.value); } else { afterSave = null; }
       });
     });
     $("author-revert").addEventListener("click", function () {
-      if (keepOrDiscard()) { load(my.unit, my.gear); }
+      if (!keepOrDiscard()) { return; }
+      if (qs.on) { loadQuestions(my.unit); } else { load(my.unit, my.gear); }
     });
     $("author-try").addEventListener("click", function () {
       function tryIt() {

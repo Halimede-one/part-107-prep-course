@@ -41,6 +41,8 @@ def stub_paths(tmp):
         "ledger": os.path.join(tmp, "ledger.md"),
         "responses": os.path.join(tmp, "responses.jsonl"),
         "metrics": os.path.join(tmp, "metrics.jsonl"),
+        "questions_log": os.path.join(tmp, "questions.jsonl"),
+        "questions": os.path.join(tmp, "questions"),
     }
 
 
@@ -173,10 +175,13 @@ class TestPromptAssembly(unittest.TestCase):
 
     def test_quiz_context_supplies_the_ground_truth_and_avoids_repeats(self):
         content = self.tutor.content("UA.I.B.K21c", 1)
-        context = self.tutor.quiz_context("UA.I.B.K21c", 1, content, ["k21c-a1"])
+        context = self.tutor.quiz_context("UA.I.B.K21c", 1, content, ["How far must\n  you see?"])
         self.assertIn("VETTED FACTS", context)
         self.assertIn("3 statute miles", context)
-        self.assertIn("k21c-a1", context)
+        self.assertIn("ALREADY ASKED (ask something different):\n- How far must you see?", context)
+        # The quiz names the facts, so a question can say which one its key rests on.
+        self.assertIn("- F1: Minimum flight visibility -> 3 statute miles", context)
+        self.assertNotIn("F1:", self.tutor.teach_context("UA.I.B.K21c", 1, content))
 
     def test_remediate_context_reports_the_misconception_and_returning_state(self):
         content = self.tutor.content("UA.I.B.K16", 3)

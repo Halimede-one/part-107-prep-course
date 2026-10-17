@@ -32,11 +32,11 @@ Emit one of these objects. Fields marked required must be present.
 {"type":"lesson","unit":"UA.I.B.K16","gear":2,"title":"Short title","body":"Paragraphs separated by blank lines.","citations":[{"source":"14 CFR 107.41","url":"https://..."}]}
 ```
 
-**question** (required: type, unit, gear, question_id, stem, options, answer, rationale)
+**question** (required: type, unit, gear, stem, options, answer, rationale; optional: fact)
 ```json
-{"type":"question","unit":"UA.I.B.K16","gear":2,"question_id":"k16-a1","stem":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"answer":"B","rationale":"Why B is right and the others are not.","citations":[{"source":"14 CFR 107.41","url":"https://..."}]}
+{"type":"question","unit":"UA.I.B.K16","gear":2,"stem":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"answer":"B","rationale":"Why B is right and the others are not.","fact":"F1","citations":[{"source":"14 CFR 107.41","url":"https://..."}]}
 ```
-`answer` and `rationale` are read by the course server and never shown to the student before they answer. Do not hint at the answer in the stem or make the correct option conspicuously longer or more detailed than the others.
+The course server gives each question its id. `fact` names the vetted fact the key rests on, by its label in the message. `answer`, `rationale` and `fact` are read by the course server and never shown to the student before they answer. Do not hint at the answer in the stem or make the correct option conspicuously longer or more detailed than the others.
 
 **feedback** (required: type, unit, gear, question_id, correct, correct_option, message, citations)
 ```json

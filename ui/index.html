@@ -147,7 +147,8 @@
 
 <!-- The instructor workspace (instructor.js): only when the course runs with
      --instructor. It edits one lesson file at a time, by hand or with the
-     authoring assistant, and shows it as a student would see it. -->
+     authoring assistant, and shows it as a student would see it. Its Questions
+     tab edits a unit's guidance and questions. -->
 <div id="author" class="author" hidden role="dialog" aria-modal="true" aria-labelledby="author-title">
   <div class="author-head">
     <h1 id="author-title" class="author-title">Instructor</h1>
@@ -157,6 +158,7 @@
       <button type="button" role="tab" data-gear="1">Fast-track</button>
       <button type="button" role="tab" data-gear="2">Guided</button>
       <button type="button" role="tab" data-gear="3">Foundational</button>
+      <button type="button" role="tab" id="author-questions-tab">Questions</button>
     </div>
     <span id="author-file" class="author-file"></span>
     <button type="button" id="author-close" class="btn secondary">Close</button>
@@ -192,6 +194,21 @@
                 title="Speak your request. Your browser's speech service turns it into text."><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg></button>
         <button id="author-send" type="submit">Send</button>
       </form>
+    </section>
+  </div>
+  <!-- The Questions tab: one unit's guidance for the tutor who writes its
+       questions, and the instructor's own questions, which the course asks first. -->
+  <div id="author-questions" class="author-questions" hidden>
+    <section class="author-col" aria-label="Questions">
+      <div class="author-col-head">Guidance and questions <span id="questions-dirty" class="author-dirty" hidden>unsaved changes</span></div>
+      <div class="questions-body">
+        <ul id="questions-problems" class="questions-problems" hidden></ul>
+        <label for="questions-guidance">Guidance for the tutor who writes this unit's questions</label>
+        <textarea id="questions-guidance" rows="4" placeholder="For example: make sure the student understands that ..."></textarea>
+        <p class="questions-note">The course asks your questions first, in this order. After that, the tutor writes its own.</p>
+        <div id="questions-list"></div>
+        <button type="button" id="questions-add" class="btn secondary">Add a question</button>
+      </div>
     </section>
   </div>
   <div class="author-foot">
