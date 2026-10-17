@@ -1,0 +1,39 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 250' width='560' height='250'>
+<defs><marker id='k16-arrow' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 z' fill='#8a4a12'/></marker></defs>
+<rect x='0' y='0' width='560' height='250' fill='#ffffff'/>
+<rect x='40' y='30' width='290' height='180' fill='#dce9f9'/>
+<rect x='330' y='30' width='200' height='180' fill='#eef3ec'/>
+<line x1='330' y1='30' x2='330' y2='210' stroke='#1f4e9c' stroke-width='3' stroke-dasharray='10 7'/>
+<line x1='20' y1='210' x2='540' y2='210' stroke='#444444' stroke-width='2'/>
+<text x='20' y='228' font-size='10' fill='#444444'>surface (ground)</text>
+<text x='330' y='228' text-anchor='middle' font-size='10' fill='#1f4e9c'>Class D lateral boundary (dashed blue on the chart)</text>
+<rect x='52' y='196' width='10' height='14' fill='#8a8a8a'/>
+<line x1='57' y1='196' x2='57' y2='184' stroke='#8a8a8a' stroke-width='2'/>
+<text x='30' y='178' font-size='10' fill='#555555'>towered airport</text>
+<text x='50' y='52' font-size='13' fill='#1f4e9c'>Class D surface area</text>
+<text x='50' y='68' font-size='11' fill='#1f4e9c'>prior ATC authorization required</text>
+<text x='345' y='52' font-size='13' fill='#2f6b38'>Class G</text>
+<text x='345' y='68' font-size='11' fill='#2f6b38'>no authorization required</text>
+<line x1='45' y1='130' x2='325' y2='130' stroke='#b5651d' stroke-width='2' stroke-dasharray='8 5'/>
+<text x='48' y='124' font-size='11' fill='#8a4a12'>authorized ceiling: 200 ft (LAANC approval)</text>
+<line x1='150' y1='208' x2='150' y2='133' stroke='#8a4a12' stroke-width='1.5' marker-end='url(#k16-arrow)' marker-start='url(#k16-arrow)'/>
+<text x='156' y='175' font-size='11' fill='#8a4a12'>200 ft</text>
+<line x1='218' y1='90' x2='252' y2='90' stroke='#9aa0a6' stroke-width='3'/>
+<circle cx='218' cy='90' r='5' fill='none' stroke='#9aa0a6' stroke-width='2'/>
+<circle cx='252' cy='90' r='5' fill='none' stroke='#9aa0a6' stroke-width='2'/>
+<line x1='220' y1='78' x2='250' y2='102' stroke='#a32020' stroke-width='2'/>
+<line x1='250' y1='78' x2='220' y2='102' stroke='#a32020' stroke-width='2'/>
+<text x='55' y='94' font-size='11' fill='#a32020'>above 200 ft: not authorized</text>
+<line x1='218' y1='168' x2='252' y2='168' stroke='#20405f' stroke-width='3'/>
+<circle cx='218' cy='168' r='5' fill='none' stroke='#20405f' stroke-width='2'/>
+<circle cx='252' cy='168' r='5' fill='none' stroke='#20405f' stroke-width='2'/>
+<rect x='230' y='164' width='10' height='8' fill='#20405f'/>
+<text x='235' y='190' text-anchor='middle' font-size='11' fill='#20405f'>3 miles from the airport,</text>
+<text x='235' y='203' text-anchor='middle' font-size='11' fill='#20405f'>flying at or below 200 ft</text>
+<line x1='433' y1='168' x2='467' y2='168' stroke='#2f6b38' stroke-width='3'/>
+<circle cx='433' cy='168' r='5' fill='none' stroke='#2f6b38' stroke-width='2'/>
+<circle cx='467' cy='168' r='5' fill='none' stroke='#2f6b38' stroke-width='2'/>
+<rect x='445' y='164' width='10' height='8' fill='#2f6b38'/>
+<text x='450' y='190' text-anchor='middle' font-size='11' fill='#2f6b38'>8 miles out, outside</text>
+<text x='450' y='203' text-anchor='middle' font-size='11' fill='#2f6b38'>every boundary</text>
+</svg>

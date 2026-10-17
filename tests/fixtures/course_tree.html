@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Course tree check</title>
+<link rel="stylesheet" href="../../ui/styles.css">
+</head>
+<body>
+
+<!-- Loaded by tests/test_course_tree.py. Draws the course tree from
+     ui/course-tree.js with one unit current at gear 2, checks the marker on
+     its lane, and writes PASS, or one line per failed check, into #result. -->
+<pre id="result">NOT RUN</pre>
+<div id="tree"></div>
+
+<script src="../../ui/course-tree.js"></script>
+<script>
+window.addEventListener("load", function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+
+  function unit(n) {
+    return { id: "UA.I.A.K" + n, task: "A", title: "Knowledge unit number " + n + ".", mastery: n === 1 ? "mastered" : n === 2 ? "learning" : "unseen",
+             current: n === 2, available_gears: [1, 2, 3], written: true, gears_taken: n <= 2 ? [1, 2] : [], attempts: n <= 2 ? { "1": 1, "2": 1 } : {},
+             current_gear: 2, needs_attention: false, parked: false };
+  }
+  var state = { summary: { mastered: 1, total: 3 }, readiness: { ready: false, passes: 0, passes_needed: 2 }, units: [1, 2, 3].map(unit) };
+  var tree = document.getElementById("tree");
+  window.CourseTree.render(tree, state, { A: "Regulations" }, "sidebar", false);
+
+  // The marker: a solid dot the size of a node, over a halo at the same place
+  // that grows and fades. Reduced motion hides the halo.
+  var dots = tree.querySelectorAll(".now-dot"), halos = tree.querySelectorAll(".now-halo");
+  check("one dot on the current lane", dots.length === 1);
+  check("one halo on the current lane", halos.length === 1);
+  if (dots.length === 1 && halos.length === 1) {
+    var dot = dots[0], halo = halos[0];
+    check("the dot is the size of a node", Number(dot.getAttribute("r")) === window.CourseTree.METRICS.sidebar.nodeR);
+    check("the halo starts at the dot", ["cx", "cy", "r"].every(function (a) { return halo.getAttribute(a) === dot.getAttribute(a); }));
+    check("the dot is on the gear 2 lane", Number(dot.getAttribute("cx")) === window.CourseTree.METRICS.sidebar.trunkX + window.CourseTree.METRICS.sidebar.laneGap);
+    check("the halo is drawn under the dot", halo.compareDocumentPosition(dot) & Node.DOCUMENT_POSITION_FOLLOWING);
+    check("the dot does not fade", getComputedStyle(dot).animationName === "none");
+    check("the halo pulses", getComputedStyle(halo).animationName === "ct-halo");
+  }
+  var style = tree.querySelector("svg style").textContent;
+  check("reduced motion hides the halo", /@media \(prefers-reduced-motion:reduce\)\{[^}]*\.now-halo\{display:none\}/.test(style));
+
+  document.getElementById("result").textContent = failures.length ? failures.join("\n") : "PASS";
+});
+</script>
+</body>
+</html>

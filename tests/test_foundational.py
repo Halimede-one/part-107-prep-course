@@ -138,6 +138,19 @@ class TestDrafts(unittest.TestCase):
             self.assertTrue(course.ledger.units[UNIT]["parked"])
 
 
+class TestTheCourseStampsUnitAndGear(unittest.TestCase):
+    def test_lesson_question_and_feedback_carry_the_courses_unit_and_gear(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = make_course(tmp)  # the mock's canned blocks say UA.I.B.K16 at gear 2
+            lesson = course.handle({"type": "goto", "unit": UNIT, "gear": 3, "timestamp": "t"})
+            self.assertEqual((lesson["unit"], lesson["gear"]), (UNIT, 3))
+            question = course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual((question["unit"], question["gear"]), (UNIT, 3))
+            feedback = course.handle({"type": "answer", "question_id": question["question_id"], "unit": UNIT,
+                                      "selected_option": "B", "timestamp": "t"})
+            self.assertEqual((feedback["unit"], feedback["gear"]), (UNIT, 3))
+
+
 class TestStatusRow(unittest.TestCase):
     TABLE = ("# Content status\n\n| Unit | Gear 1 | Gear 2 | Gear 3 | Reference facts | Status | Notes |\n"
              "|---|---|---|---|---|---|---|\n| UA.I.A.K1 | | drafted | | drafted | draft | First note. |\n\n"

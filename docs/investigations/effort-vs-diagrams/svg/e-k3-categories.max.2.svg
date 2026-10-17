@@ -1,0 +1,54 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 414' width='560' height='414'>
+<rect x='0' y='0' width='560' height='414' fill='#ffffff'/>
+<text x='10' y='18' font-family='sans-serif' font-size='13' font-weight='bold' fill='#111111'>Operations over people: the four categories</text>
+<rect x='10' y='30' width='540' height='374' fill='none' stroke='#333333' stroke-width='1'/>
+<rect x='10' y='30' width='540' height='34' fill='#eeeeee' stroke='#333333' stroke-width='1'/>
+<line x1='100' y1='30' x2='100' y2='404' stroke='#333333' stroke-width='1'/>
+<line x1='330' y1='30' x2='330' y2='404' stroke='#333333' stroke-width='1'/>
+<line x1='10' y1='138' x2='550' y2='138' stroke='#333333' stroke-width='1'/>
+<line x1='10' y1='226' x2='550' y2='226' stroke='#333333' stroke-width='1'/>
+<line x1='10' y1='330' x2='550' y2='330' stroke='#333333' stroke-width='1'/>
+<text x='18' y='51' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category</text>
+<text x='106' y='51' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>The aircraft must</text>
+<text x='336' y='51' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Where it may fly over people</text>
+<text x='18' y='105' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 1</text>
+<text x='106' y='84' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; 0.55 pounds or less</text>
+<text x='106' y='98' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; No exposed rotating parts that</text>
+<text x='114' y='112' font-family='sans-serif' font-size='11' fill='#111111'>could lacerate skin</text>
+<text x='106' y='126' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; No declaration of compliance</text>
+<text x='336' y='84' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Over people</text>
+<text x='336' y='98' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Sustained flight over an</text>
+<text x='344' y='112' font-family='sans-serif' font-size='11' fill='#111111'>open-air assembly only with</text>
+<text x='344' y='126' font-family='sans-serif' font-size='11' fill='#111111'>remote identification (Part 89)</text>
+<text x='18' y='186' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 2</text>
+<text x='106' y='158' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Would not cause injury worse</text>
+<text x='114' y='172' font-family='sans-serif' font-size='11' fill='#111111'>than a transfer of 11 foot-pounds</text>
+<text x='114' y='186' font-family='sans-serif' font-size='11' fill='#111111'>of kinetic energy</text>
+<text x='106' y='200' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Accepted declaration of</text>
+<text x='114' y='214' font-family='sans-serif' font-size='11' fill='#111111'>compliance and a label</text>
+<text x='336' y='158' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Over people</text>
+<text x='336' y='172' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Sustained flight over an</text>
+<text x='344' y='186' font-family='sans-serif' font-size='11' fill='#111111'>open-air assembly only with</text>
+<text x='344' y='200' font-family='sans-serif' font-size='11' fill='#111111'>remote identification (Part 89)</text>
+<text x='18' y='282' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 3</text>
+<text x='106' y='246' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Would not cause injury worse</text>
+<text x='114' y='260' font-family='sans-serif' font-size='11' fill='#111111'>than 25 foot-pounds of kinetic</text>
+<text x='114' y='274' font-family='sans-serif' font-size='11' fill='#111111'>energy</text>
+<text x='106' y='288' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Accepted declaration of</text>
+<text x='114' y='302' font-family='sans-serif' font-size='11' fill='#111111'>compliance and a label</text>
+<text x='336' y='246' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Never over an open-air assembly</text>
+<text x='336' y='260' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Sustained flight over people</text>
+<text x='344' y='274' font-family='sans-serif' font-size='11' fill='#111111'>only in a closed- or restricted-</text>
+<text x='344' y='288' font-family='sans-serif' font-size='11' fill='#111111'>access site where everyone is on</text>
+<text x='344' y='302' font-family='sans-serif' font-size='11' fill='#111111'>notice, or over people who are</text>
+<text x='344' y='316' font-family='sans-serif' font-size='11' fill='#111111'>participating or protected</text>
+<text x='18' y='371' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 4</text>
+<text x='106' y='350' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Hold an airworthiness</text>
+<text x='114' y='364' font-family='sans-serif' font-size='11' fill='#111111'>certificate</text>
+<text x='106' y='378' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Be flown within the operating</text>
+<text x='114' y='392' font-family='sans-serif' font-size='11' fill='#111111'>limits in the flight manual</text>
+<text x='336' y='350' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Over people</text>
+<text x='336' y='364' font-family='sans-serif' font-size='11' fill='#111111'>&#8226; Sustained flight over an</text>
+<text x='344' y='378' font-family='sans-serif' font-size='11' fill='#111111'>open-air assembly only with</text>
+<text x='344' y='392' font-family='sans-serif' font-size='11' fill='#111111'>remote identification (Part 89)</text>
+</svg>

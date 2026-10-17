@@ -1,0 +1,21 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 240' width='560' height='240'>
+  <rect x='0' y='0' width='560' height='240' fill='#ffffff'/>
+  <line x1='20' y1='200' x2='540' y2='200' stroke='#555' stroke-width='2'/>
+  <text x='24' y='218' font-family='sans-serif' font-size='12' fill='#555'>ground</text>
+  <rect x='40' y='60' width='280' height='140' fill='#2a6ebb' fill-opacity='0.08' stroke='#2a6ebb' stroke-width='2' stroke-dasharray='6 4'/>
+  <text x='52' y='78' font-family='sans-serif' font-size='13' fill='#2a6ebb'>Class D surface area (dashed blue on chart)</text>
+  <text x='52' y='96' font-family='sans-serif' font-size='12' fill='#2a6ebb'>authorization required</text>
+  <line x1='40' y1='170' x2='320' y2='170' stroke='#c2410c' stroke-width='2'/>
+  <text x='46' y='164' font-family='sans-serif' font-size='12' fill='#c2410c'>200 ft authorized ceiling</text>
+  <circle cx='240' cy='182' r='5' fill='#c2410c'/>
+  <text x='188' y='196' font-family='sans-serif' font-size='11' fill='#c2410c'>flight at 200 ft</text>
+  <text x='188' y='40' font-family='sans-serif' font-size='12' fill='#333'>3 miles from the airport</text>
+  <line x1='240' y1='46' x2='240' y2='60' stroke='#333' stroke-width='1'/>
+  <rect x='360' y='60' width='180' height='140' fill='#2e7d32' fill-opacity='0.07' stroke='#2e7d32' stroke-width='2'/>
+  <text x='372' y='78' font-family='sans-serif' font-size='13' fill='#2e7d32'>Class G</text>
+  <text x='372' y='96' font-family='sans-serif' font-size='12' fill='#2e7d32'>no authorization</text>
+  <text x='372' y='114' font-family='sans-serif' font-size='12' fill='#2e7d32'>under 107.41</text>
+  <circle cx='450' cy='182' r='5' fill='#2e7d32'/>
+  <text x='392' y='40' font-family='sans-serif' font-size='12' fill='#333'>8 miles from the airport</text>
+  <line x1='450' y1='46' x2='450' y2='60' stroke='#333' stroke-width='1'/>
+</svg>

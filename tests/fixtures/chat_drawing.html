@@ -22,7 +22,7 @@
   <div id="intake-pick" hidden><button class="tree-pick-start"></button><button class="tree-pick-cancel"></button></div></div>
 <button id="mock-btn" type="button" hidden></button><button id="instructor-btn" type="button" hidden></button>
 <div id="chat-log"></div>
-<form id="chat-form"><textarea id="chat-input"></textarea><button id="chat-send" type="submit"></button></form>
+<form id="chat-form"><textarea id="chat-input"></textarea><button id="chat-mic" type="button" hidden></button><button id="chat-send" type="submit"></button></form>
 <div id="chat-meta"></div><div id="sent-log"></div>
 
 <script>
@@ -44,6 +44,7 @@ window.fetch = function (url) {
 <script src="../../ui/markdown.js"></script>
 <script src="../../ui/course-tree.js"></script>
 <script>window.Instructor = { init: function () {} };  // the workspace is not part of this check</script>
+<script src="../../ui/dictation.js"></script>
 <script src="../../ui/app.js"></script>
 <script>
 // app.js draws the chat history before the load event.

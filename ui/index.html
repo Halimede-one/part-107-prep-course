@@ -76,6 +76,9 @@
     <form id="chat-form" class="chat-form" autocomplete="off">
       <label for="chat-input" class="visually-hidden">Ask the tutor a question</label>
       <textarea id="chat-input" rows="2" placeholder="Ask about anything in the course"></textarea>
+      <!-- Dictation (dictation.js): shown only where the browser has speech recognition -->
+      <button id="chat-mic" type="button" hidden aria-pressed="false" aria-label="Speak your question"
+              title="Speak your question. Your browser's speech service turns it into text."><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg></button>
       <button id="chat-send" type="submit">Send</button>
     </form>
     <div id="chat-meta" class="chat-meta"></div>
@@ -215,6 +218,7 @@
 <script src="course-tree.js"></script>
 <script src="panels.js"></script>
 <script src="instructor.js"></script>
+<script src="dictation.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

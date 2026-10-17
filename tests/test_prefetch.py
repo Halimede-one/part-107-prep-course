@@ -15,6 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tests"))
 
+import orchestrator                     # noqa: E402
 import server as server_module          # noqa: E402
 from llm_client import LLMClient, LLMError  # noqa: E402
 from test_phase3 import make_course     # noqa: E402
@@ -231,6 +232,39 @@ class TestPrefetch(unittest.TestCase):
             self.assertEqual(course.client.calls.count("question"), 2)
             self.assertEqual(len([e for e in events if "start" in e]), 1)  # failed before it wrote anything
             self.assertEqual([r["outcome"] for r in metrics(course) if r.get("kind") == "prefetch"], ["failed"])
+
+    def test_the_first_visit_at_foundational_keeps_its_prefetched_question(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = scripted_course(tmp)
+            unit = "UA.I.B.K21c"  # no Foundational file yet
+            course.handle({"type": "goto", "unit": unit, "gear": 3, "timestamp": "t"})
+            settle(course)
+            self.assertTrue(os.path.isfile(orchestrator.lesson_path(course.paths["curriculum"], unit, 3)))
+            question = course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual(question["type"], "question")
+            self.assertEqual(course.calls[-1]["prefetched"], "ready")
+            self.assertEqual(course.client.calls.count("question"), 1)
+            # This session keeps the Guided lesson; the next one gets the draft.
+            self.assertEqual(course.content(unit, 3)["form"], "derived")
+            course.handle({"type": "intake", "default_gear": 1, "timestamp": "t"})
+            self.assertEqual(course.content(unit, 3)["form"], "draft")
+
+    def test_a_re_teach_at_foundational_keeps_its_prefetched_question_after_the_background_draft(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = scripted_course(tmp)
+            unit = "UA.I.B.K21c"
+            course.handle({"type": "goto", "unit": unit, "gear": 2, "timestamp": "t"})
+            question = course.handle({"type": "advance", "timestamp": "t"})
+            answer(course, question, "A")                               # a miss: Foundational next
+            course.handle({"type": "advance", "timestamp": "t"})        # the re-teach, with a draft in the background
+            server_module.wait_for_drafts()
+            settle(course)
+            self.assertTrue(os.path.isfile(orchestrator.lesson_path(course.paths["curriculum"], unit, 3)))
+            questions = course.client.calls.count("question")
+            again = course.handle({"type": "advance", "timestamp": "t"})
+            self.assertEqual((again["type"], again["gear"]), ("question", 3))
+            self.assertEqual(course.calls[-1]["prefetched"], "ready")
+            self.assertEqual(course.client.calls.count("question"), questions)
 
     def test_nothing_is_guessed_at_a_task_boundary(self):
         with tempfile.TemporaryDirectory() as tmp:

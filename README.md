@@ -109,6 +109,15 @@ Then open http://localhost:8107. If `./start.sh` reports a permission error, run
 `config.json`), the instructor workspace does not exist, so a student's copy
 cannot change its course material. See "Improving the tutor" below.
 
+**Speaking a question.** With the microphone button beside Send, a student can
+speak a question. The browser's own speech recognition turns it into text.
+Chrome sends the audio to Google, Edge to Microsoft, and Safari to Apple. Safari
+needs Siri or Dictation turned on in macOS settings. Firefox has no speech
+recognition, so it shows no button. Brave shows the button but has no speech
+service. The words go into the question box. Nothing goes to the tutor until the
+student presses Send. The speech service needs the internet, also with the
+offline `ollama` backend.
+
 ## Choosing a backend
 
 The backend is set by `provider` in `config.json`.
@@ -303,8 +312,9 @@ taught at all, so write that file first.
 The assistant follows the tutor's rules: facts come only from the course material,
 and every source is cited. When the material does not support a request, it says
 so in its note. Check its work all the same: a diagram can carry a wrong label as
-easily as a sentence can carry a wrong fact. One request takes about 30 to 80
-seconds, because the assistant writes the whole file again.
+easily as a sentence can carry a wrong fact. The assistant sends only its changes,
+so a small change is quick. A request for a new diagram takes about 30 to 60
+seconds, most of it the model thinking before it writes.
 
 ### The speeds and their files
 

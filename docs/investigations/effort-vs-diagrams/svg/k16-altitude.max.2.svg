@@ -1,0 +1,27 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 250' width='540' height='250'>
+<rect x='0' y='0' width='540' height='250' fill='#ffffff'/>
+<rect x='45' y='55' width='275' height='150' fill='#dce9f7' stroke='#1f4e9c' stroke-width='2' stroke-dasharray='7 4'/>
+<rect x='45' y='150' width='275' height='55' fill='#d9eed9'/>
+<line x1='45' y1='150' x2='320' y2='150' stroke='#b3261e' stroke-width='2' stroke-dasharray='8 5'/>
+<line x1='20' y1='205' x2='520' y2='205' stroke='#333333' stroke-width='3'/>
+<rect x='56' y='183' width='10' height='22' fill='#555555'/>
+<text x='60' y='78' font-family='sans-serif' font-size='14' fill='#1f4e9c'>Class D, reaches the surface</text>
+<text x='60' y='96' font-family='sans-serif' font-size='12' fill='#1f4e9c'>prior ATC authorization required</text>
+<text x='60' y='125' font-family='sans-serif' font-size='12' fill='#444444'>above the ceiling: not authorized</text>
+<text x='52' y='144' font-family='sans-serif' font-size='13' fill='#b3261e'>Authorized ceiling: 200 ft</text>
+<text x='60' y='176' font-family='sans-serif' font-size='12' fill='#2f6b2f'>fly at or below 200 ft</text>
+<line x1='238' y1='170' x2='262' y2='170' stroke='#333333' stroke-width='2'/>
+<circle cx='238' cy='170' r='4' fill='#333333'/>
+<circle cx='262' cy='170' r='4' fill='#333333'/>
+<rect x='246' y='166' width='8' height='8' fill='#333333'/>
+<line x1='418' y1='170' x2='442' y2='170' stroke='#333333' stroke-width='2'/>
+<circle cx='418' cy='170' r='4' fill='#333333'/>
+<circle cx='442' cy='170' r='4' fill='#333333'/>
+<rect x='426' y='166' width='8' height='8' fill='#333333'/>
+<text x='345' y='90' font-family='sans-serif' font-size='14' fill='#2f6b2f'>Class G</text>
+<text x='345' y='108' font-family='sans-serif' font-size='12' fill='#2f6b2f'>no authorization needed</text>
+<text x='345' y='124' font-family='sans-serif' font-size='12' fill='#2f6b2f'>under 14 CFR 107.41</text>
+<text x='22' y='224' font-family='sans-serif' font-size='12' fill='#333333'>Towered airport</text>
+<text x='190' y='224' font-family='sans-serif' font-size='12' fill='#333333'>Day 1: 3 miles out</text>
+<text x='380' y='224' font-family='sans-serif' font-size='12' fill='#333333'>Day 2: 8 miles out</text>
+</svg>

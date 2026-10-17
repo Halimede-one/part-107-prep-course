@@ -181,10 +181,12 @@
       (isTaken ? taken : parts.lanes).push(group);
     });
     parts.routes.push(taken.join(""));
-    // the moving marker on the lane the student is on now
+    // the moving marker on the lane the student is on now: a dot the size of a
+    // node over a halo that grows and fades
     if (u.current) {
       var cx = x + m.laneGap * ((u.current_gear || 1) - 1), cy = lane.to + (lane.from - lane.to) * 0.5;
-      parts.marks.push('<circle class="now-dot" cx="' + cx + '" cy="' + f(cy) + '" r="' + (rad * 0.6) + '"/>');
+      var at = ' cx="' + cx + '" cy="' + f(cy) + '" r="' + rad + '"/>';
+      parts.marks.push('<circle class="now-halo"' + at + '<circle class="now-dot"' + at);
     }
     // node
     var cls = "node " + u.mastery + (u.current ? " current" : "") + (u.parked ? " parked" : "") + (u.needs_attention && !u.parked ? " attention" : "");
@@ -253,8 +255,9 @@
     '.course-tree .ring{fill:none;stroke:var(--ct-accent);stroke-width:2}' +
     '.course-tree .flag{fill:var(--ct-bad);stroke:var(--ct-bad);stroke-width:1;stroke-linejoin:round}' +
     '.course-tree .attn{fill:var(--ct-bad);stroke:var(--ct-surface);stroke-width:1}' +
-        '.course-tree .now-dot{fill:var(--ct-accent);stroke:var(--ct-surface);stroke-width:1.5;pointer-events:none;animation:ct-pulse 1.6s ease-in-out infinite}' +
-    '@keyframes ct-pulse{0%,100%{opacity:1}50%{opacity:.35}}@media (prefers-reduced-motion:reduce){.course-tree .now-dot{animation:none}}' +
+        '.course-tree .now-dot{fill:var(--ct-accent);stroke:var(--ct-surface);stroke-width:2;pointer-events:none}' +
+    '.course-tree .now-halo{fill:none;stroke:var(--ct-accent);stroke-width:2;pointer-events:none;transform-box:fill-box;transform-origin:center;animation:ct-halo 1.6s ease-out infinite}' +
+    '@keyframes ct-halo{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}@media (prefers-reduced-motion:reduce){.course-tree .now-halo{display:none}}' +
     '.course-tree .knot{fill:var(--ct-surface);stroke:var(--ct-muted);stroke-width:1.5}' +
     '.course-tree .rule{stroke:var(--ct-line);stroke-width:1}.course-tree .ground{stroke:var(--ct-muted);stroke-width:1.5;stroke-linecap:round}' +
     '.course-tree .gate-mark{fill:var(--ct-surface);stroke:var(--ct-muted);stroke-width:1.5}.course-tree .gate.done .gate-mark{fill:var(--ct-good);stroke:var(--ct-good)}' +

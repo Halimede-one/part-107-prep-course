@@ -422,7 +422,7 @@ _MOCK = {
     "revision": {
         "type": "revision",
         "note": "Sample revision from the mock provider, with a diagram.",
-        "text": "---\nsource: Mock source | https://www.ecfr.gov/current/title-14/part-107\n---\n"
+        "file": "---\nsource: Mock source | https://www.ecfr.gov/current/title-14/part-107\n---\n"
                 "Sample revised lesson from the mock provider.\n\n"
                 "```svg A sample box\n<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' width='120' "
                 "height='40'><rect x='1' y='1' width='118' height='38' fill='none' stroke='black'/>"

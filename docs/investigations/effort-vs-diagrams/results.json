@@ -1,0 +1,830 @@
+[
+ {
+  "run": "a-k4-reporting.low.1",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "low",
+  "sample": 1,
+  "seconds": 19,
+  "output_tokens": 1710,
+  "thinking_tokens": 42,
+  "note": "I added a decision flow diagram after the paragraph on where the report goes, so the student sees the test before the fine print on serious injury and drone damage. Every branch and number in it comes from 14 CFR 107.9: the injury test, the $500 property-damage test for property other than the small unmanned aircraft, and the 10 calendar day deadline. I left DroneZone and the Flight Standards District Office out of the diagram boxes to keep it to the reportable-or-not decision, and changed nothing else.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flow for whether a small unmanned aircraft accident must be reported to the FAA, and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "540",
+   "height": "420",
+   "viewBox": "0 0 540 420",
+   "labels": 14,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.low.2",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "low",
+  "sample": 2,
+  "seconds": 18,
+  "output_tokens": 1511,
+  "thinking_tokens": 24,
+  "note": "I added a decision flowchart as an SVG block right after the paragraph on serious injury, so the student reads the two triggers first and then sees them as a flow. Every label in it comes from 107.9 as stated in the file and the vetted facts: the injury trigger, the $500 property threshold excluding the drone itself, and the 10-calendar-day deadline. I did not label the reporting method inside the diagram, since the DroneZone/FSDO detail is AC guidance and reads better in the prose where it already sits.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flowchart for whether a small unmanned aircraft accident must be reported to the FAA, and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "420",
+   "viewBox": "0 0 560 420",
+   "labels": 16,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.medium.1",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "medium",
+  "sample": 1,
+  "seconds": 22,
+  "output_tokens": 1778,
+  "thinking_tokens": 222,
+  "note": "Added a decision flowchart after the paragraph that states the two triggers, so the student can walk the two tests in order and land on the 10-calendar-day deadline. Every box uses only wording the vetted facts and 14 CFR 107.9 support: serious injury or any loss of consciousness, damage to property other than the small unmanned aircraft exceeding $500 in repair cost or fair market value, and the 10 calendar day deadline. I left the reporting method (DroneZone or the nearest FSDO) out of the diagram boxes to keep it to the decision itself; it stays in the paragraph below. No other text changed and no new source was needed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flowchart for whether a small unmanned aircraft accident must be reported to the FAA, and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "107",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "470",
+   "viewBox": "0 0 560 470",
+   "labels": 15,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.medium.2",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "medium",
+  "sample": 2,
+  "seconds": 20,
+  "output_tokens": 1679,
+  "thinking_tokens": 165,
+  "note": "I added a decision diagram as a fenced SVG block right after the worked example, before the common-misreading paragraph. It follows two questions in order (serious injury or any loss of consciousness, then damage to property other than the small unmanned aircraft exceeding $500) and ends in either \"Report to FAA within 10 calendar days\" or \"No report required.\" Every number and label comes from 14 CFR 107.9 as stated in the file and the vetted facts; I did not label the reporting channels inside the diagram, since those stay in the prose. No header lines changed, as no new source was needed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flowchart for FAA accident reporting: serious injury or any loss of consciousness, or damage over $500 to property other than the small unmanned aircraft, requires a report within 10 calendar days; otherwise no report is required"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "420",
+   "viewBox": "0 0 560 420",
+   "labels": 13,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.default.1",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "default",
+  "sample": 1,
+  "seconds": 59,
+  "output_tokens": 4547,
+  "thinking_tokens": 2942,
+  "note": "I added a decision flowchart after the paragraph on how and where to report, just before the two detail notes, with a one-line lead-in. The diagram follows the same order as the rule text: injury or loss of consciousness first, then whether any property other than the small unmanned aircraft was damaged, then the $500 repair-cost or fair-market-value test, ending in either \"Report to the FAA within 10 calendar days\" or \"No report required.\" Every label is taken from 14 CFR 107.9 as stated in the lesson and the vetted facts; I left the reporting method (DroneZone or the FSDO) out of the diagram so it only answers whether and by when, as you asked. Nothing else in the file changed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flowchart for whether a small unmanned aircraft accident must be reported to the FAA and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "400",
+   "viewBox": "0 0 560 400",
+   "labels": 16,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.default.2",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "default",
+  "sample": 2,
+  "seconds": 51,
+  "output_tokens": 4175,
+  "thinking_tokens": 2702,
+  "note": "I added a decision flowchart right after the paragraph that lists the two triggers, so a student reads the rule and then sees it as a path. Every label comes from the file's existing material and the vetted facts: the injury trigger, the property-damage test with the $500 repair-cost and fair-market-value wording, the 10-calendar-day deadline, and DroneZone or the nearest Flight Standards District Office as the destination. I left the Abbreviated Injury Scale detail out of the diagram to keep the boxes short; it stays in the prose below. No new sources were needed, so the header is unchanged.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision flow for whether a drone accident must be reported to the FAA, and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "380",
+   "viewBox": "0 0 560 380",
+   "labels": 17,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.max.1",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "max",
+  "sample": 1,
+  "seconds": 109,
+  "output_tokens": 9480,
+  "thinking_tokens": 7495,
+  "note": "I added a decision flow right after the paragraph that states the two triggers, so a student reads the rule and then walks it, plus a one-line lead-in sentence. Every box uses only wording the lesson and 14 CFR 107.9 already supply: the serious-injury-or-any-loss-of-consciousness trigger, the damage test for property other than the small unmanned aircraft, the $500 repair-cost or fair-market-value threshold, and the 10-calendar-day deadline. I kept the Abbreviated Injury Scale detail and the DroneZone/Flight Standards District Office filing route out of the boxes, since the paragraphs on either side carry them and they would crowd the diagram. No new header source line was needed; both sources already in the header cover everything drawn.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision diagram for whether an accident must be reported to the FAA and by when"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "540",
+   "viewBox": "0 0 560 540",
+   "labels": 17,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "a-k4-reporting.max.2",
+  "task": "a-k4-reporting",
+  "unit": "UA.I.A.K4",
+  "gear": 2,
+  "effort": "max",
+  "sample": 2,
+  "seconds": 93,
+  "output_tokens": 7360,
+  "thinking_tokens": 5110,
+  "note": "I added a decision diagram after the paragraph on where the report goes, so the rule is stated first and then shown as a path. Every box uses only what 14 CFR 107.9 supplies as given in the file and the vetted facts: the two injury triggers, the property-damage test for property other than the small unmanned aircraft, the $500 threshold, and the 10-calendar-day deadline. I left the DroneZone and FSDO detail out of the diagram, since it is the 'how' rather than the 'whether and by when' and it already sits in the text just above. No other text changed and no new source was needed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Decision diagram for accident reporting: serious injury or any loss of consciousness, or damage exceeding $500 to property other than the small unmanned aircraft, requires a report to the FAA within 10 calendar days"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "10",
+   "500"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "440",
+   "viewBox": "0 0 560 440",
+   "labels": 19,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.low.1",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "low",
+  "sample": 1,
+  "seconds": 33,
+  "output_tokens": 3607,
+  "thinking_tokens": 119,
+  "note": "I added two source lines to the header for 14 CFR 107.110 and 107.125, since the diagram rests on the open-air-assembly rules those sections carry. The diagram is a four-column comparison placed just before the worked example: each column gives the category's aircraft requirement and where it may fly over people. Every label comes from the lesson text and the vetted facts; I left out weight or energy figures for Category 4 and remote-ID details beyond the sustained-flight condition, because the material does not state them.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Four columns comparing Categories 1 through 4 of operation over people, showing what each requires of the aircraft and where each may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4",
+   "89"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "320",
+   "viewBox": "0 0 560 320",
+   "labels": 60,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.low.2",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "low",
+  "sample": 2,
+  "seconds": 26,
+  "output_tokens": 2738,
+  "thinking_tokens": 111,
+  "note": "Added a four-column comparison diagram after the remote-identification paragraph, showing what each category requires of the aircraft and where each may fly over people. Every number and limit in it is copied from the lesson text and the vetted facts; I added header source lines for 14 CFR 107.110 and 107.125, which the vetted facts cite for the open-air assembly rules. The diagram stays coarse on Category 4 because the material gives only the airworthiness certificate and flight-manual limits, with no weight or energy figure.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Comparison of the four categories of operation over people, showing what each requires of the aircraft and where each may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4",
+   "89"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "330",
+   "viewBox": "0 0 560 330",
+   "labels": 45,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.medium.1",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "medium",
+  "sample": 1,
+  "seconds": 30,
+  "output_tokens": 2712,
+  "thinking_tokens": 958,
+  "note": "I added a comparison table diagram after the paragraph on open-air assemblies, laying out each category's aircraft requirement and where it may fly over people. Every cell is drawn from the existing lesson text and the vetted facts; I added no limits the material does not state, so Category 4 shows only the airworthiness certificate and flight-manual limits. I also added header source lines for 14 CFR 107.110 and 107.125, which the open-air-assembly rows rest on.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Table comparing the four categories of operation over people, showing each category's aircraft requirement and where it may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "312",
+   "viewBox": "0 0 560 312",
+   "labels": 33,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.medium.2",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "medium",
+  "sample": 2,
+  "seconds": 46,
+  "output_tokens": 4777,
+  "thinking_tokens": 998,
+  "note": "Added a four-column comparison diagram after the open-air-assembly paragraph, showing for each category what the aircraft must be or carry and where it may fly over people. Every label is drawn from the file's existing text and the vetted facts: no new limits were introduced, and I left Category 3's and 4's weight or energy details unstated beyond what the material gives. I also added header source lines for 14 CFR 107.110 and 107.125, since the remote identification condition and the Category 3 open-air-assembly prohibition come from those sections.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Comparison of the four categories of operation over people, showing what each requires of the aircraft and where each may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4",
+   "89"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "330",
+   "viewBox": "0 0 560 330",
+   "labels": 58,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.default.1",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "default",
+  "sample": 1,
+  "seconds": 50,
+  "output_tokens": 4119,
+  "thinking_tokens": 2300,
+  "note": "I added a four-row comparison diagram after the paragraph on open-air assemblies, so it sits with the rules it summarizes and ahead of the worked example. Each cell repeats only what the lesson and vetted facts already state: the aircraft requirement per category, and where each may fly over people, including Category 3's bar on open-air assemblies and the remote identification condition for Categories 1, 2, and 4. I also added header source lines for 14 CFR 107.110 and 107.125, which the diagram's open-air-assembly labels rest on. Nothing else in the file changed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Table comparing the four categories of operation over people: what each category requires of the aircraft, and where each may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "290",
+   "viewBox": "0 0 560 290",
+   "labels": 36,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.default.2",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "default",
+  "sample": 2,
+  "seconds": 74,
+  "output_tokens": 7277,
+  "thinking_tokens": 3186,
+  "note": "I added a side-by-side diagram of the four categories after the remote-identification paragraph, with one column per category: what it requires of the aircraft on top, where it may fly over people below, and the general exceptions in a footnote. Every number and condition in it is copied from the lesson text and the vetted facts (0.55 lb and no exposed lacerating rotating parts, 11 and 25 foot-pounds with declaration and label, airworthiness certificate and flight manual limits, Category 3's bar on open-air assemblies, remote ID for sustained flight over an open-air assembly under Categories 1, 2, and 4). I also added header source lines for 14 CFR 107.110 and 107.125, since the diagram leans on those two facts. The material gives no aircraft weight or energy figure for Category 4 and no label requirement for Category 1, so those cells say only what the sources support.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "The four categories of operation over people side by side, each column showing what the category requires of the aircraft and where it may fly over people, with the general exceptions in a footnote"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "320",
+   "viewBox": "0 0 560 320",
+   "labels": 62,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.max.1",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "max",
+  "sample": 1,
+  "seconds": 93,
+  "output_tokens": 8874,
+  "thinking_tokens": 7093,
+  "note": "I added a four-row comparison table as an SVG block right after the paragraph on remote identification, so every fact in the table has already been stated in the text above it. Each cell is copied from the lesson's own wording and the vetted facts: aircraft eligibility in the middle column, where each category may fly over people in the right column, including Category 3's bar on open-air assemblies. I also added header source lines for 14 CFR 107.110 and 107.125, since the vetted facts attribute the remote identification condition and the Category 3 open-air assembly bar to those sections. I kept the general exceptions (directly participating people, covered structure, stationary vehicle) out of the diagram because you asked for the four categories, and I added no weight or energy figures beyond those the material states.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Table comparing the four categories of operation over people, showing what each category requires of the aircraft and where each may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "286",
+   "viewBox": "0 0 560 286",
+   "labels": 33,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "e-k3-categories.max.2",
+  "task": "e-k3-categories",
+  "unit": "UA.I.E.K3",
+  "gear": 2,
+  "effort": "max",
+  "sample": 2,
+  "seconds": 111,
+  "output_tokens": 11045,
+  "thinking_tokens": 7939,
+  "note": "I added a three-column comparison table right after the remote-identification paragraph, so every fact in it has already been stated in the prose: category, what the aircraft must be, and where it may fly over people. I also added header source lines for 14 CFR 107.110 and 107.125, which the vetted facts cite for the remote-ID condition and the Category 3 open-air-assembly ban. The diagram carries only figures the material states (0.55 pounds, 11 foot-pounds, 25 foot-pounds), so it says nothing about laceration-protection criteria for Categories 2 and 3 or about declaration details beyond \"accepted declaration of compliance and a label\" \u2014 the material does not cover those. The general exceptions for participating or protected people and covered structures stay in the prose, since they sit outside the four categories.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Table comparing the four categories of operation over people: what each one requires of the aircraft and where each one may fly over people"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "0.55",
+   "1",
+   "11",
+   "2",
+   "25",
+   "3",
+   "4",
+   "8226",
+   "89"
+  ],
+  "unsupported_numbers": [
+   "8226"
+  ],
+  "measured": {
+   "width": "560",
+   "height": "414",
+   "viewBox": "0 0 560 414",
+   "labels": 44,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.low.1",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "low",
+  "sample": 1,
+  "seconds": 12,
+  "output_tokens": 989,
+  "thinking_tokens": 38,
+  "note": "Added a side-view diagram right after the worked example, showing the Class D surface area with the 200-foot authorized ceiling inside it and Class G outside the boundary. Every label comes from the worked example and the vetted facts: Class D, surface, 200 feet authorized, Class G, no authorization. I left out any lateral or vertical dimensions for Class D itself, since the material does not state them.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of a Class D surface area: inside the boundary the flight is capped at the 200-foot authorized altitude; outside the boundary the airspace is Class G and needs no authorization"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "107.41",
+   "200"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "240",
+   "viewBox": "0 0 560 240",
+   "labels": 8,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.low.2",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "low",
+  "sample": 2,
+  "seconds": 15,
+  "output_tokens": 1276,
+  "thinking_tokens": 44,
+  "note": "I added an SVG diagram right after the worked example: a side view showing the Class D surface area reaching the ground, the pilot's 200-foot authorized ceiling inside it, and the Class G position 8 miles out needing no authorization. Every label comes from the file's own worked example (3 miles, 200 feet, 8 miles) or the vetted facts; I added nothing about Class D dimensions or altitude tiers, since the material does not state them. No other text changed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the Class D surface area the pilot flies no higher than the 200-foot authorized ceiling, while 8 miles out in Class G no authorization is needed"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "107.41",
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "240",
+   "viewBox": "0 0 560 240",
+   "labels": 10,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.medium.1",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "medium",
+  "sample": 1,
+  "seconds": 18,
+  "output_tokens": 1353,
+  "thinking_tokens": 328,
+  "note": "I added a side-view diagram right after the worked example, showing the dashed-blue Class D boundary reaching the ground, the 200-foot authorized ceiling the pilot may not exceed inside it, and the Class G position 8 miles out where no authorization is needed. Every label and number is taken from the worked example already in the file and from the vetted facts; I left out any altitude figure the material does not state, so the diagram shows no floor or ceiling for Class D itself. I also added one sentence introducing the diagram.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the dashed Class D surface area the pilot flies at or below the 200-foot authorized altitude, while 8 miles out in Class G no authorization is needed"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "540",
+   "height": "240",
+   "viewBox": "0 0 540 240",
+   "labels": 9,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.medium.2",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "medium",
+  "sample": 2,
+  "seconds": 15,
+  "output_tokens": 1319,
+  "thinking_tokens": 168,
+  "note": "Added a side-view diagram right after the worked example, showing the 200-foot authorized ceiling as a lid over the flight inside the Class D surface area, and the same pilot outside the boundary in Class G. Every label comes from the worked example or the vetted facts: 200 feet, 3 miles, 8 miles, Class D surface area, Class G, and the authorization status. I left out any Class D ceiling or radius figures, since the material does not state them. No source line needed, since both sources were already in the header.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the Class D surface area the pilot flies no higher than the 200-foot authorized altitude, while outside the boundary the same pilot is in Class G and needs no authorization"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "540",
+   "height": "260",
+   "viewBox": "0 0 540 260",
+   "labels": 9,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.default.1",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "default",
+  "sample": 1,
+  "seconds": 29,
+  "output_tokens": 2479,
+  "thinking_tokens": 1036,
+  "note": "I added a side-view diagram right after the worked example, showing the Class D surface area reaching the ground, the 200-foot authorized ceiling the pilot flies at or below, and the same pilot outside the boundary in Class G with no authorization needed. Every label comes from the worked example and the vetted facts: the dashed blue boundary, Class D, Class G, the 200-foot authorized ceiling, and the 3-mile and 8-mile positions. I did not label a top altitude for the Class D block or a width for the surface area, since the material gives no figures for those. No other text changed.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the dashed blue Class D surface area the pilot flies at or below the 200-foot authorized ceiling, while the same pilot 8 miles out is in Class G and needs no authorization"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "270",
+   "viewBox": "0 0 560 270",
+   "labels": 10,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.default.2",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "default",
+  "sample": 2,
+  "seconds": 25,
+  "output_tokens": 1924,
+  "thinking_tokens": 771,
+  "note": "I added a side-view diagram right after the worked example, showing the Class D surface area reaching the ground, the 200-foot authorized ceiling the pilot flies at or below, and the Class G position outside the boundary where no authorization is needed. Every label comes from the worked example in the file and the vetted facts, so the diagram carries no number the material does not state. I deliberately left the top of the Class D wedding cake unlabeled, since neither the Guided lesson nor the facts give a ceiling altitude for Class D itself.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the Class D surface area the pilot flies at or below the 200-foot authorized ceiling, while outside the boundary the same flight is in Class G and needs no authorization"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "540",
+   "height": "250",
+   "viewBox": "0 0 540 250",
+   "labels": 10,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.max.1",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "max",
+  "sample": 1,
+  "seconds": 115,
+  "output_tokens": 10135,
+  "thinking_tokens": 8053,
+  "note": "I added a side-view diagram immediately after the worked example. It shows the Class D surface area reaching the ground, the 200-foot ceiling the LAANC request returned applying only inside that boundary, a flight at or below it, and the same pilot 8 miles out in Class G with no authorization needed. The only numbers in the drawing are the ones your worked example already uses (3 miles, 8 miles, 200 feet), which are scenario values rather than regulatory limits. I left the top of the Class D block unlabeled, because neither the Guided lesson nor the vetted facts give a ceiling altitude for Class D, so there is no supported number to put there.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: inside the Class D surface area, which reaches the ground, the authorized 200-foot ceiling applies and the flight stays at or below it, while 8 miles out beyond the dashed blue boundary the same flight is in Class G and needs no authorization"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "560",
+   "height": "250",
+   "viewBox": "0 0 560 250",
+   "labels": 14,
+   "outside": [],
+   "overlaps": []
+  }
+ },
+ {
+  "run": "k16-altitude.max.2",
+  "task": "k16-altitude",
+  "unit": "UA.I.B.K16",
+  "gear": 3,
+  "effort": "max",
+  "sample": 2,
+  "seconds": 89,
+  "output_tokens": 7498,
+  "thinking_tokens": 5894,
+  "note": "I added the side-view diagram right after the worked example, with a one-line lead-in and a one-line read-out so the drawing is tied to the example rather than floating. It shows Class D reaching the surface, the dashed 200 ft authorized ceiling with the flyable band below it, the day-one flight inside the boundary, and the day-two flight outside in Class G. The only numbers on it are 200 ft, 3 miles, and 8 miles, all taken from your own worked example; note that 200 ft is your illustrative figure, not a number stated in 107.41 or AC 107-2A, so if you want the diagram to carry only source numbers I can relabel it as \"authorized ceiling\" with no figure. I left out any 400 ft or Class E 700 ft labels, since the material does not attach them to this example, and no new source lines are needed in the header.",
+  "mode": "edits",
+  "lines_removed": 0,
+  "drawings": 1,
+  "descriptions": [
+   "Side view of the worked example: Class D airspace reaching the surface with a dashed 200-foot authorized ceiling inside it, and Class G outside the boundary"
+  ],
+  "unsafe": false,
+  "label_numbers": [
+   "1",
+   "107.41",
+   "14",
+   "2",
+   "200",
+   "3",
+   "8"
+  ],
+  "unsupported_numbers": [],
+  "measured": {
+   "width": "540",
+   "height": "250",
+   "viewBox": "0 0 540 250",
+   "labels": 11,
+   "outside": [],
+   "overlaps": []
+  }
+ }
+]

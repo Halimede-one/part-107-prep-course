@@ -1,0 +1,53 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 312' width='560' height='312'>
+  <rect x='0' y='0' width='560' height='312' fill='#ffffff'/>
+  <rect x='0' y='0' width='560' height='36' fill='#e8eef5'/>
+  <g font-family='sans-serif' font-size='11' fill='#111111'>
+    <text x='10' y='22' font-weight='bold'>Category</text>
+    <text x='90' y='22' font-weight='bold'>What the aircraft must be</text>
+    <text x='300' y='22' font-weight='bold'>Where it may fly over people</text>
+  </g>
+  <g font-family='sans-serif' font-size='10' fill='#111111'>
+    <text x='10' y='56' font-weight='bold'>1</text>
+    <text x='90' y='56'>0.55 pounds or less, with no exposed</text>
+    <text x='90' y='70'>rotating parts that could lacerate skin.</text>
+    <text x='90' y='84'>No declaration needed.</text>
+    <text x='300' y='56'>Over people. Sustained flight over an</text>
+    <text x='300' y='70'>open-air assembly only if the aircraft meets</text>
+    <text x='300' y='84'>the remote identification requirement.</text>
+
+    <text x='10' y='120' font-weight='bold'>2</text>
+    <text x='90' y='120'>Would not cause injury worse than a</text>
+    <text x='90' y='134'>transfer of 11 foot-pounds of kinetic</text>
+    <text x='90' y='148'>energy. Accepted declaration and label.</text>
+    <text x='300' y='120'>Over people. Sustained flight over an</text>
+    <text x='300' y='134'>open-air assembly only if the aircraft meets</text>
+    <text x='300' y='148'>the remote identification requirement.</text>
+
+    <text x='10' y='184' font-weight='bold'>3</text>
+    <text x='90' y='184'>Would not cause injury worse than a</text>
+    <text x='90' y='198'>transfer of 25 foot-pounds of kinetic</text>
+    <text x='90' y='212'>energy. Accepted declaration and label.</text>
+    <text x='300' y='184'>Never over an open-air assembly.</text>
+    <text x='300' y='198'>Sustained flight over people only within a</text>
+    <text x='300' y='212'>closed- or restricted-access site where</text>
+    <text x='300' y='226'>everyone is on notice, or only over people</text>
+    <text x='300' y='240'>who are participating or protected.</text>
+
+    <text x='10' y='272' font-weight='bold'>4</text>
+    <text x='90' y='272'>Holds an airworthiness certificate and is</text>
+    <text x='90' y='286'>flown within the operating limits in the</text>
+    <text x='90' y='300'>flight manual.</text>
+    <text x='300' y='272'>Over people. Sustained flight over an</text>
+    <text x='300' y='286'>open-air assembly only if the aircraft meets</text>
+    <text x='300' y='300'>the remote identification requirement.</text>
+  </g>
+  <g stroke='#9aa7b4' stroke-width='1'>
+    <rect x='0' y='0' width='560' height='312' fill='none'/>
+    <line x1='0' y1='36' x2='560' y2='36'/>
+    <line x1='0' y1='100' x2='560' y2='100'/>
+    <line x1='0' y1='164' x2='560' y2='164'/>
+    <line x1='0' y1='252' x2='560' y2='252'/>
+    <line x1='80' y1='0' x2='80' y2='312'/>
+    <line x1='292' y1='0' x2='292' y2='312'/>
+  </g>
+</svg>

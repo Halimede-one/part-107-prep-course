@@ -1,0 +1,17 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 240' width='540' height='240'>
+  <rect x='0' y='0' width='540' height='240' fill='#ffffff'/>
+  <line x1='20' y1='200' x2='520' y2='200' stroke='#4a3b2a' stroke-width='3'/>
+  <text x='24' y='216' font-size='12' fill='#4a3b2a'>ground</text>
+  <line x1='300' y1='40' x2='300' y2='200' stroke='#1f4fd8' stroke-width='3' stroke-dasharray='10 7'/>
+  <text x='40' y='60' font-size='13' fill='#1f4fd8'>Class D surface area</text>
+  <text x='40' y='78' font-size='12' fill='#1f4fd8'>(dashed blue line on the chart)</text>
+  <text x='316' y='60' font-size='13' fill='#2a6b2a'>Class G</text>
+  <text x='316' y='78' font-size='12' fill='#2a6b2a'>no authorization needed</text>
+  <line x1='40' y1='150' x2='290' y2='150' stroke='#b02020' stroke-width='2' stroke-dasharray='6 5'/>
+  <text x='40' y='144' font-size='12' fill='#b02020'>200 ft authorized altitude: do not exceed</text>
+  <circle cx='170' cy='158' r='6' fill='#333333'/>
+  <text x='120' y='182' font-size='12' fill='#333333'>pilot 3 miles out: flies at 200 ft</text>
+  <circle cx='430' cy='158' r='6' fill='#333333'/>
+  <text x='372' y='182' font-size='12' fill='#333333'>same pilot 8 miles out</text>
+  <text x='40' y='104' font-size='12' fill='#333333'>authorization required from Air Traffic Control before flight</text>
+</svg>

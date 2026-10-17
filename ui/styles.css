@@ -276,6 +276,9 @@ div.streaming-text.active:empty::after { content: "\258D"; color: var(--muted); 
 }
 .chat-form button:hover { background: var(--accent-soft); }
 .chat-form button[disabled], .chat-form textarea[disabled] { opacity: 0.5; cursor: not-allowed; }
+/* the microphone (dictation.js): the icon is level with Send's label; red while it listens */
+#chat-mic svg { width: 1em; height: 1em; vertical-align: -0.125em; }
+#chat-mic[aria-pressed="true"] { color: var(--surface); background: var(--bad); border-color: var(--bad); }
 .chat-meta {
   font-size: 11px; color: var(--muted); padding: 0 12px 8px; text-align: right;
   min-height: 18px; font-variant-numeric: tabular-nums;

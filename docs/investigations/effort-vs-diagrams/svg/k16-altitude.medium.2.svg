@@ -1,0 +1,19 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 260' width='540' height='260'>
+  <rect x='0' y='0' width='540' height='260' fill='#ffffff'/>
+  <rect x='40' y='40' width='260' height='170' fill='#e8eef8' stroke='#2b5fa8' stroke-width='2' stroke-dasharray='8 5'/>
+  <text x='52' y='62' font-family='sans-serif' font-size='13' fill='#2b5fa8'>Class D surface area</text>
+  <text x='52' y='80' font-family='sans-serif' font-size='12' fill='#2b5fa8'>authorization needed</text>
+  <rect x='300' y='40' width='200' height='170' fill='#f4f4f4' stroke='#777777' stroke-width='2'/>
+  <text x='312' y='62' font-family='sans-serif' font-size='13' fill='#555555'>Class G</text>
+  <text x='312' y='80' font-family='sans-serif' font-size='12' fill='#555555'>no authorization needed</text>
+  <line x1='40' y1='210' x2='500' y2='210' stroke='#333333' stroke-width='3'/>
+  <text x='40' y='232' font-family='sans-serif' font-size='12' fill='#333333'>ground</text>
+  <line x1='55' y1='150' x2='285' y2='150' stroke='#c0392b' stroke-width='2' stroke-dasharray='6 4'/>
+  <text x='58' y='144' font-family='sans-serif' font-size='12' fill='#c0392b'>200 feet, authorized altitude</text>
+  <circle cx='150' cy='172' r='6' fill='#c0392b'/>
+  <text x='120' y='196' font-family='sans-serif' font-size='12' fill='#333333'>flight at 200 feet</text>
+  <text x='112' y='252' font-family='sans-serif' font-size='12' fill='#333333'>3 miles from the airport</text>
+  <circle cx='400' cy='172' r='6' fill='#555555'/>
+  <text x='352' y='252' font-family='sans-serif' font-size='12' fill='#333333'>8 miles from the airport</text>
+  <line x1='300' y1='40' x2='300' y2='210' stroke='#2b5fa8' stroke-width='2' stroke-dasharray='8 5'/>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 420' width='560' height='420'>
+<rect x='150' y='10' width='260' height='46' rx='6' fill='#eef3fa' stroke='#33506e'/>
+<text x='280' y='32' font-size='13' text-anchor='middle' fill='#13243a'>An accident happened during</text>
+<text x='280' y='49' font-size='13' text-anchor='middle' fill='#13243a'>your operation</text>
+<line x1='280' y1='56' x2='280' y2='84' stroke='#33506e'/>
+<polygon points='280,92 280,84 276,84 284,84' fill='#33506e'/>
+<rect x='110' y='92' width='340' height='56' rx='6' fill='#fff' stroke='#33506e'/>
+<text x='280' y='114' font-size='13' text-anchor='middle' fill='#13243a'>Serious injury to any person,</text>
+<text x='280' y='131' font-size='13' text-anchor='middle' fill='#13243a'>or any loss of consciousness?</text>
+<line x1='450' y1='120' x2='520' y2='120' stroke='#33506e'/>
+<line x1='520' y1='120' x2='520' y2='300' stroke='#33506e'/>
+<text x='462' y='112' font-size='12' fill='#13243a'>Yes</text>
+<line x1='280' y1='148' x2='280' y2='176' stroke='#33506e'/>
+<text x='290' y='167' font-size='12' fill='#13243a'>No</text>
+<rect x='60' y='176' width='440' height='74' rx='6' fill='#fff' stroke='#33506e'/>
+<text x='280' y='198' font-size='13' text-anchor='middle' fill='#13243a'>Damage to property other than the small</text>
+<text x='280' y='215' font-size='13' text-anchor='middle' fill='#13243a'>unmanned aircraft, with repair cost or fair</text>
+<text x='280' y='232' font-size='13' text-anchor='middle' fill='#13243a'>market value over $500?</text>
+<line x1='500' y1='213' x2='520' y2='213' stroke='#33506e'/>
+<text x='470' y='205' font-size='12' fill='#13243a'>Yes</text>
+<line x1='160' y1='250' x2='160' y2='300' stroke='#33506e'/>
+<text x='170' y='275' font-size='12' fill='#13243a'>No</text>
+<rect x='40' y='300' width='240' height='56' rx='6' fill='#f2f2f2' stroke='#33506e'/>
+<text x='160' y='322' font-size='13' text-anchor='middle' fill='#13243a'>No report to the FAA</text>
+<text x='160' y='339' font-size='13' text-anchor='middle' fill='#13243a'>is required</text>
+<rect x='320' y='300' width='230' height='74' rx='6' fill='#eaf4ea' stroke='#2f6b3a'/>
+<text x='435' y='322' font-size='13' text-anchor='middle' fill='#143a1c'>Report to the FAA</text>
+<text x='435' y='339' font-size='13' text-anchor='middle' fill='#143a1c'>within 10 calendar days</text>
+<text x='435' y='358' font-size='12' text-anchor='middle' fill='#143a1c'>(damage to the drone itself never counts)</text>
+</svg>

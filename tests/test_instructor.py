@@ -202,9 +202,9 @@ class TestAssistant(unittest.TestCase):
             events = []
             final = course.author_ask(UNIT, 2, course.author_file(UNIT, 2)["text"], "Add a diagram.", emit=events.append)
             self.assertEqual((events[0]["start"]["stage"], events[0]["start"]["status"]), ("author", "Revising the lesson"))
-            streamed = {f: "".join(e["delta"] for e in events if e.get("field") == f) for f in ("note", "text")}
+            streamed = {f: "".join(e["delta"] for e in events if e.get("field") == f) for f in ("note", "file")}
             self.assertEqual(streamed["note"], final["note"])
-            self.assertEqual(streamed["text"].rstrip("\n"), final["text"].rstrip("\n"))
+            self.assertEqual(streamed["file"].rstrip("\n"), final["text"].rstrip("\n"))
             self.assertTrue(any(line.startswith("+```svg") for line in final["diff"]))
             self.assertTrue(any(line.startswith("-") and not line.startswith("---") for line in final["diff"]))
 
@@ -221,6 +221,88 @@ class TestAssistant(unittest.TestCase):
             saved = json.loads(saved)
             self.assertEqual((saved["version"], saved["images"]), (1, ["images/%s-1.svg" % UNIT]))
             self.assertEqual(saved["file"]["files"]["3"], {"version": 1, "draft": False})
+
+
+FILE = ("---\nsource: S | https://example.invalid/s\n---\nStep 1, the picture.\n\n"
+        "Worked example. A pilot flies at 200 feet.\n\nMemory handle.\n")
+
+
+class TestEdits(unittest.TestCase):
+    def test_a_span_a_single_from_and_an_insertion(self):
+        out = server_module.apply_edits(FILE, [
+            {"from": "Step 1", "to": "picture.", "text": "Step 1, the new picture."},
+            {"from": "Memory handle.", "text": "Memory handle: ask first."},
+            {"after": "at 200 feet.", "text": "\n\n```svg A diagram\n<svg></svg>\n```"},
+        ])
+        self.assertEqual(out, FILE.replace("Step 1, the picture.", "Step 1, the new picture.")
+                                  .replace("Memory handle.", "Memory handle: ask first.")
+                                  .replace("at 200 feet.", "at 200 feet.\n\n```svg A diagram\n<svg></svg>\n```"))
+
+    def test_changes_that_do_not_fit_are_refused(self):
+        for edits in (
+            [{"from": "Nowhere", "text": "x"}],                       # not in the file
+            [{"from": "e", "text": "x"}],                             # more than once
+            [{"from": "Memory", "to": "Step 1", "text": "x"}],        # the end before the start
+            [{"from": "Step 1", "to": "feet.", "text": "x"}, {"from": "Worked example", "text": "y"}],  # overlap
+            [{"from": "Step 1"}],                                     # no new text
+            [{"text": "x"}],                                          # no place
+        ):
+            with self.assertRaises(ValueError, msg=edits):
+                server_module.apply_edits(FILE, edits)
+
+
+def scripted(course, replies):
+    """Answer the model calls with `replies` in turn, streamed in one piece. Returns the messages sent."""
+    sent = []
+
+    def complete(system, user, stage=None, on_text=None, research_dirs=None, on_tool=None):
+        sent.append(user)
+        reply = json.dumps(replies[len(sent) - 1])
+        if on_text:
+            on_text(reply)
+        return reply
+
+    course.client.complete = complete
+    return sent
+
+
+class TestAssistantEdits(unittest.TestCase):
+    def test_changes_are_applied_to_the_editor_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            sent = scripted(course, [{"type": "revision", "note": "Added a diagram.", "edits": [
+                {"after": "at 200 feet.", "text": "\n\n```svg Altitude\n<svg viewBox='0 0 1 1'></svg>\n```"}]}])
+            events = []
+            final = course.author_ask(UNIT, 3, FILE, "Add a diagram.", emit=events.append)
+            self.assertEqual(len(sent), 1)
+            self.assertIn("at 200 feet.\n\n```svg Altitude", final["text"])
+            self.assertTrue(final["text"].startswith("---\nsource: S"))
+            self.assertEqual([line[0] for line in final["diff"][2:] if line[:1] in "+-"], ["+", "+", "+", "+"])
+            self.assertEqual("".join(e["delta"] for e in events if e.get("field") == "note"), "Added a diagram.")
+            self.assertFalse([e for e in events if e.get("field") == "file"])  # changes do not stream as a file
+
+    def test_changes_that_do_not_fit_lead_to_one_request_for_the_whole_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            whole = FILE.replace("Memory handle.", "Memory handle: ask first.")
+            sent = scripted(course, [
+                {"type": "revision", "note": "Changed it.", "edits": [{"from": "Not in the file", "text": "x"}]},
+                {"type": "revision", "note": "Changed it, whole file.", "file": whole},
+            ])
+            events = []
+            final = course.author_ask(UNIT, 3, FILE, "Change the handle.", emit=events.append)
+            self.assertEqual(len(sent), 2)
+            self.assertIn("YOUR CHANGES DID NOT FIT THE FILE", sent[1])
+            self.assertIn("'Not in the file' is not in the file", sent[1])
+            self.assertEqual((final["text"], final["note"]), (whole, "Changed it, whole file."))
+            self.assertEqual(len([e for e in events if "start" in e]), 2)  # the page starts the reply afresh
+
+    def test_a_whole_file_reply_still_works(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            scripted(course, [{"type": "revision", "note": "A first version.", "file": FILE}])
+            final = course.author_ask(UNIT, 1, "", "Write a first version.")
+            self.assertEqual(final["text"], FILE)
 
 
 if __name__ == "__main__":

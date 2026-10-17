@@ -108,6 +108,47 @@ def with_version(text, version):
     return "---\n" + "".join(line + "\n" for line in kept) + rest.lstrip("\n")
 
 
+def apply_edits(text, edits):
+    """Apply the authoring assistant's changes to the file in the editor.
+
+    Each change names exact text in the file. `from`, and `to` when given,
+    mark a span from the start of `from` to the end of `to`, which `text`
+    replaces. `after` marks the place right after it, where `text` goes in.
+    So the model copies only the ends of what it replaces, not all of it.
+    Raises ValueError, naming the change, when one does not fit the file.
+    """
+    spans = []
+    for number, edit in enumerate(edits, 1):
+        if not isinstance(edit, dict) or not isinstance(edit.get("text"), str):
+            raise ValueError("change %d has no text" % number)
+        anchor = edit.get("after", edit.get("from"))
+        if not isinstance(anchor, str) or not anchor:
+            raise ValueError("change %d names no place in the file" % number)
+        found = text.count(anchor)
+        if found != 1:
+            raise ValueError("change %d: %r is %s in the file" % (
+                number, anchor[:60], "not" if not found else "%d times" % found))
+        start = text.index(anchor)
+        end = start + len(anchor)
+        if "after" in edit:
+            start = end
+        elif edit.get("to"):
+            at = text.find(edit["to"], start)
+            if at < 0:
+                raise ValueError("change %d: %r does not come after %r" % (number, edit["to"][:60], anchor[:60]))
+            end = max(end, at + len(edit["to"]))
+        spans.append((start, end, edit["text"]))
+    spans.sort(key=lambda span: (span[0], span[1]))
+    for (_, end, _), (start, _, _) in zip(spans, spans[1:]):
+        if start < end:
+            raise ValueError("two changes overlap")
+    pieces, done = [], 0
+    for start, end, new in spans:
+        pieces += [text[done:start], new]
+        done = end
+    return "".join(pieces) + text[done:]
+
+
 # A drawing the assistant made: a fenced block that starts ```svg <description>.
 _DRAWING = re.compile(r"^```svg[ \t]*(?P<description>[^\n]*)\n(?P<svg><svg\b.*?</svg>)\s*\n```[ \t]*$",
                       re.S | re.M | re.I)
@@ -176,7 +217,7 @@ _STREAMED = {
     "score_diagnose": ("message",),
     "mock_gate": ("body",),
     "qa": ("answer",),
-    "author": ("note", "text"),
+    "author": ("note", "file"),
 }
 _STATUS = {
     "teach": "Writing your lesson",
@@ -194,7 +235,7 @@ _STATUS_AFTER = {
     ("quiz", "stem"): "Writing the answer options",
     ("score_diagnose", "message"): "Adding the sources",
     ("qa", "answer"): "Adding the sources",
-    ("author", "note"): "Writing the revised file",
+    ("author", "note"): "Writing the changes",
 }
 # The status while the chat tutor runs a tool, by the tool's name.
 _SEARCHING = {
@@ -219,6 +260,7 @@ class Session:
         self.reviewing = None      # the unit whose review question is on screen
         self.returning = set()     # units unparked at the last boundary, for the remediate framing
         self.chosen = None         # a unit picked from the course tree, in play until mastered or set aside
+        self.drafted = set()       # units whose Foundational draft this session wrote; used from the next session
         self.mock = None           # the practice-exam attempt in progress, if any
         self.resume_stage = None   # where the course was when the exam started
 
@@ -381,12 +423,22 @@ class Course:
     def lesson_gear(self, unit, gear=None):
         return min(gear or self.unit_gear(unit), max(self.gears_for(unit)))
 
+    def content(self, unit, gear):
+        """A unit's content at a gear, as the teaching calls use it. A
+        Foundational draft written during this session is used from the next
+        session on: it is the lesson this student has just seen, and calls this
+        session prepared ahead must still match their prefetches."""
+        content = self.tutor.content(unit, gear)
+        if content and content["form"] == "draft" and unit in self.session.drafted:
+            return dict(content["guided"], gear=gear, form="derived")
+        return content
+
     def lesson_call(self, unit, stage="teach", gear=None, chosen=False):
         """The model call that teaches a unit: its stage, gear, and message, or
         None when there is no content at that gear. A unit just missed, or
         returning after being set aside, is re-taught from a fresh angle."""
         gear = self.lesson_gear(unit, gear)
-        content = self.tutor.content(unit, gear)
+        content = self.content(unit, gear)
         if content is None:
             return None
         returning = unit in self.session.returning
@@ -402,7 +454,7 @@ class Course:
         if unit is None:
             return None
         gear = self.unit_gear(unit)
-        content = self.tutor.content(unit, gear)
+        content = self.content(unit, gear)
         if content is None:
             return None
         context = self.tutor.quiz_context(unit, gear, content, self.session.asked.get(unit, []), review=review)
@@ -448,10 +500,14 @@ class Course:
         self.prefetch(self.quiz_call(unit))
         block = self.generate(call["stage"], call["context"],
                               preview={"type": "lesson", "unit": unit, "gear": call["gear"]})
-        if call["gear"] == 3 and call["form"] == "derived":
+        if block.get("type") == "lesson":
+            # The unit and gear are the course's decision, not the model's to restate.
+            block["unit"], block["gear"] = unit, call["gear"]
+        if call["gear"] == 3 and call["form"] == "derived" and unit not in self.session.drafted:
             # The unit has no Foundational file yet. A lesson the student picked
             # is general and becomes the draft; a re-teach starts from one
             # student's mistake, so a general draft is written separately.
+            self.session.drafted.add(unit)
             if call["stage"] == "teach":
                 self.save_draft(unit, block)
             else:
@@ -566,7 +622,7 @@ class Course:
         )
         if block.get("type") == "question":
             # The key stays on the server. The browser never sees it.
-            block["unit"] = unit
+            block["unit"], block["gear"] = unit, call["gear"]
             self.session.pending = dict(block)
             self.session.asked.setdefault(unit, []).append(block.get("question_id", ""))
             block = {k: v for k, v in block.items() if k not in ("answer", "rationale")}
@@ -765,7 +821,7 @@ class Course:
             keyed = pending.get("answer", "")
             correct = bool(keyed) and keyed.strip().upper() == selected.strip().upper()
 
-        content = self.tutor.content(unit, gear)
+        content = self.content(unit, gear)
         if content is None:
             return self.missing_content(unit, gear)
 
@@ -811,7 +867,7 @@ class Course:
             block["correct"] = bool(correct)
             block["correct_option"] = keyed
             block["question_id"] = item_id
-            block["unit"] = unit
+            block["unit"], block["gear"] = unit, gear
 
         self.session.stage = "review_feedback" if review else "feedback"
         self.session.pending = None
@@ -913,10 +969,23 @@ class Course:
             unit, gear, text, request, chunks=found, history=list(history)[-CHAT_MEMORY:],
             can_search=self.client.supports_course_search,
         )
-        block = self.generate("author", context, preview={"type": "revision", "unit": unit, "gear": gear})
-        if block.get("type") != "revision" or not isinstance(block.get("text"), str):
-            return {"error": block.get("message", "The assistant returned no revision.")}
-        revised = block["text"].rstrip("\n") + "\n"
+        preview = {"type": "revision", "unit": unit, "gear": gear}
+        block = self.generate("author", context, preview=preview)
+        revised = None
+        if block.get("type") == "revision" and isinstance(block.get("edits"), list):
+            try:
+                revised = apply_edits(text, block["edits"])
+            except ValueError as problem:
+                # The changes do not fit the file. Ask once for the whole file,
+                # rather than leave the instructor with an error after the wait.
+                block = self.generate("author", context + "\n\nYOUR CHANGES DID NOT FIT THE FILE: %s. "
+                                      "Reply again with the whole file as `file`, and no `edits`." % problem,
+                                      preview=preview)
+        if revised is None:
+            if block.get("type") != "revision" or not isinstance(block.get("file"), str):
+                return {"error": block.get("message", "The assistant returned no revision.")}
+            revised = block["file"]
+        revised = revised.rstrip("\n") + "\n"
         diff = list(difflib.unified_diff(text.splitlines(), revised.splitlines(), "editor", "proposal", lineterm="", n=2))
         return {"done": True, "note": block.get("note", ""), "text": revised, "diff": diff}
 

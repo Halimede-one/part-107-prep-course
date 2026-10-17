@@ -72,7 +72,7 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       asked.push(payload);
       onEvent({ start: { stage: "author", status: "Revising the lesson", model: "mock", block: {} } });
       onEvent({ delta: "I added a diagram.", field: "note" });
-      onEvent({ delta: REVISION, field: "text" });
+      // Changes, the usual reply: only the note streams, and the proposal comes with the end.
       return Promise.resolve({ done: true, note: "I added a diagram.", text: REVISION,
                                diff: ["--- editor", "+++ proposal", "@@ -1,4 +1,6 @@", "-The Guided lesson.", "+Step 1, the limit."] });
     },

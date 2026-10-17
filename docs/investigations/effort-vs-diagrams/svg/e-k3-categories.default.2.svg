@@ -1,0 +1,77 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 320' width='560' height='320'>
+<rect x='0' y='0' width='560' height='320' fill='#ffffff'/>
+<text x='20' y='18' font-family='sans-serif' font-size='13' font-weight='bold' fill='#111111'>Operations over people: the four categories</text>
+<rect x='20' y='28' width='125' height='230' fill='#f5f7fa' stroke='#4a5a6a'/>
+<rect x='155' y='28' width='125' height='230' fill='#f5f7fa' stroke='#4a5a6a'/>
+<rect x='290' y='28' width='125' height='230' fill='#f5f7fa' stroke='#4a5a6a'/>
+<rect x='425' y='28' width='125' height='230' fill='#f5f7fa' stroke='#4a5a6a'/>
+<line x1='20' y1='50' x2='145' y2='50' stroke='#4a5a6a'/>
+<line x1='155' y1='50' x2='280' y2='50' stroke='#4a5a6a'/>
+<line x1='290' y1='50' x2='415' y2='50' stroke='#4a5a6a'/>
+<line x1='425' y1='50' x2='550' y2='50' stroke='#4a5a6a'/>
+<line x1='20' y1='138' x2='145' y2='138' stroke='#4a5a6a'/>
+<line x1='155' y1='138' x2='280' y2='138' stroke='#4a5a6a'/>
+<line x1='290' y1='138' x2='415' y2='138' stroke='#4a5a6a'/>
+<line x1='425' y1='138' x2='550' y2='138' stroke='#4a5a6a'/>
+<text x='82' y='44' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 1</text>
+<text x='217' y='44' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 2</text>
+<text x='352' y='44' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 3</text>
+<text x='487' y='44' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#111111'>Category 4</text>
+<text x='26' y='64' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>AIRCRAFT</text>
+<text x='161' y='64' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>AIRCRAFT</text>
+<text x='296' y='64' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>AIRCRAFT</text>
+<text x='431' y='64' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>AIRCRAFT</text>
+<text x='26' y='76' font-family='sans-serif' font-size='9' fill='#111111'>0.55 pounds or less</text>
+<text x='26' y='87' font-family='sans-serif' font-size='9' fill='#111111'>No exposed rotating</text>
+<text x='26' y='98' font-family='sans-serif' font-size='9' fill='#111111'>parts that could</text>
+<text x='26' y='109' font-family='sans-serif' font-size='9' fill='#111111'>lacerate skin</text>
+<text x='26' y='120' font-family='sans-serif' font-size='9' fill='#111111'>No declaration needed</text>
+<text x='161' y='76' font-family='sans-serif' font-size='9' fill='#111111'>No injury worse than</text>
+<text x='161' y='87' font-family='sans-serif' font-size='9' fill='#111111'>a transfer of 11</text>
+<text x='161' y='98' font-family='sans-serif' font-size='9' fill='#111111'>foot-pounds of</text>
+<text x='161' y='109' font-family='sans-serif' font-size='9' fill='#111111'>kinetic energy</text>
+<text x='161' y='120' font-family='sans-serif' font-size='9' fill='#111111'>Accepted declaration</text>
+<text x='161' y='131' font-family='sans-serif' font-size='9' fill='#111111'>of compliance + label</text>
+<text x='296' y='76' font-family='sans-serif' font-size='9' fill='#111111'>No injury worse than</text>
+<text x='296' y='87' font-family='sans-serif' font-size='9' fill='#111111'>a transfer of 25</text>
+<text x='296' y='98' font-family='sans-serif' font-size='9' fill='#111111'>foot-pounds of</text>
+<text x='296' y='109' font-family='sans-serif' font-size='9' fill='#111111'>kinetic energy</text>
+<text x='296' y='120' font-family='sans-serif' font-size='9' fill='#111111'>Accepted declaration</text>
+<text x='296' y='131' font-family='sans-serif' font-size='9' fill='#111111'>of compliance + label</text>
+<text x='431' y='76' font-family='sans-serif' font-size='9' fill='#111111'>Holds an airworthiness</text>
+<text x='431' y='87' font-family='sans-serif' font-size='9' fill='#111111'>certificate</text>
+<text x='431' y='98' font-family='sans-serif' font-size='9' fill='#111111'>Flown within the</text>
+<text x='431' y='109' font-family='sans-serif' font-size='9' fill='#111111'>operating limits in the</text>
+<text x='431' y='120' font-family='sans-serif' font-size='9' fill='#111111'>flight manual</text>
+<text x='26' y='152' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>OVER PEOPLE</text>
+<text x='161' y='152' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>OVER PEOPLE</text>
+<text x='296' y='152' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>OVER PEOPLE</text>
+<text x='431' y='152' font-family='sans-serif' font-size='9' font-weight='bold' fill='#333333'>OVER PEOPLE</text>
+<text x='26' y='164' font-family='sans-serif' font-size='9' fill='#111111'>May fly over people</text>
+<text x='26' y='175' font-family='sans-serif' font-size='9' fill='#111111'>Sustained flight over</text>
+<text x='26' y='186' font-family='sans-serif' font-size='9' fill='#111111'>an open-air assembly</text>
+<text x='26' y='197' font-family='sans-serif' font-size='9' fill='#111111'>only if the aircraft</text>
+<text x='26' y='208' font-family='sans-serif' font-size='9' fill='#111111'>meets remote ID</text>
+<text x='161' y='164' font-family='sans-serif' font-size='9' fill='#111111'>May fly over people</text>
+<text x='161' y='175' font-family='sans-serif' font-size='9' fill='#111111'>Sustained flight over</text>
+<text x='161' y='186' font-family='sans-serif' font-size='9' fill='#111111'>an open-air assembly</text>
+<text x='161' y='197' font-family='sans-serif' font-size='9' fill='#111111'>only if the aircraft</text>
+<text x='161' y='208' font-family='sans-serif' font-size='9' fill='#111111'>meets remote ID</text>
+<text x='296' y='164' font-family='sans-serif' font-size='9' fill='#111111'>Never over an</text>
+<text x='296' y='175' font-family='sans-serif' font-size='9' fill='#111111'>open-air assembly</text>
+<text x='296' y='186' font-family='sans-serif' font-size='9' fill='#111111'>Sustained flight over</text>
+<text x='296' y='197' font-family='sans-serif' font-size='9' fill='#111111'>people only within a</text>
+<text x='296' y='208' font-family='sans-serif' font-size='9' fill='#111111'>closed- or restricted-</text>
+<text x='296' y='219' font-family='sans-serif' font-size='9' fill='#111111'>access site where all</text>
+<text x='296' y='230' font-family='sans-serif' font-size='9' fill='#111111'>are on notice, or over</text>
+<text x='296' y='241' font-family='sans-serif' font-size='9' fill='#111111'>people participating</text>
+<text x='296' y='252' font-family='sans-serif' font-size='9' fill='#111111'>or protected</text>
+<text x='431' y='164' font-family='sans-serif' font-size='9' fill='#111111'>May fly over people</text>
+<text x='431' y='175' font-family='sans-serif' font-size='9' fill='#111111'>Sustained flight over</text>
+<text x='431' y='186' font-family='sans-serif' font-size='9' fill='#111111'>an open-air assembly</text>
+<text x='431' y='197' font-family='sans-serif' font-size='9' fill='#111111'>only if the aircraft</text>
+<text x='431' y='208' font-family='sans-serif' font-size='9' fill='#111111'>meets remote ID</text>
+<text x='20' y='280' font-family='sans-serif' font-size='9' fill='#111111'>Outside the four categories, flight over people is allowed when the people are directly participating in the</text>
+<text x='20' y='292' font-family='sans-serif' font-size='9' fill='#111111'>operation, or are under a covered structure or inside a stationary vehicle that provides reasonable protection</text>
+<text x='20' y='304' font-family='sans-serif' font-size='9' fill='#111111'>from a falling aircraft.</text>
+</svg>

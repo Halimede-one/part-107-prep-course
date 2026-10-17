@@ -523,6 +523,8 @@
     input.disabled = chat.paused;
     input.placeholder = chat.paused ? "The chat is paused during the practice exam" : "Ask about anything in the course";
     document.getElementById("chat-send").disabled = chat.busy || chat.paused;
+    document.getElementById("chat-mic").disabled = chat.paused;
+    if (chat.paused) { Dictation.cancel(); }
   }
 
   // Read a response body as it arrives and pass on each complete JSON line.
@@ -723,6 +725,7 @@
     var input = document.getElementById("chat-input");
     function submitChat() {
       if (chat.busy || chat.paused || !input.value.trim()) { return; }
+      Dictation.cancel();  // words still to come would land in the emptied box
       sendChat(input.value);
       input.value = "";
     }
@@ -736,6 +739,11 @@
         e.preventDefault();
         submitChat();
       }
+    });
+    // The microphone (dictation.js) puts spoken words into the box; if it
+    // fails, the chat says why.
+    Dictation.attach(document.getElementById("chat-mic"), input, function (text) {
+      appendChat(el("div", { class: "msg tutor error" }, text));
     });
     document.getElementById("mock-btn").addEventListener("click", startMock);
     document.getElementById("chat-log").addEventListener("click", enlargeDrawing);

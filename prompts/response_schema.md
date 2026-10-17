@@ -87,7 +87,7 @@ A response with no model call, such as a practice-exam question, sends only the 
 Only when the course starts with `--instructor`; otherwise these paths answer 404. The page names a unit and a gear, never a file path, and the server refuses a unit that is not in `objectives.md` or a gear other than 1, 2, or 3.
 
 - `GET /api/author?unit=UA.I.B.K16&gear=3`: the lesson file as the editor shows it (the source lines and the body), the Guided lesson, each gear's file version and draft mark, and the unit's `STATUS.md` row.
-- `POST /api/author/ask` with `{"unit", "gear", "text", "request", "history"}`: `text` is the editor's content with unsaved changes, and `history` holds the earlier `{"role", "text"}` turns. The reply streams like the chat; the stage is `author`, its fields `note` and `text`, and the final line is `{"done": true, "note", "text", "diff"}`.
+- `POST /api/author/ask` with `{"unit", "gear", "text", "request", "history"}`: `text` is the editor's content with unsaved changes, and `history` holds the earlier `{"role", "text"}` turns. The reply streams like the chat; the stage is `author`, its fields `note` and, for a whole-file reply, `file` (a reply with changes streams only its note), and the final line is `{"done": true, "note", "text", "diff"}`.
 - `POST /api/author/save` with `{"unit", "gear", "text", "note", "vetted"}`: saves the file and returns `{"saved": true, "version", "images", "warnings", "file"}`, or `{"error"}` for a drawing that could run code.
 
 ## Notes

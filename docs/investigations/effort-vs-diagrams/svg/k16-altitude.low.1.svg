@@ -1,0 +1,16 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 240' width='560' height='240'>
+  <rect x='0' y='0' width='560' height='240' fill='#ffffff'/>
+  <line x1='40' y1='200' x2='540' y2='200' stroke='#333333' stroke-width='2'/>
+  <text x='40' y='222' font-family='sans-serif' font-size='13' fill='#333333'>Ground (surface)</text>
+  <rect x='60' y='40' width='280' height='160' fill='#e8eeff' stroke='#2b4fa8' stroke-width='2' stroke-dasharray='8 6'/>
+  <text x='74' y='62' font-family='sans-serif' font-size='14' fill='#2b4fa8'>Class D, reaches the ground</text>
+  <text x='74' y='80' font-family='sans-serif' font-size='13' fill='#2b4fa8'>authorization required</text>
+  <line x1='80' y1='160' x2='320' y2='160' stroke='#c0392b' stroke-width='2'/>
+  <text x='80' y='154' font-family='sans-serif' font-size='13' fill='#c0392b'>200 feet, authorized ceiling</text>
+  <circle cx='200' cy='175' r='6' fill='#333333'/>
+  <text x='212' y='180' font-family='sans-serif' font-size='13' fill='#333333'>flight at 200 feet or below</text>
+  <text x='380' y='62' font-family='sans-serif' font-size='14' fill='#1e7a46'>Class G</text>
+  <text x='380' y='80' font-family='sans-serif' font-size='13' fill='#1e7a46'>no authorization</text>
+  <text x='380' y='98' font-family='sans-serif' font-size='13' fill='#1e7a46'>under 107.41</text>
+  <circle cx='450' cy='140' r='6' fill='#333333'/>
+</svg>

@@ -6,10 +6,10 @@ Vetting status of the Regulations curriculum. A unit is vetted when a reviewer h
 |---|---|---|---|---|---|---|
 | UA.I.A.K1 | | drafted | | drafted | draft | Re-cited October 9, 2026: the content and the applicability fact now follow current 107.1(b) (four exclusions; part 101 is no longer named). Vet the new wording against chunk 14cfr107-107-1. |
 | UA.I.A.K2 | | drafted | | drafted | draft | |
-| UA.I.A.K3 | | drafted | | drafted | draft | Re-cited October 9, 2026: 107.5 is reserved since November 3, 2025; the content, both reference facts, and mock item m-a2 now cite 14 CFR 3.401 to 3.405 (part 3, subpart D). Vet the new wording against chunks 14cfr3-3-401, 3-403, 3-405. |
-| UA.I.A.K4 | | drafted | | drafted | draft | |
-| UA.I.A.K5 | | drafted | | drafted | draft | |
-| UA.I.A.K6 | | drafted | | drafted | draft | Confirm the exact section to cite for multiple-category eligibility; subpart D and AC 107-2A chapter 6 are the places to look. |
+| UA.I.A.K3 |  | drafted | tutor draft v1 | drafted | draft | Re-cited October 9, 2026: 107.5 is reserved since November 3, 2025; the content, both reference facts, and mock item m-a2 now cite 14 CFR 3.401 to 3.405 (part 3, subpart D). Vet the new wording against chunks 14cfr3-3-401, 3-403, 3-405. 2026-10-16: Foundational draft written by the tutor; review it in the instructor interface. |
+| UA.I.A.K4 |  | v2 edited |  | drafted | draft | 2026-10-16: Guided lesson v2, not yet vetted: test changes in grammar |
+| UA.I.A.K5 |  | drafted | tutor draft v1 | drafted | draft | 2026-10-16: Foundational draft written by the tutor; review it in the instructor interface. |
+| UA.I.A.K6 |  | drafted | tutor draft v1 | drafted | draft | Confirm the exact section to cite for multiple-category eligibility; subpart D and AC 107-2A chapter 6 are the places to look. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. |
 | UA.I.A.K7 | | drafted | | drafted | draft | Confirm the retention periods against 107.165 as currently published. |
 | UA.I.A.K8 | | drafted | | drafted | draft | Confirm there is no grandfathering language in subpart D. |
 | UA.I.B.K16 | | drafted | drafted | drafted | draft | Gear-3 exemplar. |

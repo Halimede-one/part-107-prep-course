@@ -163,7 +163,7 @@ Part 2.5:
 
 ## As built
 
-Built October 16, 2026, in the order above. The test suite has 181 tests (1 skipped); new are `tests/test_foundational.py`, `tests/test_instructor.py`, and `tests/test_instructor_page.py` with `tests/fixtures/instructor.html`. Differences from the plan, and what the build found:
+Built October 16, 2026, in the order above. The test suite had 181 tests (1 skipped), and 189 after the follow-up below; new are `tests/test_foundational.py`, `tests/test_instructor.py`, and `tests/test_instructor_page.py` with `tests/fixtures/instructor.html`. Differences from the plan, and what the build found:
 
 1. **MCP servers in every `claude -p` call.** The real-model check showed 25,000 tokens of context on a lesson call that needs about 3,700. The user's claude.ai connectors and plugins loaded into every tutor call, because `--setting-sources ""` does not turn them off. They also put tools that reach the user's Google account in front of the tutor. The `claude_code` adapter now passes `--strict-mcp-config`, which loads no MCP servers; a trivial call fell from 21,563 to 264 tokens. `tests/test_phase2.py` checks the flag.
 2. **The save dialog acts on its buttons, not on its `close` event.** Headless Chrome under `--dump-dom` closes a dialog but never fires the event, so the browser test could not see a save. A click on "Not yet" or "Yes, vetted" saves; Enter in the note field clicks "Not yet", the first button; Escape and Cancel save nothing.
@@ -172,8 +172,10 @@ Built October 16, 2026, in the order above. The test suite has 181 tests (1 skip
 5. **`STATUS.md`** got its Gear 1 column by hand, and the server edits rows through `status.py`.
 6. **Real-model run** (claude_code, Opus 5): two assistant rounds on the UA.I.B.K16 Foundational file took 44 s and 76 s and wrote 3,600 and 6,000 tokens, because each revision is the whole file. The save stored the diagram as `images/UA.I.B.K16-1.svg`, and "Try it as a student" taught the unit at Foundational with the diagram in the lesson.
 
-Open points:
+Open points, resolved October 16, 2026 (approved follow-up plan):
 
-- The mock backend's canned lesson says gear 2 and unit UA.I.B.K16 whatever was asked, so with the mock the gear tag shows the canned values. The server could set a lesson's unit and gear from what it decided, as it already does for a question's unit.
-- The first time a unit reaches Foundational, the question prefetched with the lesson was built before the draft file existed, so it no longer matches and is written again. This happens once per unit.
-- Each assistant revision rewrites the whole file. Edits that send only the changed part would be faster on long files.
+1. **The unit and gear on a block are the course's.** `teach()`, `quiz()`, and `handle_answer()` now stamp the unit and gear they decided on the lesson, question, and feedback, whatever the model wrote. With the mock, the gear tag after "Try it as a student" now shows the gear tried.
+2. **A draft written during a session is used from the next session.** `Session.drafted` records the units this session wrote a Foundational draft for, and `Course.content()` gives the teaching calls the Guided lesson for them until the next pace choice or server start. So the question prefetched with the first Foundational lesson still matches; tests show it is used on both paths (a picked lesson, and a re-teach with its background draft), and they fail without the change.
+3. **The assistant sends only its changes.** `prompts/author.md` asks for `edits`: a `from`/`to` span or an `after` place, each copied exactly from the file, with the new `text`. `apply_edits()` in `server.py` applies them and refuses a change that does not fit (missing, repeated, out of order, overlapping); then the server asks once for the whole file. A first version or a full rewrite still comes as `file`, which streams into the preview. The whole-file key was renamed from `text` to `file`, because the streaming parser takes the first `"text"` key, and in a reply with changes that belongs to a change.
+
+Measured with the real model on the UA.I.B.K16 Foundational diagram request: the second round (larger labels) fell from 76 s and 6,000 output tokens to 31 s and 2,700. The first round (add a diagram) did not get faster: 40 to 59 s. Its reply is about 1,000 tokens; the rest is thinking. At the default effort, 2,219 of 3,262 output tokens were thinking (45 s). With `--effort low` the same request took 13 s, with 64 thinking tokens and a valid reply. The effort is unchanged: less thinking may make worse diagrams, and that is the user's call.

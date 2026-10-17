@@ -136,6 +136,11 @@
       unit: my.unit, gear: my.gear, text: text(), request: request, history: my.history
     }, function (event) {
       if (event.start) {
+        // A second start is the server asking again, for the whole file, when
+        // the changes did not fit: begin the reply afresh.
+        if (status) { status.stop(); status.node.remove(); }
+        note.textContent = "";
+        proposal = "";
         status = deps.indicator(event.start);
         live.insertBefore(status.node, note);
       }
@@ -143,7 +148,8 @@
       if (event.delta !== undefined) {
         if (status) { status.writing(); }
         if (event.field === "note") { deps.streamInto(note, event.delta); scrollLog(); }
-        if (event.field === "text") { proposal += event.delta; previewSoon(proposal); }
+        // A whole file streams into the preview; changes show when they are applied.
+        if (event.field === "file") { proposal += event.delta; previewSoon(proposal); }
       }
     }).then(function (final) {
       clearTimeout(timer);

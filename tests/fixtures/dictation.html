@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dictation check</title>
+<link rel="stylesheet" href="../../ui/styles.css">
+</head>
+<body>
+
+<!-- Loaded by tests/test_dictation.py. Runs the course page's own markup with
+     ui/dictation.js and ui/app.js, speaks into the chat through a fake speech
+     recognizer, and writes PASS, or one line per failed check, into #result.
+     The query picks the checks: none, the microphone in use; ?none, a browser
+     without speech recognition. -->
+<pre id="result">NOT RUN</pre>
+
+<script>
+// The course page's markup: index.html's body up to its scripts.
+var page = new XMLHttpRequest();
+page.open("GET", "../../ui/index.html", false);
+page.send();
+document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
+</script>
+<script>
+var MODE = location.search.slice(1);
+document.getElementById("intake").hidden = true;
+
+// The requests app.js makes, answered here instead of by the server. A
+// question to the tutor is kept, and never answered.
+var REPLIES = {
+  "/api/state": { summary: { mastered: 0, total: 0 }, units: [] },
+  "/api/chat": { meta: {}, messages: [] }
+};
+var asked = [];
+window.fetch = function (url, options) {
+  if (url === "/api/ask") {
+    asked.push(JSON.parse(options.body));
+    return new Promise(function () {});
+  }
+  return Promise.resolve({
+    headers: { get: function () { return null; } },
+    json: function () { return Promise.resolve(REPLIES[url]); }
+  });
+};
+
+// The workspace is not part of this check. Its shared functions let the
+// checks make app.js read the course state again.
+var shared = null;
+window.Instructor = { init: function (deps) { shared = deps; } };
+
+// A stand-in for the browser's speech recognition: it records the calls, and
+// the checks fire its events. Chrome has a real one under both names.
+var made = [];
+function FakeRecognition() { this.calls = []; made.push(this); }
+["start", "stop", "abort"].forEach(function (name) {
+  FakeRecognition.prototype[name] = function () { this.calls.push(name); };
+});
+window.SpeechRecognition = window.webkitSpeechRecognition = MODE === "none" ? undefined : FakeRecognition;
+</script>
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script src="../../ui/course-tree.js"></script>
+<script src="../../ui/dictation.js"></script>
+<script src="../../ui/app.js"></script>
+<script>
+window.addEventListener("load", function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+  function finish() {
+    document.getElementById("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
+  }
+  var mic = document.getElementById("chat-mic"), send = document.getElementById("chat-send");
+  var box = document.getElementById("chat-input"), log = document.getElementById("chat-log");
+  var form = document.getElementById("chat-form"), layout = document.querySelector(".layout");
+
+  // The recognizer says these transcripts, as the whole result list so far.
+  function say(r, transcripts) {
+    r.onresult({ results: transcripts.map(function (t) { return [{ transcript: t }]; }) });
+  }
+  function pressed() { return mic.getAttribute("aria-pressed") === "true"; }
+  function errors() { return log.querySelectorAll(".msg.error"); }
+
+  try {
+    if (MODE === "none") {
+      check("without speech recognition the button stays hidden", mic.hidden && mic.offsetWidth === 0);
+      finish();
+      return;
+    }
+
+    check("the microphone button shows", !mic.hidden && mic.offsetWidth > 0);
+    check("it is as tall as Send", mic.offsetHeight === send.offsetHeight);
+    layout.style.setProperty("--right", "300px");
+    check("the button and Send fit the narrowest chat panel",
+          send.getBoundingClientRect().right <= form.getBoundingClientRect().right - parseFloat(getComputedStyle(form).paddingRight) + 0.5);
+    layout.style.removeProperty("--right");
+
+    // A click starts listening.
+    box.value = "What is";
+    mic.focus();
+    mic.click();
+    var r = made[0];
+    check("a click starts one recognizer", made.length === 1 && r.calls.join() === "start");
+    check("in US English, through pauses, with words as they come", r.lang === "en-US" && r.continuous === true && r.interimResults === true);
+    check("the button shows that it listens", pressed());
+
+    // The words go into the box.
+    say(r, [" the altitude limit"]);
+    check("spoken words follow the typed ones after one space", box.value === "What is the altitude limit");
+    say(r, ["the altitude limit", " for drones"]);
+    check("Chrome's results read as separate words", box.value === "What is the altitude limit for drones");
+    say(r, ["the altitude limit", "for drones"]);
+    check("Safari's results read as separate words", box.value === "What is the altitude limit for drones");
+
+    // A second click stops listening; the last words still arrive.
+    mic.click();
+    check("a second click stops listening and waits for the last words", r.calls.join() === "start,stop");
+    say(r, ["the altitude limit", "for drones near an airport"]);
+    check("the last words still arrive", box.value === "What is the altitude limit for drones near an airport");
+    r.onend();
+    check("the end releases the button", !pressed());
+    check("and puts the focus in the box", document.activeElement === box);
+    check("dictation alone sends nothing", asked.length === 0 && !log.querySelector(".msg.student"));
+
+    // Typing while listening stops it and keeps the typing.
+    box.value = "";
+    mic.click();
+    r = made[1];
+    say(r, ["how high"]);
+    box.value += " can I fly";
+    box.dispatchEvent(new Event("input"));
+    check("typing stops listening", r.calls.join() === "start,abort" && !pressed());
+    say(r, ["how high can"]);
+    check("and keeps the typing", box.value === "how high can I fly");
+
+    // A failure says why in the chat; silence says nothing.
+    mic.click();
+    r = made[2];
+    r.onerror({ error: "not-allowed" });
+    check("a blocked microphone says why in the chat", errors().length === 1 && /permission/.test(errors()[0].textContent));
+    check("and releases the button without an end event", !pressed());
+    mic.click();
+    r = made[3];
+    r.onerror({ error: "no-speech" });
+    r.onend();
+    check("silence shows no message", errors().length === 1 && !pressed());
+
+    // Enter sends the spoken question. The chat stays busy after this, since
+    // the tutor never answers here, so this check comes late.
+    box.value = "";
+    mic.click();
+    r = made[4];
+    say(r, ["what is LAANC"]);
+    box.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    check("Enter stops listening", r.calls.join() === "start,abort" && !pressed());
+    check("and sends the spoken question", asked.length === 1 && asked[0].text === "what is LAANC");
+    say(r, ["what is LAANC airspace"]);
+    check("late words do not come back", box.value === "");
+
+    // The practice exam pauses the chat: app.js reads the state again.
+    mic.click();
+    r = made[5];
+    REPLIES["/api/state"] = { summary: { mastered: 0, total: 0 }, units: [], mock_in_progress: true };
+    shared.refresh();
+    setTimeout(function () {
+      try {
+        check("the practice exam stops listening", r.calls.join() === "start,abort" && !pressed());
+        check("and turns the button off", mic.disabled);
+      } catch (e) {
+        failures.push("ERROR " + e.message);
+      }
+      finish();
+    }, 0);
+  } catch (e) {
+    // A failed check can leave dictation running, so later steps can throw.
+    // Keep the failures found so far: they name the cause.
+    failures.push("ERROR " + e.message);
+    finish();
+  }
+});
+</script>
+</body>
+</html>
