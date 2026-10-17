@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tree follows check</title>
+<link rel="stylesheet" href="../../ui/styles.css">
+</head>
+<body>
+
+<!-- Loaded by tests/test_tree_follows.py. Runs the course page's own markup
+     with ui/app.js, picks a lane in the course tree, and checks that the tree
+     shows the pick while the tutor is still writing the lesson. Writes PASS,
+     or one line per failed check, into #result. The query picks the pick:
+     none, the current unit at another gear (a track switch); ?unit, another
+     unit. -->
+<pre id="result">NOT RUN</pre>
+
+<script>
+// The course page's markup: index.html's body up to its scripts.
+var page = new XMLHttpRequest();
+page.open("GET", "../../ui/index.html", false);
+page.send();
+document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
+</script>
+<script>
+var MODE = location.search.slice(1);
+var PICK = MODE === "unit" ? { unit: "UA.I.A.K5", gear: 1 } : { unit: "UA.I.A.K2", gear: 2 };
+document.getElementById("intake").hidden = true;
+
+// Six units, the second current at gear 1. After the pick, the server's state
+// has the picked unit current at the picked gear, as soon as the tutor starts.
+function units(current, gear) {
+  return [1, 2, 3, 4, 5, 6].map(function (n) {
+    var id = "UA.I.A.K" + n, now = id === current;
+    return { id: id, number: "1." + n, task: "A", title: "Knowledge unit number " + n + ".",
+             mastery: n === 1 ? "mastered" : now || n === 2 ? "learning" : "unseen", current: now,
+             available_gears: [1, 2, 3], written: true, gears_taken: n <= 2 ? [1] : [], attempts: n <= 2 ? { "1": 1 } : {},
+             current_gear: now ? gear : 1, needs_attention: false, parked: false };
+  });
+}
+function state(current, gear) {
+  return { summary: { mastered: 1, total: 6 }, readiness: { ready: false, passes: 0, passes_needed: 2, reasons: [] },
+           units: units(current, gear) };
+}
+var posted = false;
+// ResizeObserver reports at the next frame, and headless Chrome draws no
+// frames when it dumps the page.
+window.ResizeObserver = function () { this.observe = function () {}; };
+window.fetch = function (url, options) {
+  if (url === "/api/respond") {
+    // The tutor has started and is still writing: the stream sends "start" and stays open.
+    posted = true;
+    var body = JSON.parse(options.body);
+    var line = JSON.stringify({ start: { stage: "teach", status: "Writing your lesson", model: "mock",
+                                         block: { type: "lesson", unit: body.unit, gear: body.gear } } }) + "\n";
+    return Promise.resolve({ body: new ReadableStream({ start: function (c) { c.enqueue(new TextEncoder().encode(line)); } }) });
+  }
+  var reply = url === "/api/chat" ? { meta: {}, messages: [] } : posted ? state(PICK.unit, PICK.gear) : state("UA.I.A.K2", 1);
+  return Promise.resolve({
+    headers: { get: function () { return null; } },
+    json: function () { return Promise.resolve(reply); }
+  });
+};
+</script>
+<script src="../../ui/marked.min.js"></script>
+<script src="../../ui/markdown.js"></script>
+<script src="../../ui/course-tree.js"></script>
+<script src="../../ui/panels.js"></script>
+<script src="../../ui/instructor.js"></script>
+<script src="../../ui/dictation.js"></script>
+<script src="../../ui/app.js"></script>
+<script>
+window.addEventListener("load", function () {
+  "use strict";
+  var failures = [];
+  function check(name, ok) { if (!ok) { failures.push(name); } }
+  var tree = document.getElementById("course-tree"), m = CourseTree.METRICS.sidebar;
+  // The unit the tree marks current, and the gear of the lane its dot is on.
+  function shown() {
+    var node = tree.querySelector("circle.node.current"), dot = tree.querySelector(".now-dot");
+    return {
+      unit: node ? node.closest("g.unit").getAttribute("data-id") : null,
+      gear: dot ? (Number(dot.getAttribute("cx")) - m.trunkX) / m.laneGap + 1 : null
+    };
+  }
+
+  var before = shown();
+  check("before the pick, the tree shows 1.2 at gear 1", before.unit === "UA.I.A.K2" && before.gear === 1);
+  tree.querySelector('g.lane-g[data-unit="' + PICK.unit + '"][data-gear="' + PICK.gear + '"] path.hit')
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  document.querySelector("#tree-pick .tree-pick-start").click();
+
+  setTimeout(function () {
+    check("the tutor is still writing", !!document.querySelector("#block-root .status"));
+    var after = shown();
+    check("the tree shows " + PICK.unit + " as current", after.unit === PICK.unit);
+    check("the dot is on the gear " + PICK.gear + " lane", after.gear === PICK.gear);
+    document.getElementById("result").textContent = failures.length ? "FAIL\n" + failures.join("\n") : "PASS";
+  }, 500);
+});
+</script>
+</body>
+</html>

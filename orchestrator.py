@@ -104,6 +104,22 @@ def task_of(unit):
     return unit.split(".")[2] if unit else None
 
 
+# The short unit number is chapter.lesson. Area I's tasks A to F are chapters
+# 1 to 6, and the later ACS areas continue the count. The lesson is the K number.
+FIRST_CHAPTER = {"I": 1, "II": 7, "III": 9, "IV": 11, "V": 12}
+
+
+def number_of(unit):
+    """The short number of a unit code: UA.I.B.K16 -> 2.16, UA.I.B.K21a -> 2.21a."""
+    _, area, task, element = unit.split(".")
+    return "%d.%s" % (FIRST_CHAPTER[area] + ord(task) - ord("A"), element[1:])
+
+
+def label_of(unit):
+    """A unit as people see it: 2.16 (UA.I.B.K16)."""
+    return "%s (%s)" % (number_of(unit), unit)
+
+
 def current_unit(led):
     """The first unit not yet mastered and not parked, in course order."""
     for unit in led.order:
@@ -261,7 +277,7 @@ class Orchestrator:
     # ---- per-stage context ----------------------------------------------
     def _header(self, unit, gear):
         return [
-            "UNIT: %s" % unit,
+            "UNIT: %s" % label_of(unit),
             "OBJECTIVE: %s" % self.objectives.get(unit, "(not listed)"),
             "GEAR: %d (%s)" % (gear, GEAR_NAMES.get(gear, "Guided")),
         ]
@@ -358,7 +374,7 @@ class Orchestrator:
         in their editor, and the material that grounds it. Earlier turns carry
         the requests and the notes, not every earlier version of the file."""
         lines = [
-            "UNIT: %s" % unit,
+            "UNIT: %s" % label_of(unit),
             "OBJECTIVE: %s" % self.objectives.get(unit, "(not listed)"),
             "FILE: the %s lesson (gear %d)" % (GEAR_NAMES.get(gear, "Guided"), gear),
         ]
@@ -397,7 +413,7 @@ class Orchestrator:
         lines += ["- Task %s: %d of %d" % (t["task"], t["correct"], t["total"]) for t in result["by_task"]]
         missed_units = sorted({m["unit"] for m in result["missed"]})
         lines += ["", "MISSED UNITS (with the objective each one tests):"]
-        lines += ["- %s: %s" % (u, self.objectives.get(u, "")) for u in missed_units] or ["- none"]
+        lines += ["- %s: %s" % (label_of(u), self.objectives.get(u, "")) for u in missed_units] or ["- none"]
         lines += [
             "",
             "READINESS STATUS: %s" % ("ready to schedule the real exam" if ready["ready"] else "not yet"),

@@ -181,6 +181,7 @@
   var afterSave = null;
 
   function save(then) {
+    Dictation.cancel();  // the dialog covers the request box
     afterSave = then || null;
     $("author-note").value = "";
     $("author-save-dialog").showModal();
@@ -213,10 +214,11 @@
 
   // ---- opening and closing ------------------------------------------------
   function open() {
+    Dictation.cancel();  // the workspace covers the chat
     var units = deps.units(), select = $("author-unit"), here = deps.here() || {};
     select.innerHTML = "";
     units.forEach(function (u) {
-      select.appendChild(deps.el("option", { value: u.id }, u.id + " · " + (u.title || "").replace(/\.$/, "")));
+      select.appendChild(deps.el("option", { value: u.id }, u.number + " (" + u.id + ") · " + (u.title || "").replace(/\.$/, "")));
     });
     $("author").hidden = false;
     load(here.unit || (units[0] && units[0].id), here.gear || 2).then(function () { $("author-text").focus(); });
@@ -224,6 +226,7 @@
 
   function close() {
     if (!keepOrDiscard()) { return; }
+    Dictation.cancel();
     $("author").hidden = true;
     $("instructor-btn").focus();
   }
@@ -272,6 +275,7 @@
       e.preventDefault();
       var input = $("author-request");
       if (my.busy || !input.value.trim()) { return; }
+      Dictation.cancel();  // words still to come would land in the emptied box
       ask(input.value);
       input.value = "";
     });
@@ -281,6 +285,13 @@
         e.preventDefault();
         $("author-form").requestSubmit();
       }
+    });
+    // The microphone (dictation.js) puts spoken words into the request box; if
+    // it fails, the assistant column says why. It stops when the box goes out
+    // of reach: on Send, Save, Close, and Try it.
+    Dictation.attach($("author-mic"), $("author-request"), function (message) {
+      $("author-log").appendChild(deps.el("div", { class: "msg tutor error" }, message));
+      scrollLog();
     });
     $("author-save").addEventListener("click", function () { save(); });
     Array.prototype.forEach.call(document.querySelectorAll("#author-save-dialog button"), function (b) {
@@ -293,6 +304,7 @@
     });
     $("author-try").addEventListener("click", function () {
       function tryIt() {
+        Dictation.cancel();
         $("author").hidden = true;
         deps.tryIt(my.unit, my.gear);
       }

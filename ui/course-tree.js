@@ -36,6 +36,9 @@
   // The title as shown: the ACS text without its lettered prefix or final period.
   function titleOf(u) { return String(u.title || "").replace(/^[a-d]\.\s*/, "").replace(/\.$/, ""); }
 
+  // A unit as people see it: its chapter.lesson number, then its ACS code.
+  function labelOf(u) { return u.number + " (" + u.id + ")"; }
+
   // The gears a unit can be taught at today: none while its content is unwritten.
   function writtenGears(u) { return u.written === false ? [] : u.available_gears; }
 
@@ -57,7 +60,7 @@
     for (var i = units.length - 1; i >= 0; i--) {
       rows.push({ kind: "unit", unit: units[i], index: i, h: isSub(units[i]) ? m.subH : m.unitH });
       if (i === 0 || units[i].task !== units[i - 1].task) {
-        rows.push({ kind: "task", task: units[i].task, first: i === 0, h: m.taskH });
+        rows.push({ kind: "task", task: units[i].task, chapter: units[i].number.split(".")[0], first: i === 0, h: m.taskH });
       }
     }
     rows.push({ kind: "start", h: m.startH });
@@ -154,7 +157,7 @@
       var p = attemptCount(u, g); return "gear " + g + " " + gearName(g) + (p ? " (" + p + (p === 1 ? " attempt" : " attempts") + ")" : "");
     });
     var sources = [1, 2, 3].map(function (g) { return gearName(g) + ": " + gearSource(u, g); }).join("; ");
-    return u.id + ": " + titleOf(u) + ". " + words + ". " + sources + (taken.length ? ". Taken: " + taken.join(", ") : "") +
+    return labelOf(u) + ": " + titleOf(u) + ". " + words + ". " + sources + (taken.length ? ". Taken: " + taken.join(", ") : "") +
       ". Lane color is the unit's state; weight is attempts at that gear." + (u.mastery === "unseen" ? " Click to start." : " Click to review.");
   }
 
@@ -174,7 +177,7 @@
     [1, 2, 3].forEach(function (g) {
       var d = lanePath(m, g, lane.from, lane.to), cls = laneClass(u, g), isTaken = cls !== "lane";
       var written = writtenGears(u).indexOf(g) >= 0, p = attemptCount(u, g);
-      var tip = u.id + ", gear " + g + " (" + gearName(g) + "): " + (isTaken ? "taken" + (p ? ", " + p + (p === 1 ? " attempt" : " attempts") : "") : "not taken") +
+      var tip = labelOf(u) + ", gear " + g + " (" + gearName(g) + "): " + (isTaken ? "taken" + (p ? ", " + p + (p === 1 ? " attempt" : " attempts") : "") : "not taken") +
         ". Lesson: " + gearSource(u, g) + (written ? ". Click to " + (u.mastery === "unseen" ? "start" : "review") + " at this speed." : ".");
       var group = '<g class="lane-g" data-unit="' + esc(u.id) + '" data-gear="' + g + '"><title>' + esc(tip) + '</title>' +
         '<path class="' + cls + '" d="' + d + '"/><path class="hit" d="' + d + '"/></g>';
@@ -200,9 +203,9 @@
     } else if (u.needs_attention) {
       node += '<circle class="attn" cx="' + (x + rad * 0.9) + '" cy="' + f(ny - rad * 0.9) + '" r="' + Math.max(1.2, rad * 0.42) + '"/>';
     }
-    // labels: the code with its state tag, then the title
+    // labels: the number and code with its state tag, then the title
     var lx = m.labelX + (sub ? 12 : 0), maxW = m.width - lx - 6, tag = stateTag(u);
-    node += '<text class="code" x="' + lx + '" y="' + f(ny + m.codeFont * 0.36) + '">' + esc(sub ? u.id.replace(/^UA\.I\./, "") : u.id) +
+    node += '<text class="code" x="' + lx + '" y="' + f(ny + m.codeFont * 0.36) + '">' + esc(u.number + " (" + (sub ? u.id.replace(/^UA\.I\./, "") : u.id) + ")") +
       (tag ? '<tspan class="' + tag.cls + '" dx="7">' + esc(tag.text) + '</tspan>' : "") + '</text>';
     wrap(titleOf(u), m.font, maxW, m.labelLines).forEach(function (line, i) {
       node += '<text class="title" x="' + lx + '" y="' + f(ny + m.codeFont * 0.36 + (i + 1) * (m.font + 3) + 1) + '">' + esc(line) + '</text>';
@@ -216,7 +219,7 @@
     parts.marks.push('<line class="rule" x1="' + (m.labelX - 10) + '" y1="' + f(y) + '" x2="' + m.width + '" y2="' + f(y) + '"/>');
     parts.marks.push('<circle class="knot" cx="' + x + '" cy="' + f(y) + '" r="' + m.knotR + '"><title>' +
       esc(r.first ? "Start of task " + r.task + ", " + name : "Task boundary: review check of up to three mastered units, then set-aside units return. Task " + r.task + " starts here") + '</title></circle>');
-    var label = wrap("Task " + r.task + " · " + name, m.codeFont, m.width - m.labelX - 6, 1)[0];
+    var label = wrap(r.chapter + " (Task " + r.task + ") · " + name, m.codeFont, m.width - m.labelX - 6, 1)[0];
     parts.nodes.push('<text class="task" x="' + m.labelX + '" y="' + f(y - 5) + '">' + esc(label) + '</text>');
   }
 
@@ -405,6 +408,6 @@
   }
 
   window.CourseTree = { laneGlyph: laneGlyph, METRICS: METRICS, layout: layout, svg: svg, render: render, scrollToCurrent: scrollToCurrent,
-                        offCurrent: offCurrent, lanePath: lanePath, onSelect: onSelect, markSelected: markSelected, gearName: gearName, titleOf: titleOf, writtenGears: writtenGears,
+                        offCurrent: offCurrent, lanePath: lanePath, onSelect: onSelect, markSelected: markSelected, gearName: gearName, titleOf: titleOf, labelOf: labelOf, writtenGears: writtenGears,
                         gearSource: gearSource };
 })();

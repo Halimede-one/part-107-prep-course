@@ -147,7 +147,7 @@
     if (!block.gear && !block.unit) { return null; }
     return el("div", null, [
       block.gear ? el("span", { class: "gear-tag" }, "Gear " + block.gear + " \u00b7 " + gearName(block.gear)) : null,
-      block.unit ? el("span", { class: "unit-code" }, block.unit) : null
+      block.unit ? el("span", { class: "unit-code" }, unitLabel(block.unit)) : null
     ]);
   }
 
@@ -238,6 +238,7 @@
       root.innerHTML = "";
       root.appendChild(el("div", null, [ind.node].concat(parts)));
       progress = { indicator: ind, fields: fields };
+      api.getState().then(function (state) { renderMap(state, true); });
       return;
     }
     if (!progress) { return; }
@@ -401,7 +402,7 @@
         b.passed ? "Passed the " + b.pass_mark + "% mark" : "Below the " + b.pass_mark + "% mark"),
       el("div", { class: "bytask" }, rows),
       (b.missed_units && b.missed_units.length)
-        ? el("p", { class: "missed" }, "Missed: " + b.missed_units.join(", "))
+        ? el("p", { class: "missed" }, "Missed: " + b.missed_units.map(unitLabel).join(", "))
         : null
     ];
   }
@@ -603,6 +604,8 @@
 
   function currentOf(state) { return (state.units || []).filter(function (u) { return u.current; })[0]; }
   function unitById(state, id) { return (state.units || []).filter(function (u) { return u.id === id; })[0]; }
+  // A unit code as people see it, or the bare code before the state arrives.
+  function unitLabel(id) { var u = lastState && unitById(lastState, id); return u ? CourseTree.labelOf(u) : id; }
 
   // A glide the shell started is not the student scrolling away: when the
   // window is off the current unit, hold the recenter button until the window
@@ -626,7 +629,7 @@
       (state.summary.mastered || 0) + " / " + (state.summary.total || 0);
     var cur = currentOf(state);
     document.getElementById("map-task-name").textContent =
-      cur ? "Task " + cur.task + " \u00b7 " + (TASKS[cur.task] || "") : "";
+      cur ? cur.number.split(".")[0] + " (Task " + cur.task + ") \u00b7 " + (TASKS[cur.task] || "") : "";
     if (pickers.sidebar) { pickers.sidebar.hide(); }
     var tree = document.getElementById("course-tree");
     CourseTree.render(tree, state, TASKS, "sidebar", !!animate, { width: tree.clientWidth });
@@ -660,7 +663,7 @@
       if (!u || lastState.mock_in_progress || turn.busy) { return; }
       var written = CourseTree.writtenGears(u);
       chosen = { unit: u.id, gear: sel.gear && written.indexOf(sel.gear) >= 0 ? sel.gear : u.current_gear };
-      title.textContent = u.id + " \u00b7 " + CourseTree.titleOf(u);
+      title.textContent = CourseTree.labelOf(u) + " \u00b7 " + CourseTree.titleOf(u);
       said = (u.mastery === "unseen" ? "Not started"
         : (u.mastery === "mastered" ? "Mastered at gear " : "Learning at gear ") + u.current_gear + (u.parked ? ", set aside" : "")) + ".";
       Array.prototype.forEach.call(gears, function (b) {

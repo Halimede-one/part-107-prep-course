@@ -9,7 +9,8 @@
 
 <!-- Loaded by tests/test_course_tree.py. Draws the course tree from
      ui/course-tree.js with one unit current at gear 2, checks the marker on
-     its lane, and writes PASS, or one line per failed check, into #result. -->
+     its lane and the unit and task labels, and writes PASS, or one line per
+     failed check, into #result. -->
 <pre id="result">NOT RUN</pre>
 <div id="tree"></div>
 
@@ -21,7 +22,7 @@ window.addEventListener("load", function () {
   function check(name, ok) { if (!ok) { failures.push(name); } }
 
   function unit(n) {
-    return { id: "UA.I.A.K" + n, task: "A", title: "Knowledge unit number " + n + ".", mastery: n === 1 ? "mastered" : n === 2 ? "learning" : "unseen",
+    return { id: "UA.I.A.K" + n, number: "1." + n, task: "A", title: "Knowledge unit number " + n + ".", mastery: n === 1 ? "mastered" : n === 2 ? "learning" : "unseen",
              current: n === 2, available_gears: [1, 2, 3], written: true, gears_taken: n <= 2 ? [1, 2] : [], attempts: n <= 2 ? { "1": 1, "2": 1 } : {},
              current_gear: 2, needs_attention: false, parked: false };
   }
@@ -43,6 +44,12 @@ window.addEventListener("load", function () {
     check("the dot does not fade", getComputedStyle(dot).animationName === "none");
     check("the halo pulses", getComputedStyle(halo).animationName === "ct-halo");
   }
+  // The labels: a unit's number, then its ACS code; a task row's chapter, then its letter.
+  var codes = Array.prototype.map.call(tree.querySelectorAll("text.code"), function (t) { return t.firstChild ? t.firstChild.nodeValue : ""; });
+  check("a unit label reads 1.1 (UA.I.A.K1)", codes.indexOf("1.1 (UA.I.A.K1)") >= 0);
+  var task = tree.querySelector("text.task");
+  check("the task row reads 1 (Task A) · Regulations", !!task && task.textContent === "1 (Task A) · Regulations");
+
   var style = tree.querySelector("svg style").textContent;
   check("reduced motion hides the halo", /@media \(prefers-reduced-motion:reduce\)\{[^}]*\.now-halo\{display:none\}/.test(style));
 

@@ -242,7 +242,7 @@ chat_drawing.html (run by test_markdown.py) and panels.html (run by test_layout.
 ## Not in this change
 
 - On-device recognition (Chrome 139+ `processLocally`) and phrase hints for aviation terms.
-- A microphone for the instructor's authoring assistant. It uses the same `.chat-form`. The module keeps one `cancel` for one box, so a second box needs a small change.
+- A microphone for the instructor's authoring assistant. It uses the same `.chat-form`. The module keeps one `cancel` for one box, so a second box needs a small change. Done October 17, 2026: see "Follow-up: the instructor's assistant" at the end.
 - Reading answers aloud, and a record of whether a question was spoken.
 
 ## Noticed, not in this change
@@ -272,3 +272,25 @@ The implementation follows the plan, with these changes:
 Tests: `python3 -m unittest discover -s tests` runs 191 tests, all pass (1 skip, pdftotext). Each new check failed when the code it covers was broken on purpose: 17 breaks in dictation.js and app.js, one at a time. The `#chat-mic svg` rule has no automatic check; the screenshots cover it.
 
 Open: the manual check with a real microphone (steps 1 to 8 above) needs a person at the computer.
+
+## Follow-up: the instructor's assistant
+
+Approved and built October 17, 2026, after the user tested the chat microphone in Chrome. The request box of the assistant in the instructor workspace got the same microphone.
+
+- **One cancel per box.** `ui/dictation.js` kept one `cancel`, and a second `attach()` replaced it. Then the chat's Send no longer stopped the chat's microphone. Each box now has its own cancel. `Dictation.cancel()` stops every box, so app.js did not change.
+- **One microphone at a time.** A new session first stops any other. The workspace covers the chat, but Tab still reaches the chat's button behind it.
+- **Where listening stops in the workspace:** Send, Save (its dialog covers the box), Close or Escape, "Try it as a student", and opening the workspace (it covers the chat). A failure shows in the assistant column, as request errors do.
+- **Markup and styles.** `#author-mic` has the chat's icon. Both microphone rules in `ui/styles.css` list `#author-mic`. The id selectors keep the listening color above `.chat-form button:hover`.
+- **README.** Step 4 of "Edit in the instructor workspace" says that the request can be spoken.
+
+Tests:
+- `tests/fixtures/dictation.html`: two boxes (starting one stops the other; typing stops only its own box; `Dictation.cancel()` reaches any box), and a red listening button. With the old module, the two-box checks failed, and so did the chat's "Enter stops listening".
+- `tests/fixtures/instructor.html`: opening the workspace stops the chat's microphone; spoken words go into the request box; the button is red; Send, Save, "Try it", and Escape stop listening; late words do not come back; a failure shows in the assistant column.
+- `python3 -m unittest discover -s tests` runs 192 tests, all pass (1 skip, pdftotext). 13 lines were broken on purpose, one at a time (4 in dictation.js, 7 in instructor.js, 2 in styles.css). Each break failed its own check.
+
+Open: the manual check in Chrome with a real microphone. Speak a request and send it. Close, Save, and opening the workspace must stop listening.
+
+Noticed, not in this change:
+- The workspace does not make the page behind it inert. Tab reaches the page behind. Enter on the hidden Instructor button runs `open()` again, which reloads the file without `keepOrDiscard()`. Unsaved edits are then lost.
+- The request submit handler lacks the `!my.unit` check of `ask()`. With no unit loaded, Send empties the box and sends nothing.
+- In the chat, the enlarged drawing (a modal dialog) does not stop the chat's microphone.

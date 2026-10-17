@@ -17,6 +17,15 @@ Lettered sub-elements (for example `K21a`) are tracked as their own units, so a 
 
 The six tasks in Area I are: A General, B Operating Rules, C Remote Pilot Certification with an sUAS Rating, D Waivers, E Operations Over People, and F Remote Identification (RID). There are 65 top-level codes plus 12 lettered sub-elements, for 77 tracked units in total across the six tasks.
 
+## How to read a unit number
+
+People use a short number in place of the code: chapter.lesson. The course map and the tutor show both, for example `2.16 (UA.I.B.K16)`.
+
+- The chapter is the task. Task A is chapter 1, B is 2, C is 3, D is 4, E is 5, and F is 6.
+- The lesson is the knowledge element number, with its sub-element letter if it has one.
+
+Examples: `UA.I.A.K5` is 1.5, `UA.I.B.K16` is 2.16, `UA.I.B.K21a` is 2.21a, and `UA.I.E.K3c` is 5.3c. The later ACS areas continue the chapter count: Area II starts at chapter 7, Area III at 9, Area IV at 11, and Area V at 12. The number is only a label. The code stays the name of the lesson files and the key in the tables.
+
 ---
 
 ## Task A. General

@@ -31,7 +31,7 @@ if (MODE === "stored") { localStorage.setItem("part107.panels", JSON.stringify({
 // server: twelve units, so the tree is taller than its window.
 function unit(n) {
   var mastery = n === 1 ? "mastered" : n === 2 ? "learning" : "unseen";
-  return { id: "UA.I." + (n <= 6 ? "A" : "B") + ".K" + n, task: n <= 6 ? "A" : "B", title: "Knowledge unit number " + n + " of this small test course.",
+  return { id: "UA.I." + (n <= 6 ? "A" : "B") + ".K" + n, number: (n <= 6 ? "1." : "2.") + n, task: n <= 6 ? "A" : "B", title: "Knowledge unit number " + n + " of this small test course.",
            mastery: mastery, current: n === 2, available_gears: [1, 2, 3], written: true, gears_taken: mastery === "unseen" ? [] : [1],
            attempts: mastery === "unseen" ? {} : { "1": 2 }, current_gear: 1, needs_attention: false, parked: false };
 }

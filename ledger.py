@@ -14,7 +14,7 @@ orchestrator reports; the transition and terminal logic arrives in Phase 3.
 import os
 import re
 
-from orchestrator import lesson_files
+from orchestrator import lesson_files, number_of
 
 MASTERY_STREAK = 2
 
@@ -251,6 +251,7 @@ class Ledger:
             entry = self.units.get(unit, _entry(self.default_gear))
             units.append({
                 "id": unit,
+                "number": number_of(unit),
                 "task": unit.split(".")[2],
                 "title": (objectives or {}).get(unit, ""),
                 "mastery": self.mastery(unit),

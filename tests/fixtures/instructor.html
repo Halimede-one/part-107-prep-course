@@ -23,6 +23,7 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
 <script src="../../ui/marked.min.js"></script>
 <script src="../../ui/markdown.js"></script>
 <script src="../../ui/instructor.js"></script>
+<script src="../../ui/dictation.js"></script>
 <script>
 (function () {
   "use strict";
@@ -63,6 +64,28 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
     });
     return node;
   }
+
+  // A stand-in for the browser's speech recognition, as in dictation.html: it
+  // records the calls, and the checks fire its events.
+  var made = [];
+  function FakeRecognition() { this.calls = []; made.push(this); }
+  ["start", "stop", "abort"].forEach(function (name) {
+    FakeRecognition.prototype[name] = function () { this.calls.push(name); };
+  });
+  window.SpeechRecognition = window.webkitSpeechRecognition = FakeRecognition;
+  function latest() { return made[made.length - 1]; }
+  function say(r, transcripts) { r.onresult({ results: transcripts.map(function (t) { return [{ transcript: t }]; }) }); }
+  // A listening button is red: the same background as a box styled with --bad.
+  function red(button) {
+    var probe = document.body.appendChild(document.createElement("div"));
+    probe.style.background = "var(--bad)";
+    var same = getComputedStyle(button).backgroundColor === getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return same;
+  }
+  // The chat's microphone, attached before the workspace's, as app.js does.
+  Dictation.attach($("chat-mic"), $("chat-input"), function () {});
+
   Instructor.init({
     el: el,
     citations: function (cites) { return cites.length ? el("div", { class: "citations" }, cites.map(function (c) { return el("a", { href: c.url }, c.source); })) : null; },
@@ -76,7 +99,7 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       return Promise.resolve({ done: true, note: "I added a diagram.", text: REVISION,
                                diff: ["--- editor", "+++ proposal", "@@ -1,4 +1,6 @@", "-The Guided lesson.", "+Step 1, the limit."] });
     },
-    units: function () { return [{ id: "UA.I.B.K21a", title: "a. Maximum groundspeed." }, { id: UNIT, title: "b. Altitude limitations." }]; },
+    units: function () { return [{ id: "UA.I.B.K21a", number: "2.21a", title: "a. Maximum groundspeed." }, { id: UNIT, number: "2.21b", title: "b. Altitude limitations." }]; },
     here: function () { return { unit: UNIT, gear: 3 }; },
     refresh: function () { refreshed++; },
     tryIt: function (unit, gear) { tried.push([unit, gear]); }
@@ -84,8 +107,14 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
 
   // The steps, each after the last one's requests have settled.
   var steps = [
-    function () { $("instructor-btn").hidden = false; $("instructor-btn").click(); },
     function () {
+      $("instructor-btn").hidden = false;
+      $("chat-mic").click();  // the chat's microphone listens when the workspace opens
+      $("instructor-btn").click();
+    },
+    function () {
+      check("opening the workspace stops the chat's microphone", made[0].calls.join() === "start,abort");
+      check("the assistant has a microphone", !$("author-mic").hidden);
       check("the workspace opens", !$("author").hidden);
       check("on the unit on screen", $("author-unit").value === UNIT);
       check("at the gear on screen", document.querySelector(".author-gears [aria-selected=true]").getAttribute("data-gear") === "3");
@@ -97,8 +126,16 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       check("as an unsaved change", !$("author-dirty").hidden);
       check("the preview shows it", $("author-preview").textContent.indexOf("The Guided lesson.") >= 0);
       check("with its sources", $("author-preview").querySelector(".citations a").textContent === "14 CFR 107.51");
+      $("author-mic").click();
+      var spoken = latest();
+      say(spoken, ["Add a diagram"]);
+      check("spoken words go into the request box", $("author-request").value === "Add a diagram");
+      check("the listening button is red", red($("author-mic")));
       $("author-request").value = "Add a diagram of the altitude limit.";
       $("author-form").requestSubmit();
+      check("Send stops listening", spoken.calls.join() === "start,abort");
+      say(spoken, ["Add a diagram of"]);
+      check("and late words do not come back", $("author-request").value === "");
     },
     function () {
       check("the request carries the editor text", asked[0] && asked[0].text === GUIDED && asked[0].gear === 3);
@@ -108,10 +145,17 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       check("the editor is not changed yet", $("author-text").value === GUIDED);
       check("the note is in the assistant column", $("author-log").textContent.indexOf("I added a diagram.") >= 0);
       check("with the changes counted", $("author-log").querySelector("summary").textContent === "Changes: 1 lines added, 1 removed");
+      $("author-mic").click();
+      latest().onerror({ error: "not-allowed" });
+      var failed = $("author-log").lastChild;
+      check("a microphone failure shows in the assistant column", failed.classList.contains("error") && /permission/.test(failed.textContent));
       $("author-apply").click();
       check("Apply puts the proposal in the editor", $("author-text").value === REVISION && $("author-proposal").hidden);
+      $("author-mic").click();
+      var listening = latest();
       $("author-save").click();
       check("Save asks first", $("author-save-dialog").open);
+      check("Save stops listening", listening.calls.join() === "start,abort");
       $("author-note").value = "Added a diagram.";
       document.querySelector("#author-save-dialog button[value=edited]").click();
       check("the dialog closes", !$("author-save-dialog").open);
@@ -125,9 +169,12 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
       check("the message says so", $("author-message").textContent.indexOf("Saved as version 1, not yet vetted.") === 0);
       check("the course map is drawn again", refreshed === 1);
       check("the file state is updated", $("author-file").textContent.indexOf("version 1") >= 0);
+      $("author-mic").click();
+      var listening = latest();
       $("author-try").click();
       check("Try it closes the workspace", $("author").hidden);
       check("and teaches the unit at that gear", tried.length === 1 && tried[0][0] === UNIT && tried[0][1] === 3);
+      check("Try it stops listening", listening.calls.join() === "start,abort");
       $("instructor-btn").click();
     },
     function () {
@@ -135,8 +182,11 @@ document.write(page.responseText.match(/<body>([\s\S]*?)<script/)[1]);
     },
     function () {
       check("a tab loads that gear's file", $("author-text").value === GUIDED && $("author-empty").hidden);
+      $("author-mic").click();
+      var listening = latest();
       $("author").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       check("Escape closes the workspace", $("author").hidden);
+      check("and stops listening", listening.calls.join() === "start,abort");
     }
   ];
   function run(i) {

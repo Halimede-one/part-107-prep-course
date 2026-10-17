@@ -80,6 +80,15 @@ window.addEventListener("load", function () {
   }
   function pressed() { return mic.getAttribute("aria-pressed") === "true"; }
   function errors() { return log.querySelectorAll(".msg.error"); }
+  function latest() { return made[made.length - 1]; }
+  // A listening button is red: the same background as a box styled with --bad.
+  function red(button) {
+    var probe = document.body.appendChild(document.createElement("div"));
+    probe.style.background = "var(--bad)";
+    var same = getComputedStyle(button).backgroundColor === getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return same;
+  }
 
   try {
     if (MODE === "none") {
@@ -103,6 +112,7 @@ window.addEventListener("load", function () {
     check("a click starts one recognizer", made.length === 1 && r.calls.join() === "start");
     check("in US English, through pauses, with words as they come", r.lang === "en-US" && r.continuous === true && r.interimResults === true);
     check("the button shows that it listens", pressed());
+    check("and turns red", red(mic));
 
     // The words go into the box.
     say(r, [" the altitude limit"]);
@@ -145,11 +155,25 @@ window.addEventListener("load", function () {
     r.onend();
     check("silence shows no message", errors().length === 1 && !pressed());
 
+    // A second box, as in the instructor's workspace: one microphone listens
+    // at a time, and typing stops only the session of the box typed in.
+    var authorMic = document.getElementById("author-mic");
+    Dictation.attach(authorMic, document.getElementById("author-request"), function () {});
+    mic.click();
+    var inChat = latest();
+    authorMic.click();
+    var inAuthor = latest();
+    check("starting one microphone stops the other", inChat.calls.join() === "start,abort" && inAuthor.calls.join() === "start");
+    box.dispatchEvent(new Event("input"));
+    check("typing stops only the session of its own box", inAuthor.calls.join() === "start");
+    Dictation.cancel();
+    check("Dictation.cancel() stops the session in any box", inAuthor.calls.join() === "start,abort");
+
     // Enter sends the spoken question. The chat stays busy after this, since
     // the tutor never answers here, so this check comes late.
     box.value = "";
     mic.click();
-    r = made[4];
+    r = latest();
     say(r, ["what is LAANC"]);
     box.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     check("Enter stops listening", r.calls.join() === "start,abort" && !pressed());
@@ -159,7 +183,7 @@ window.addEventListener("load", function () {
 
     // The practice exam pauses the chat: app.js reads the state again.
     mic.click();
-    r = made[5];
+    r = latest();
     REPLIES["/api/state"] = { summary: { mastered: 0, total: 0 }, units: [], mock_in_progress: true };
     shared.refresh();
     setTimeout(function () {

@@ -292,7 +292,8 @@ only together with the course maintainer.
    shows how the authorized altitude applies in the worked example?" The
    assistant replies with a note on what it changed and a proposal for the whole
    file. The proposal shows in the middle column. Under the note, **Changes**
-   lists each line that it adds or removes.
+   lists each line that it adds or removes. You can also speak the request with
+   the microphone button beside Send (see "Speaking a question" above).
 5. Read the proposal. **Apply** puts it into the editor, and **Discard** drops
    it. Ask again to adjust it, for example "make the labels larger". You can also
    edit by hand at any time. Nothing is saved until you click Save.

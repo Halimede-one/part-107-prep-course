@@ -10,8 +10,8 @@ Vetting status of the Regulations curriculum. A unit is vetted when a reviewer h
 | UA.I.A.K4 |  | v2 edited |  | drafted | draft | 2026-10-16: Guided lesson v2, not yet vetted: test changes in grammar |
 | UA.I.A.K5 |  | drafted | tutor draft v1 | drafted | draft | 2026-10-16: Foundational draft written by the tutor; review it in the instructor interface. |
 | UA.I.A.K6 |  | drafted | v3 edited | drafted | draft | Confirm the exact section to cite for multiple-category eligibility; subpart D and AC 107-2A chapter 6 are the places to look. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. 2026-10-17: Foundational lesson v2, not yet vetted: edited in the instructor interface 2026-10-17: Foundational lesson v3, not yet vetted: edited in the instructor interface |
-| UA.I.A.K7 |  | drafted | tutor draft v1 | drafted | draft | Confirm the retention periods against 107.165 as currently published. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. |
-| UA.I.A.K8 | | drafted | | drafted | draft | Confirm there is no grandfathering language in subpart D. |
+| UA.I.A.K7 |  | drafted | v2 edited | drafted | draft | Confirm the retention periods against 107.165 as currently published. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. 2026-10-17: Foundational lesson v2, not yet vetted: edited in the instructor interface |
+| UA.I.A.K8 |  | drafted | tutor draft v1 | drafted | draft | Confirm there is no grandfathering language in subpart D. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. |
 | UA.I.B.K16 | | drafted | drafted | drafted | draft | Gear-3 exemplar. |
 | UA.I.E.K3 | | drafted | drafted | drafted | draft | Gear-3 exemplar; grouping parent for K3a to K3d. |
 | UA.I.E.K3a | | drafted | | drafted | draft | |

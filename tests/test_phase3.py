@@ -166,7 +166,7 @@ class TestPromptAssembly(unittest.TestCase):
     def test_teach_context_carries_unit_objective_gear_and_sources(self):
         content = self.tutor.content("UA.I.B.K16", 2)
         context = self.tutor.teach_context("UA.I.B.K16", 2, content)
-        self.assertIn("UNIT: UA.I.B.K16", context)
+        self.assertIn("UNIT: 2.16 (UA.I.B.K16)", context)
         self.assertIn("GEAR: 2 (Guided)", context)
         self.assertIn("prior authorization", context.lower())
         self.assertIn("https://example.invalid/fixture/107-41", context)
@@ -288,6 +288,9 @@ class TestLoop(unittest.TestCase):
                 os.rename(hidden, live)
             self.assertEqual(block["type"], "error")
             self.assertIn("no vetted content", block["message"].lower())
+            # No gear has content without the Guided lesson, so the message names the file, not a gear.
+            self.assertIn("Guided lesson, UA.I.C.K4.md,", block["message"])
+            self.assertNotIn("at gear", block["message"])
 
     def test_streaming_a_lesson_a_question_and_feedback(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -457,7 +460,7 @@ class TestBoundariesAndReview(unittest.TestCase):
             course.session.stage = None                               # between units
             block = course.handle({"type": "advance", "timestamp": "t"})
             self.assertIn("set aside", block["title"])
-            self.assertIn("UA.I.D.K1", block["body"])
+            self.assertIn("4.1 (UA.I.D.K1)", block["body"])
             # Continue from the done screen retries the parked unit.
             block = course.handle({"type": "advance", "timestamp": "t"})
             self.assertEqual(block["type"], "lesson")
@@ -514,6 +517,22 @@ class TestGoto(unittest.TestCase):
             self.assertEqual(course.ledger.units["UA.I.C.K4"]["current_gear"], 2)
             self.assertEqual(course.ledger.units["UA.I.C.K4"]["gears_taken"], [2])
             self.assertTrue(next(u for u in course.state()["units"] if u["id"] == "UA.I.C.K4")["current"])
+
+    def test_the_state_has_the_pick_before_the_tutor_writes(self):
+        # The page redraws the tree when the "start" event arrives, so the state
+        # must already have the new unit, and the new gear on a track switch.
+        with tempfile.TemporaryDirectory() as tmp:
+            course = self.start(tmp)
+            seen = []
+
+            def emit(event):
+                if "start" in event:
+                    current = next(u for u in course.state()["units"] if u["current"])
+                    seen.append((current["id"], current["current_gear"]))
+
+            course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 1, "timestamp": "t"}, emit=emit)
+            course.handle({"type": "goto", "unit": "UA.I.C.K4", "gear": 2, "timestamp": "t"}, emit=emit)
+            self.assertEqual(seen, [("UA.I.C.K4", 1), ("UA.I.C.K4", 2)])
 
     def test_foundational_without_a_file_is_built_from_the_guided_lesson(self):
         with tempfile.TemporaryDirectory() as tmp:

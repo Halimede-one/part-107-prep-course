@@ -489,7 +489,7 @@ class Course:
 
         call = self.lesson_call(unit, stage, gear, chosen)
         if call is None:
-            return self.missing_content(unit, self.lesson_gear(unit, gear))
+            return self.missing_content(unit)
 
         self.ledger.set_gear(unit, call["gear"])
         self.save_ledger()
@@ -576,7 +576,7 @@ class Course:
             gear = self.ledger.units[unit]["current_gear"]
         gear = max(1, min(gear, max(self.gears_for(unit))))
         if self.tutor.content(unit, gear) is None:
-            return self.missing_content(unit, gear)
+            return self.missing_content(unit)
         self.session.chosen = unit
         self.session.pending = None
         self.session.next_action = None
@@ -595,7 +595,7 @@ class Course:
                 "body": "These units were set aside after repeated misses: %s.\n\n"
                         "Readiness for the real exam needs all of them mastered. Continue "
                         "to try them again, and use the ask box if a different explanation "
-                        "would help." % ", ".join(parked),
+                        "would help." % ", ".join(orchestrator.label_of(u) for u in parked),
                 "citations": [],
             }
         return {
@@ -614,7 +614,7 @@ class Course:
             return self.done_block()
         call = self.quiz_call(unit, review)
         if call is None:
-            return self.missing_content(unit, self.unit_gear(unit))
+            return self.missing_content(unit)
 
         block = self.generate(
             "quiz", call["context"],
@@ -632,13 +632,16 @@ class Course:
         self.session.reviewing = unit if review else None
         return block
 
-    def missing_content(self, unit, gear):
+    def missing_content(self, unit):
+        """Content is missing only when the unit has no Guided lesson, so no
+        gear can be taught: the tutor builds the other gears from that lesson."""
         return {
             "type": "error",
-            "message": "There is no vetted content for %s at gear %d yet, so the tutor has "
-                       "nothing to teach from. Teaching this unit from the model's own "
-                       "knowledge is not allowed, because a wrong regulation taught "
-                       "confidently is worse than a gap." % (unit, gear),
+            "message": "There is no vetted content for %s yet. Its Guided lesson, %s, is not "
+                       "written, and the tutor builds every gear from that lesson. Teaching "
+                       "this unit from the model's own knowledge is not allowed, because a "
+                       "wrong regulation taught confidently is worse than a gap."
+                       % (orchestrator.label_of(unit), orchestrator.LESSON_FILES[2] % unit),
         }
 
     # ---- response handling ----------------------------------------------
@@ -823,7 +826,7 @@ class Course:
 
         content = self.content(unit, gear)
         if content is None:
-            return self.missing_content(unit, gear)
+            return self.missing_content(unit)
 
         # Record and decide before writing feedback, so the feedback can say what
         # happens next. Routing is a ledger decision; the model only explains.

@@ -1,5 +1,5 @@
 """The course tree in ui/course-tree.js: the marker on the lane the student is
-on now.
+on now, and the unit and task labels.
 
 Serves the course folder on a free port, loads tests/fixtures/course_tree.html
 in headless Chrome, and reads the result the page writes. Skips when Chrome is

@@ -469,9 +469,11 @@ class TestLedger(unittest.TestCase):
         unit = next(u for u in state["units"] if u["id"] == "UA.I.B.K16")
         self.assertEqual(unit["attempts"], {"1": 1, "2": 2})
         self.assertIn("authorization", unit["title"].lower())
+        self.assertEqual(unit["number"], "2.16")
         untouched = next(u for u in state["units"] if u["id"] == "UA.I.A.K1")
         self.assertEqual(untouched["attempts"], {})
         self.assertIn("applicability", untouched["title"].lower())
+        self.assertEqual(untouched["number"], "1.1")
         # Content exists for task A and the two exemplars; the rest is not written yet.
         self.assertTrue(untouched["written"])
         self.assertFalse(next(u for u in state["units"] if u["id"] == "UA.I.F.K7")["written"])
@@ -729,7 +731,7 @@ class TestCourse(unittest.TestCase):
             self.assertIn("STUDENT: night anti-collision lighting", seen[1])
             self.assertIn("TUTOR: Sample answer from the mock provider", seen[1])
             self.assertIn("THE UNIT ON SCREEN", seen[1])
-            self.assertIn("UNIT: UA.I.B.K16", seen[1])
+            self.assertIn("UNIT: 2.16 (UA.I.B.K16)", seen[1])
             self.assertEqual(len(course.chat), 4)
 
     def test_the_streamed_text_is_the_answer_alone(self):
