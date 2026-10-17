@@ -1,0 +1,18 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 210' width='520' height='210'>
+  <rect x='10' y='15' width='200' height='110' rx='8' fill='#eef3fb' stroke='#3b5c8f'/>
+  <text x='110' y='42' font-size='14' text-anchor='middle' fill='#1f3356'>Aircraft is eligible for</text>
+  <rect x='40' y='56' width='140' height='26' rx='4' fill='#ffffff' stroke='#3b5c8f'/>
+  <text x='110' y='74' font-size='14' text-anchor='middle' fill='#1f3356'>Category 2</text>
+  <rect x='40' y='90' width='140' height='26' rx='4' fill='#ffffff' stroke='#3b5c8f'/>
+  <text x='110' y='108' font-size='14' text-anchor='middle' fill='#1f3356'>Category 3</text>
+  <path d='M215 70 L265 70' stroke='#1f3356' stroke-width='2'/>
+  <path d='M258 64 L266 70 L258 76 Z' fill='#1f3356'/>
+  <text x='240' y='58' font-size='12' text-anchor='middle' fill='#1f3356'>pilot chooses</text>
+  <rect x='270' y='15' width='240' height='110' rx='8' fill='#e8f5ea' stroke='#2f6b3c'/>
+  <text x='390' y='42' font-size='14' text-anchor='middle' fill='#1c4327'>Flight conducted under</text>
+  <rect x='320' y='56' width='140' height='26' rx='4' fill='#ffffff' stroke='#2f6b3c'/>
+  <text x='390' y='74' font-size='14' text-anchor='middle' fill='#1c4327'>Category 2</text>
+  <text x='390' y='106' font-size='12' text-anchor='middle' fill='#1c4327'>all Category 2 requirements apply</text>
+  <text x='260' y='160' font-size='13' text-anchor='middle' fill='#1f3356'>Aircraft eligibility requirements + operating limits of that category</text>
+  <text x='260' y='184' font-size='13' text-anchor='middle' fill='#8a2a2a'>No borrowing a looser category's operating rules</text>
+</svg>
