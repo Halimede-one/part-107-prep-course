@@ -1,10 +1,17 @@
 ---
 source: 14 CFR 107.165 | https://www.ecfr.gov/current/title-14/section-107.165
 source: AC 107-2A | https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf
-version: 1
-draft: written by the tutor on 2026-10-17 from the Guided lesson; no instructor has reviewed it
+source: 14 CFR 107.7 | https://www.ecfr.gov/current/title-14/section-107.7
+source: 14 CFR 107.160 | https://www.ecfr.gov/current/title-14/section-107.160
+version: 2
 ---
 Objective: Record retention.
+
+**Why this rule exists.** Flying over people rests on a claim. Before a small unmanned aircraft system (sUAS) can be operated over people in Category 2 or Category 3, someone has to show that the aircraft meets the requirements of § 107.120(a) or § 107.130(a). That showing is made on paper and up front: a declaration of compliance is submitted, and if the FAA determines compliance has been demonstrated, it notifies the applicant that the declaration is accepted.
+
+A claim made on paper is only worth the evidence standing behind it, and that evidence has to outlive the day it was filed. That is the job of § 107.165. It takes the supporting information used to demonstrate compliance and requires that it be retained and made available to the Administrator on request. Pair it with § 107.7, which lets the Administrator ask a holder of an accepted declaration for that declaration and any other required record, inspect its facilities, technical data, and manufactured aircraft, and witness the tests needed to determine compliance. One rule keeps the evidence in existence; the other lets the FAA reach for it.
+
+So every clock in this lesson is answering a single question: how long must the evidence behind the claim stay reachable? Keep that question in mind, and the two different time periods below stop looking arbitrary.
 
 Let's take this one piece at a time. The word "records" in this part of the rule does not mean what most pilots expect, so we'll build it up slowly.
 
@@ -24,23 +31,7 @@ A person who submits a **declaration of compliance** (a formal statement that an
 
 The clock is the part people get wrong, so hold this mental picture: the clock does not start when the declaration is filed, and it does not start when the drone is sold. It starts when the **assembly line stops**. The duty runs for **two years after that person ceases producing** the small unmanned aircraft system the declaration lists.
 
-```svg Timeline showing the retention period beginning when production stops
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 150' width='520' height='150'>
-<line x1='30' y1='80' x2='490' y2='80' stroke='#333' stroke-width='2'/>
-<line x1='90' y1='70' x2='90' y2='90' stroke='#333' stroke-width='2'/>
-<line x1='300' y1='70' x2='300' y2='90' stroke='#333' stroke-width='2'/>
-<line x1='430' y1='70' x2='430' y2='90' stroke='#333' stroke-width='2'/>
-<rect x='300' y='62' width='130' height='16' fill='#9ecbff' opacity='0.6'/>
-<text x='90' y='108' font-size='12' text-anchor='middle' fill='#333'>declaration</text>
-<text x='90' y='122' font-size='12' text-anchor='middle' fill='#333'>submitted</text>
-<text x='300' y='108' font-size='12' text-anchor='middle' fill='#333'>production</text>
-<text x='300' y='122' font-size='12' text-anchor='middle' fill='#333'>ceases</text>
-<text x='430' y='108' font-size='12' text-anchor='middle' fill='#333'>records may</text>
-<text x='430' y='122' font-size='12' text-anchor='middle' fill='#333'>be released</text>
-<text x='365' y='50' font-size='13' text-anchor='middle' fill='#333'>two years</text>
-<text x='195' y='50' font-size='12' text-anchor='middle' fill='#666'>keep records throughout</text>
-</svg>
-```
+![Timeline showing the retention period beginning when production stops](images/UA.I.A.K7-1.svg)
 
 Walk the worked example through that picture. A small company designs a 3-pound aircraft, tests it to the Category 2 impact limit, and submits a declaration of compliance. Four years later it stops making the model. The two-year clock begins at that stopping point, so the test records must be kept for two more years after production ends, and handed over if the FAA asks.
 

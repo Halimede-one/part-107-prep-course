@@ -1,0 +1,15 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 150' width='520' height='150'>
+<line x1='30' y1='80' x2='490' y2='80' stroke='#333' stroke-width='2'/>
+<line x1='90' y1='70' x2='90' y2='90' stroke='#333' stroke-width='2'/>
+<line x1='300' y1='70' x2='300' y2='90' stroke='#333' stroke-width='2'/>
+<line x1='430' y1='70' x2='430' y2='90' stroke='#333' stroke-width='2'/>
+<rect x='300' y='62' width='130' height='16' fill='#9ecbff' opacity='0.6'/>
+<text x='90' y='108' font-size='12' text-anchor='middle' fill='#333'>declaration</text>
+<text x='90' y='122' font-size='12' text-anchor='middle' fill='#333'>submitted</text>
+<text x='300' y='108' font-size='12' text-anchor='middle' fill='#333'>production</text>
+<text x='300' y='122' font-size='12' text-anchor='middle' fill='#333'>ceases</text>
+<text x='430' y='108' font-size='12' text-anchor='middle' fill='#333'>records may</text>
+<text x='430' y='122' font-size='12' text-anchor='middle' fill='#333'>be released</text>
+<text x='365' y='50' font-size='13' text-anchor='middle' fill='#333'>two years</text>
+<text x='195' y='50' font-size='12' text-anchor='middle' fill='#666'>keep records throughout</text>
+</svg>
