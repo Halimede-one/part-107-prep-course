@@ -215,9 +215,9 @@ the adaptive tutor (teach, quiz, downshift on a miss, park after repeated misses
 the deepest gear, spaced review at task boundaries), the practice exam and the
 readiness gate, and the build tools.
 
-Authored but not vetted: teaching content and reference facts for Task A (8 units),
-Task B (36 units, written October 17, 2026 against the knowledge base), and the
-gear-3 exemplars (UA.I.B.K16 and UA.I.E.K3 with K3a to K3d), and the 20-item
+Authored but not vetted: teaching content and reference facts for all 77 units
+(Task A and the gear-3 exemplars first; Tasks B to F written October 17, 2026
+against the knowledge base), Foundational files for 7 units, and the 20-item
 practice exam. See `curriculum/regulations/STATUS.md`.
 
 Built on October 9, 2026: the knowledge base, both layers, from 39 sources (the
@@ -236,10 +236,10 @@ logs every question asked, so the tutor does not repeat one across sessions. The
 workspace's Questions tab takes an instructor's guidance and own questions per
 unit. The plan and its as-built record are in `docs/plans/check-questions.md`.
 
-Not yet done, all local: content for Tasks C to F (28 units; the plan is
-`docs/plans/content-tasks-b-to-f.md`), vetting of everything against the source
-text, and a run with a real model. Until a unit has content, the tutor
-declines to teach it, by design.
+Not yet done, all local: vetting of everything against the source text, and a
+full run with a real model. The content build is recorded in
+`docs/plans/content-tasks-b-to-f.md`. Until a unit has content, the tutor
+declines to teach it, by design; every unit now has a Guided lesson.
 
 ## Improving the tutor
 
@@ -397,7 +397,9 @@ The plain-language explanation, then the worked example, then the common misread
 ### Vet
 
 To vet a file, check every fact in it against the source text in the knowledge
-base. The CFR outranks the Advisory Circular and the study guide. If two sources
+base. `docs/vetting-guide.html` is a guide and a per-unit checklist with links to
+every file, source chunk, and open question; regenerate it with
+`python3 tools/vetting_guide.py` after STATUS.md changes. The CFR outranks the Advisory Circular and the study guide. If two sources
 disagree, follow the CFR and write the conflict in the Notes column of
 `STATUS.md`; do not smooth it over in the lesson. Each save records your answer
 in the unit's row, for example `v3 vetted` or `v3 edited`. A unit is vetted when
@@ -457,11 +459,11 @@ your machine rather than in the build environment.
    free-form question, and take the practice exam. Watch the terminal for errors
    and `progress/student-ledger.md` for the state.
 
-8. Author Tasks B to F against the knowledge base, one task per batch, following
-   the conventions at the bottom of `STATUS.md`, by hand or in the instructor
-   workspace (see "Improving the tutor"). Add reference facts for each unit.
-   Re-run the integrity check after each batch; drop `--allow-incomplete` once all
-   77 units have content.
+8. All 77 units have a Guided lesson and reference facts (Tasks B to F were
+   written on October 17, 2026; see `docs/plans/content-tasks-b-to-f.md`). To add
+   or revise content, follow the conventions at the bottom of `STATUS.md`, by hand
+   or in the instructor workspace (see "Improving the tutor"), and run the
+   integrity check without `--allow-incomplete`.
 
 9. Package: `python3 tools/package.py` writes `dist/part107-course-<date>.zip`,
    refusing to package a course that fails the integrity check. Unzip it somewhere

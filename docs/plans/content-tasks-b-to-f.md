@@ -1,6 +1,6 @@
 # Content for Tasks B to F: plan
 
-Status: approved October 17, 2026. Route: the lessons are written in a Claude Code session against the knowledge base, one task per batch. The user reviews each batch.
+Status: approved and completed October 17, 2026; vetting remains. Route: the lessons are written in a Claude Code session against the knowledge base, one task per batch. The user reviews each batch.
 
 ## Context
 
@@ -44,3 +44,11 @@ The knowledge base holds every source the missing units need: 14 CFR 107 subpart
 - Checks: the integrity check with `--allow-incomplete` reports 0 errors (the 28 units of Tasks C to F still warn); 221 unit tests pass, 1 skipped; a real-model teach of 2.1 and 2.21b returned lesson blocks in 21 and 22 seconds, with the content from the files, and the altitude lesson came with a diagram.
 - The smoke test ran on a copy of the course in the session scratchpad on port 8117, so the student ledger and the responses log stayed untouched. The course reads lesson files on each request, so the running course serves new files without a restart.
 - Not in this plan: the per-unit question bank in `questions/regulations/` (the workspace's Questions tab) is empty for every unit. It is optional; the tutor writes questions from the lesson and the facts.
+
+### Tasks C to F, October 17, 2026
+
+- Written in one pass after the Task B review: Tasks C and D, 5 lessons and 15 facts; Task E, 16 lessons and 32 facts; Task F, 7 lessons and 18 facts; 28 STATUS rows.
+- Sources beyond the CFR: AC 107-2A chapters 5, 6, and 8, and the FAA pages on becoming a remote pilot, Part 107 waivers, operations over people, and remote identification. Each lesson lists its sources.
+- Open questions for vetting are in the Notes column of STATUS.md for 3.3, 3.4, 4.1, 5.1, 5.5, 5.13, 5.16, 6.1, 6.3, and 6.5. Two are currency findings: the FAA waivers page (June 2026) differs from AC 107-2A on the decision time and the application system, and 107.160(d) still cites the reserved 107.5.
+- Checks: the strict integrity check passes, 77 of 77 units with content and facts, 0 errors, 0 warnings. A real-model teach of 3.3, 4.1, 5.6, 5.16, 6.2, and 6.6 on the scratchpad copy returned lesson blocks in 16 to 28 seconds. The unit tests pass after one assertion in `tests/test_phase2.py` was updated: it asserted that UA.I.F.K7 had no content.
+- Remaining: vetting by the user, a full run with a real model, and packaging.

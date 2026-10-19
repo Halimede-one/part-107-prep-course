@@ -12,7 +12,7 @@ Vetting status of the Regulations curriculum. A unit is vetted when a reviewer h
 | UA.I.A.K6 |  | drafted | v3 edited | drafted | draft | Confirm the exact section to cite for multiple-category eligibility; subpart D and AC 107-2A chapter 6 are the places to look. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. 2026-10-17: Foundational lesson v2, not yet vetted: edited in the instructor interface 2026-10-17: Foundational lesson v3, not yet vetted: edited in the instructor interface |
 | UA.I.A.K7 |  | drafted | v2 edited | drafted | draft | Confirm the retention periods against 107.165 as currently published. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. 2026-10-17: Foundational lesson v2, not yet vetted: edited in the instructor interface |
 | UA.I.A.K8 |  | drafted | tutor draft v1 | drafted | draft | Confirm there is no grandfathering language in subpart D. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. |
-| UA.I.B.K1 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. Confirm that 91.203(a)(2), which 107.13 points to and which is not in the knowledge base, is the registration rule the lesson describes. |
+| UA.I.B.K1 |  | v1 drafted | tutor draft v1 | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. Confirm that 91.203(a)(2), which 107.13 points to and which is not in the knowledge base, is the registration rule the lesson describes. 2026-10-17: Foundational draft written by the tutor; review it in the instructor interface. |
 | UA.I.B.K2 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
 | UA.I.B.K3 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
 | UA.I.B.K4 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
@@ -48,13 +48,41 @@ Vetting status of the Regulations curriculum. A unit is vetted when a reviewer h
 | UA.I.B.K26 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The single-state, confined-area, and weight limits come from AC 107-2A 5.15; no CFR section states them. |
 | UA.I.B.K27 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. No source in the knowledge base explains the purpose of 107.52; the lesson states the rule only. |
 | UA.I.B.K28 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.C.K1 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.C.K2 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.C.K3 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The CFR gives the requirements; the application steps follow the FAA web page (June 2026) and AC 107-2A chapter 6. |
+| UA.I.C.K4 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. AC 107-2A Figure 6-1 is garbled in the knowledge-base chunk; the lesson uses only its first example (September 13, 2020 to September 30, 2022). |
+| UA.I.D.K1 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. AC 107-2A 5.20 (2021) says the FAA strives for 60 days and names faa.gov/uas; the FAA web page dated June 22, 2026 says 90 days and the Aviation Safety Hub. The lesson follows the web page for the process and keeps the AC's 60-day advice. |
+| UA.I.E.K1 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The definitions of "over" and "sustained flight" come from the FAA Part 107 Waivers page (June 2026); AC 107-2A 8.3.2.1 gives the same reading of sustained flight. |
+| UA.I.E.K2 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
 | UA.I.E.K3 | | drafted | drafted | drafted | draft | Gear-3 exemplar; grouping parent for K3a to K3d. |
 | UA.I.E.K3a | | drafted | | drafted | draft | |
 | UA.I.E.K3b | | drafted | | drafted | draft | |
 | UA.I.E.K3c | | drafted | | drafted | draft | Confirm the moving-vehicle and sustained-flight wording against 107.125 and 107.145. |
 | UA.I.E.K3d | | drafted | | drafted | draft | Confirm the maintenance paragraph against 107.140(c). |
+| UA.I.E.K4 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K5 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. Part 107 sets no stand-off distance; the lesson teaches the AC 107-2A 8.3.1 factors. |
+| UA.I.E.K6 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K7 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K8 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K9 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K10 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K11 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K12 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K13 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. 107.160(d)(2)(ii) still cites 107.5(a), reserved since November 3, 2025 (see UA.I.A.K3); the lesson calls that ground a false declaration without the section number. |
+| UA.I.E.K14 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K15 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.E.K16 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The formula and the tables come from AC 107-2A 8.6; the declarant applies them, not the pilot. |
+| UA.I.E.K17 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.F.K1 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. AC 107-2A 5.17.1 says aircraft not required to register, such as those of 0.55 pounds or less, must comply when operated under a part that requires registration; the lesson reads this as covering Part 107. |
+| UA.I.F.K2 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.F.K3 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The letter of authorization process comes from the FAA Remote ID page (March 2025), not the CFR. |
+| UA.I.F.K4 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.F.K5 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. The lesson covers only the identification notice; foreign operators also face registration and authorization rules outside this unit. |
+| UA.I.F.K6 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
+| UA.I.F.K7 |  | v1 drafted |  | v1 drafted | draft | 2026-10-17: Guided lesson and facts written against the knowledge base; not vetted. |
 
-Tasks C to F: not yet authored. Author them against the knowledge base, one task at a time, and add rows here.
+Every unit has a row. Author or revise content against the knowledge base and update the row.
 
 Drafting conventions:
 - One file per unit, `UA.I.<task>.K<n>.md` for gear 2. A unit can also have `.gear1.md` (Fast-track) and `.gear3.md` (Foundational); without them, the tutor builds those gears from the gear 2 file.

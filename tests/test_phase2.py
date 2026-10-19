@@ -476,9 +476,9 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(untouched["attempts"], {})
         self.assertIn("applicability", untouched["title"].lower())
         self.assertEqual(untouched["number"], "1.1")
-        # Content exists for task A and the two exemplars; the rest is not written yet.
+        # Every unit has had a Guided lesson since October 17, 2026.
         self.assertTrue(untouched["written"])
-        self.assertFalse(next(u for u in state["units"] if u["id"] == "UA.I.F.K7")["written"])
+        self.assertTrue(next(u for u in state["units"] if u["id"] == "UA.I.F.K7")["written"])
 
 
 class TestFieldStream(unittest.TestCase):

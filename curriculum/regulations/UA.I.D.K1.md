@@ -1,0 +1,18 @@
+---
+source: 14 CFR 107.200 | https://www.ecfr.gov/current/title-14/section-107.200
+source: 14 CFR 107.205 | https://www.ecfr.gov/current/title-14/section-107.205
+source: AC 107-2A | https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf
+source: FAA, Part 107 Waivers | https://www.faa.gov/uas/commercial_operators/part_107_waivers
+version: 1
+---
+Objective: know what a certificate of waiver can and cannot do, and what an application must contain.
+
+Section 107.200 lets the Administrator issue a certificate of waiver that authorizes a deviation from any regulation listed in 107.205, if the Administrator finds that the proposed small UAS operation can safely be conducted under the terms of the certificate. The request must contain a complete description of the proposed operation and a justification that establishes that it can be conducted safely under the terms of a certificate of waiver. The Administrator may add any limitations considered necessary. The holder may deviate from the regulations only to the extent the certificate specifies, and must comply with every condition and limitation in it.
+
+Section 107.205 lists the ten provisions a waiver may cover: 107.25, operation from a moving vehicle or aircraft; 107.29(a)(2) and (b), the anti-collision light for night and civil twilight; 107.31, visual line of sight; 107.33, visual observer; 107.35, operation of multiple small unmanned aircraft systems; 107.37(a), yielding the right of way; 107.39, operation over people; 107.41, operation in certain airspace; 107.51, the operating limitations; and 107.145, operations over moving vehicles. Two carry a bar: no waiver of 107.25 or 107.31 will be issued to allow the carriage of another person's property for compensation or hire. Everything not on the list cannot be waived, which includes the certificate requirement, the hazardous material prohibition, accident reporting, the collision hazard rule in 107.37(b), and the night training condition in 107.29(a)(1). Flying in controlled airspace is handled by an airspace authorization under 107.41, which is a separate process from a waiver.
+
+FAA guidance describes the process. A waiver application is now submitted through the FAA's Aviation Safety Hub, while airspace authorizations stay in FAADroneZone. The safety explanation for each waived section should describe the operation, the operational risks, and the methods that lessen them, following the FAA's Waiver Safety Explanation Guidelines; an application that does not identify hazards and propose mitigations is disapproved for insufficient information. The FAA aims to decide within 90 days of submission, and AC 107-2A encourages applying at least 60 days before the operation. A request for more information must be answered within 30 days or the application is cancelled. A drone need not be registered to apply, but must be registered before any operation. Failure to adhere to the terms of a waiver may be a violation of the regulation that was waived.
+
+Worked example: an inspection company wants to fly a pipeline beyond the pilot's line of sight. Section 107.31 is waivable, so the company applies, describing the aircraft, the area, the crew, and how it will keep the aircraft clear of other traffic and people without direct sight. A delivery company wants the same waiver to carry customers' packages beyond line of sight for a fee. That cannot be granted, because 107.205 bars a waiver of 107.31 for carrying another person's property for compensation or hire.
+
+Common misreading: believing any rule in Part 107 can be waived if the safety case is good enough. Only the ten provisions in 107.205 can, and two of them never for carrying property for hire.

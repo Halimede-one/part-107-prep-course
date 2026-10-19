@@ -1,0 +1,16 @@
+---
+source: 14 CFR 107.140 | https://www.ecfr.gov/current/title-14/section-107.140
+source: 14 CFR 107.15 | https://www.ecfr.gov/current/title-14/section-107.15
+source: 14 CFR 107.120 | https://www.ecfr.gov/current/title-14/section-107.120
+source: AC 107-2A | https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_107-2A.pdf
+version: 1
+---
+Objective: know the maintenance duties for aircraft eligible for operations over people, and how Category 4 differs.
+
+For Categories 1, 2, and 3 the maintenance rules are the ones every Part 107 aircraft has, plus the operating instructions. Section 107.15 requires the aircraft to be in a condition for safe operation, checked before each flight. For Category 2 and 3 aircraft, maintenance that does not change the configuration keeps the aircraft eligible, while a part replacement that the remote pilot operating instructions do not cover is a modification that ends eligibility until a new declaration of compliance is accepted. An aircraft with a safety defect is not eligible at all, because 107.120(a)(3) and 107.130(a)(3) require that it have none, and the holder of the declaration must notify owners and the FAA of defects through its product support process. AC 107-2A chapter 7 gives the general guidance: follow the manufacturer's maintenance instructions where they exist, and do not fly until a found fault is corrected.
+
+Category 4 carries its own maintenance regime in 107.140(c), because the aircraft holds an airworthiness certificate. The owner is responsible, or the operator if an agreement between them assigns the responsibility. Maintenance, preventive maintenance, alterations, and inspections must be performed with the methods, techniques, and practices in the manufacturer's current maintenance manual or instructions for continued airworthiness, or other methods acceptable to the Administrator, by a person with the knowledge, skill, and equipment to do the work, using parts of a quality that leaves the aircraft at least equal to its original or properly altered condition. Records of each maintenance action must give the description of the work, the date it was completed, and the name of the person who did it, and must be kept for 1 year from completion or until the work is repeated or superseded. Records of the status of life-limited parts, the inspection status, and compliance with airworthiness directives must be kept and transferred with the aircraft when ownership changes. All of these records must be available to the FAA or the National Transportation Safety Board on request. Compliance with part 43 and part 91 subpart E satisfies these requirements.
+
+Worked example: a company operates a Category 4 inspection aircraft. A technician replaces a motor following the manufacturer's manual and records the work, the date, and the technician's name. The company keeps that record for at least 1 year, and when it sells the aircraft two years later it hands over the life-limited parts, inspection, and airworthiness directive records with it.
+
+Common misreading: applying the Category 4 record-keeping rules to every aircraft flown over people. Those rules belong to Category 4. The other categories rest on 107.15 and the operating instructions.
