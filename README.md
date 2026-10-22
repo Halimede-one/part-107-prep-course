@@ -1,16 +1,108 @@
 # FAA Part 107 course
 
-An adaptive, LLM-tutored course for the FAA Part 107 remote pilot knowledge test.
-Content is grounded in the CFR and FAA guidance; the model teaches over it rather
-than being the authority on the rules.
+> **Draft. Not vetted.** The lessons, reference facts, and practice exam in this
+> repository are drafts. No instructor has checked them against the regulations
+> yet. Do not use this course to prepare for the FAA test until this notice is
+> removed.
 
-Runs from this folder with no packages to install. Python 3.8 or newer is the only
-prerequisite, plus a model backend (below).
+An adaptive, LLM-tutored course for the FAA Part 107 remote pilot knowledge test
+(Unmanned Aircraft General). The tutor teaches from the regulations and FAA
+guidance only, and every statement links to its source. The model teaches over
+this material. It is not the authority on the rules.
 
-## How the course works, in pictures
+**Scope.** The course covers Area of Operation I, Regulations, of the Airman
+Certification Standards (FAA-S-ACS-10B): six tasks and 77 knowledge units.
+Regulations is 15 to 25 percent of the 60-question test. The other four areas
+(Airspace, Weather, Loading and Performance, Operations) are not in the course yet.
 
-Five diagrams, drawn by hand from the code and prompts in this folder. They live
-in `docs/diagrams/` as SVG files. Update them when the code they describe changes.
+**What we ask of instructors.** Run the course on your own computer. Check the
+lessons, the reference facts, and the practice exam against the source text. Fix
+what is wrong, and send your changes back as a pull request. You do not need to
+program. You need a terminal and a few git commands, which this guide gives in full.
+
+This guide is for instructors. Developers start with [DEVELOPING.md](DEVELOPING.md).
+
+## What you need
+
+- Git, and a GitHub account for the pull request.
+- Python 3.8 or newer. The course needs no other packages.
+- A language model: your own Claude plan or your own Anthropic API key. See
+  "Choose a backend".
+- Chrome or Edge, if you want to speak your questions. The rest of the course
+  works in any current browser.
+- macOS or Linux. Windows is not tested yet; see "Start the course".
+
+## Get the course
+
+```bash
+git clone https://github.com/Halimede-one/part-107-prep-course.git
+cd part-107-prep-course
+git switch -c vetting/your-name
+```
+
+Put your own name in the branch name. Do all your work on this branch. If you
+have no write access to the repository, fork it on GitHub and clone your fork.
+
+## Choose a backend
+
+The tutor needs a language model. Use one of these two backends.
+
+| | Your Claude plan | Your Anthropic API key |
+|---|---|---|
+| Backend name | `claude_code` | `anthropic` (the default) |
+| You need | [Claude Code](https://code.claude.com/docs/en/quickstart), installed and signed in to your plan. Tested with version 2.1.235. | An API key from the Anthropic Console, set as `ANTHROPIC_API_KEY` in your shell. |
+| Cost | Comes from your plan. | Billed to your key per token, a few cents for each lesson, answer, or edit request. |
+| Start command | `./start.sh --instructor --provider claude_code` | `./start.sh --instructor` |
+| The chat tutor | Searches the course material, and the web when the material does not cover a question. | Answers from the knowledge-base passages that match the question best. |
+
+- Choose the backend with `--provider`. Do not change `provider` in
+  `config.json`, because that change would go into your pull request.
+- Do not keep `ANTHROPIC_API_KEY` in your shell profile if you use your Claude
+  plan. Claude Code then bills the API key, not your plan.
+
+On the Claude plan, the course runs Claude Code without access to your files.
+Lessons and questions get no tools. The chat and the authoring assistant can read
+only the course material. Your Claude Code settings, memory, and connectors do
+not load.
+
+## Start the course
+
+```bash
+./start.sh --instructor                          # with your API key
+./start.sh --instructor --provider claude_code   # with your Claude plan
+```
+
+The course opens http://localhost:8107 in your browser. If no browser opens, open
+that address yourself. Press Ctrl+C in the terminal to stop the course.
+
+- If `./start.sh` reports a permission error, run `chmod +x start.sh` once.
+- On Windows, start the course from its folder with `python server.py --instructor`,
+  and add `--provider claude_code` for your Claude plan.
+- `--instructor` adds the **Instructor** button. Without it, nobody can change
+  the course material from the browser.
+
+Expect these waits:
+
+| Action | Usual wait |
+|---|---|
+| A lesson or a check question | 15 to 30 seconds |
+| A diagram from the authoring assistant | 30 to 60 seconds |
+| A chat answer | Up to 2 minutes when the tutor searches the course and the web |
+
+The course keeps your progress as a student in the `progress/` folder. Git
+ignores that folder. To start over, stop the course, delete `progress/`, and
+start it again.
+
+**Speaking a question.** With the microphone button beside Send, a student can
+speak a question. The browser's own speech recognition turns it into text.
+Chrome sends the audio to Google, Edge to Microsoft, and Safari to Apple. Safari
+needs Siri or Dictation turned on in macOS settings. Firefox has no speech
+recognition, so it shows no button. Brave shows the button but has no speech
+service. The words go into the question box. Nothing goes to the tutor until the
+student presses Send. The speech service needs the internet, also with the
+offline `ollama` backend.
+
+## How the course teaches
 
 ### The student's path
 
@@ -50,203 +142,7 @@ offers, the first miss brings a re-teach from a new angle. The second miss in a
 row sets the unit aside. The course moves on and brings the unit back at the next
 task boundary. Readiness stays closed until that unit is mastered.
 
-### Data flow
-
-![Data flow: knowledge base, course content, student data](docs/diagrams/data-flow.svg)
-
-Three kinds of data meet in the server. The knowledge base is built locally from
-FAA and eCFR documents. Its source layer is cut mechanically from the documents.
-A model writes its explanation layer from one chunk at a time. Those chunks are
-tagged as derived, and the source text outranks them. Retrieval searches both
-layers for the Ask box.
-
-The course content is authored by hand and vetted against the source chunks. It
-holds the ACS objectives, the per-unit lessons, the ground-truth facts, and the
-fixed practice exam. Each tutor message carries the current unit's content,
-citation links, and facts.
-
-Student performance data lives in `progress/`, which is per run and not shipped.
-The ledger is Markdown a human can read. Mastery, the current unit, and
-readiness are derived from it in code. The same record feeds the course map
-through `/api/state`.
-
-### How the model teaches
-
-![A teaching turn](docs/diagrams/llm-teaching-turn.svg)
-
-Every model call carries the orchestrator rules, one stage prompt, and the vetted
-material for the unit. The reply is one JSON block that the fixed shell renders.
-The model writes the lesson, the question, and the feedback. The server checks
-each question before it shows it: three distinct options, one key, and a
-rationale. Where the question names a vetted fact, the keyed option must state
-that fact. A question that fails is written once more. An instructor's own
-questions on a unit come first and need no model call. The server keeps the
-answer key and scores the student's choice by comparison. It records the attempt
-and decides the next step in code. The feedback call then gives the model the
-result and what happens next. The model explains a decision it did not make.
-
-### How the model answers questions
-
-![Ask the tutor](docs/diagrams/llm-ask-the-tutor.svg)
-
-The chat panel takes any question at any time. The server retrieves the best
-matching chunks from the knowledge base. It adds the unit on screen and recent
-chat turns, and sends them with the question. On the `claude_code` backend the
-model can also search the course material itself: the knowledge base, the unit
-lessons, and the reference facts. It cannot read the practice exam or the
-student's progress. When the course material does not cover the question, it
-searches the web, official FAA and government sources first. The model answers
-from that material only, paraphrased and cited with links, and streams the
-answer as it writes. If no material covers the question, it says so. On the
-`anthropic` backend, web search is an optional fallback and is off by default.
-
-## Run it
-
-```bash
-export ANTHROPIC_API_KEY=your-key   # for the default backend
-./start.sh                          # or: python3 server.py
-./start.sh --instructor             # adds the Instructor button, which edits the course material
-```
-
-Then open http://localhost:8107. If `./start.sh` reports a permission error, run
-`chmod +x start.sh` once. Without `--instructor` (or `"instructor": true` in
-`config.json`), the instructor workspace does not exist, so a student's copy
-cannot change its course material. See "Improving the tutor" below.
-
-**Speaking a question.** With the microphone button beside Send, a student can
-speak a question. The browser's own speech recognition turns it into text.
-Chrome sends the audio to Google, Edge to Microsoft, and Safari to Apple. Safari
-needs Siri or Dictation turned on in macOS settings. Firefox has no speech
-recognition, so it shows no button. Brave shows the button but has no speech
-service. The words go into the question box. Nothing goes to the tutor until the
-student presses Send. The speech service needs the internet, also with the
-offline `ollama` backend.
-
-## Choosing a backend
-
-The backend is set by `provider` in `config.json`.
-
-| Provider | Needs | Notes |
-|---|---|---|
-| `anthropic` (default) | `ANTHROPIC_API_KEY` in your environment, and connectivity | Best for distribution: each student supplies their own key. Billed per token. Can use cited web search for questions outside the course material once `supports_web_search` is switched on. |
-| `claude_code` | [Claude Code](https://code.claude.com/docs/en/quickstart) installed and signed in to a Claude plan | Draws on your own plan instead of API billing, so it costs nothing extra while you build. Personal use only: plan allocation is per-user and cannot be shared with students. The chat tutor searches the course material, and the web while `supports_web_search` is true. |
-| `ollama` | [Ollama](https://ollama.com) running locally with the model in `config.json` pulled | Fully offline and free. Free-form answers are limited to the course material. |
-| `mock` | nothing | Canned blocks for testing the plumbing without a model. |
-
-Your API key is read from the environment and is never stored in this folder.
-
-Two notes on the `claude_code` backend. It runs `claude -p` with all tools disabled
-for lessons, questions, and feedback, because the course has no business reading or
-writing your files. The chat and the instructor's authoring assistant get read-only
-tools instead. They run in the knowledge-base folder, may also read the lessons and
-the reference facts, and nothing else; with `supports_web_search` they may also search
-the web. No tutor call loads your Claude Code memory, settings, or MCP servers, so
-your claude.ai connectors and plugins stay out of the tutor's reach and its context.
-And setting
-`ANTHROPIC_API_KEY` in your shell makes Claude Code bill to the API instead of your
-plan, so keep that variable out of your shell profile if you use this backend.
-
-Web search on the `anthropic` backend is off by default. The tool format is wired
-but was not verified against the current API from the build environment. Turn it on
-by setting `supports_web_search` to true, ask the tutor something outside the course
-material, and confirm the answer carries a web link before leaving it on.
-
-## Estimated AI costs
-
-Estimated October 16, 2026, for one student working through all 77 units on the
-`anthropic` backend or an equivalent Bedrock endpoint. The call counts follow the
-course rules: one lesson per unit, two correct checks in a row to master it, one
-re-teach per miss, 15 spaced reviews, and one debrief per practice exam. Prompt
-sizes were measured from the authored Task A units. Output sizes come from the
-recorded runs in `progress/metrics.jsonl`.
-
-| Scenario | Model calls | Input tokens | Output tokens | Total tokens |
-|---|---|---|---|---|
-| Low: Fast-track, 10 percent miss rate, 5 chat questions | 530 | 1.4M | 0.34M | 1.7M |
-| Mid: Guided, 25 percent miss rate, 15 chat questions | 760 | 2.1M | 0.68M | 2.8M |
-| High: 40 percent miss rate, 30 chat questions | 1,180 | 3.5M | 1.37M | 4.8M |
-
-Each teaching call sends about 1.8k tokens of system prompt and 0.7k to 0.9k tokens
-of unit material. Each miss adds three calls. Output tokens are 55 to 66 percent of
-the cost.
-
-Cost per student on Amazon Bedrock, in US dollars. Global endpoints bill at the
-first-party rate. Regional endpoints add 10 percent. The cached columns assume the
-system prompt is cached, which needs a `cache_control` marker that `llm_client.py`
-does not send yet.
-
-| Scenario | Opus 5.5 global | Opus 5.5 regional | Opus 5.5 cached | Sonnet 5.5 global | Sonnet 5.5 regional | Sonnet 5.5 cached |
-|---|---|---|---|---|---|---|
-| Low | $12 | $14 | $9 | $6 | $7 | $5 |
-| Mid | $22 | $24 | $18 | $11 | $12 | $9 |
-| High | $41 | $45 | $34 | $21 | $23 | $17 |
-
-Rates used, per million tokens: Opus 5.5 at $4 input, $20 output, $0.20 cache read,
-$5 cache write. Sonnet 5.5 at $2 input, $10 output, $0.10 cache read, $2.50 cache
-write. Opus 5 and Opus 4.8 cost about 25 percent more than Opus 5.5. Sonnet 4.6
-costs 50 percent more than Sonnet 5.5.
-
-Assumptions:
-
-- Tasks B to F are not authored yet. Their units are assumed to match the Task A
-  sizes, plus 10 to 25 percent in the mid and high scenarios.
-- Both models think by default, and thinking bills as output. The output sizes were
-  measured on Opus 5. The mid and high scenarios add 25 and 50 percent for thinking.
-  Sending effort `low` holds output near the measured values.
-- The chat on this backend is one call over three retrieved chunks and the unit on
-  screen. It is cheaper than the recorded `claude_code` chat calls, which also
-  searched the course and the web.
-- The `context_tokens` recorded by the `claude_code` backend include Claude Code's
-  own overhead. The API path sends 2.4k to 2.9k tokens per teaching call.
-- The rates come from Anthropic's pricing page and its Bedrock endpoint rule.
-  Confirm them on the AWS Bedrock pricing page before budgeting.
-
-## Running the tests
-
-```bash
-python3 -m unittest discover -s tests -v
-```
-
-## Where this is up to
-
-Built and tested: the interface shell, the server, the four backends, retrieval over
-the knowledge base, deterministic scoring, the student ledger with the course map,
-the adaptive tutor (teach, quiz, downshift on a miss, park after repeated misses at
-the deepest gear, spaced review at task boundaries), the practice exam and the
-readiness gate, and the build tools.
-
-Authored but not vetted: teaching content and reference facts for all 77 units
-(Task A and the gear-3 exemplars first; Tasks B to F written October 17, 2026
-against the knowledge base), Foundational files for 7 units, and the 20-item
-practice exam. See `curriculum/regulations/STATUS.md`.
-
-Built on October 9, 2026: the knowledge base, both layers, from 39 sources (the
-current eCFR text of the CFR parts, the statute, the ACS, AC 107-2A, the study
-guide, the FAA sample questions, three handbook chapters, the AIM airspace and
-UAS chapters, and the faa.gov guidance pages). `knowledge-base/BUILD.md` records
-the build, its decisions, and two currency findings for the vetting step.
-
-Built on October 16, 2026: all three speeds for every unit with a Guided lesson,
-with the tutor's first Foundational lesson saved as a draft file, and the
-instructor workspace (`./start.sh --instructor`). The plan and its as-built record
-are in `docs/plans/instructor-interface.md`.
-
-Built on October 17, 2026: the server checks each question the tutor writes, and
-logs every question asked, so the tutor does not repeat one across sessions. The
-workspace's Questions tab takes an instructor's guidance and own questions per
-unit. The plan and its as-built record are in `docs/plans/check-questions.md`.
-
-Not yet done, all local: vetting of everything against the source text, and a
-full run with a real model. The content build is recorded in
-`docs/plans/content-tasks-b-to-f.md`. Until a unit has content, the tutor
-declines to teach it, by design; every unit now has a Guided lesson.
-
-## Improving the tutor
-
-This section is for instructors who know the subject, such as remote pilots and
-flight instructors. You do not need to program to improve the course.
-
-### What the tutor teaches from
+## What the tutor teaches from
 
 The tutor knows only what is in the course files. It never teaches from memory.
 Five kinds of file decide what it says:
@@ -261,6 +157,49 @@ Five kinds of file decide what it says:
 
 The prompts in `prompts/` set how the tutor teaches, not what is true. Change them
 only together with the course maintainer.
+
+## Vet a unit
+
+`docs/vetting-guide.html` is your working aid. Open it in your browser. It has the
+full procedure and a checklist with links to every unit's files, its source
+chunks, its facts, and its open question. Its checkboxes stay in your browser
+only. `STATUS.md` is the record.
+
+1. Take the units the maintainer gave you. Read each unit's Notes in
+   `curriculum/regulations/STATUS.md` first. A note names an open question.
+2. Open the lesson in the workspace (see "Edit in the instructor workspace"), or
+   in a text editor.
+3. Check every fact in the lesson against the source text in the knowledge base:
+   who the rule binds, what it requires, and every number, date, section
+   citation, defined term, and diagram label. Check the worked example and the
+   common misreading.
+4. Check the unit's rows in `reference/regulations-facts.md` the same way. The
+   tutor's questions are keyed to these rows.
+5. Check the unit's Foundational file, if it has one. A tutor draft is a real
+   lesson file that later students get.
+6. Fix what is wrong, in the lesson and in the facts. A fix in the lesson alone
+   is not enough.
+7. Record the result, as the next section describes.
+
+The CFR outranks the Advisory Circular and the study guide. If two sources
+disagree, follow the CFR and write the conflict in the Notes column of
+`STATUS.md`. Do not smooth it over in the lesson.
+
+### Record the result
+
+- **A lesson file, in the workspace.** Save it, and answer the question "Is this
+  content vetted against the source text?" The save raises the file's version to
+  N and writes `vN vetted` or `vN edited` into the unit's row in `STATUS.md`.
+- **A lesson file, by hand.** Edit the file. Then set the unit's Gear cell in
+  `STATUS.md` to `vN vetted`, where N is the `version:` line in the file.
+- **The facts and the status, by hand.** The workspace does not change these
+  cells. Write `vetted` in the Reference facts cell when you have checked every
+  row for the unit. Set the Status cell to `vetted` when all the unit's lesson
+  files and its facts are vetted. Add a dated note.
+- **A problem you do not fix.** Write it in the unit's Notes cell, in this form:
+  `<date>: <what is wrong>, per <section>. Not fixed.` Git records who wrote it.
+
+A unit is vetted when all its lesson files and its reference facts are vetted.
 
 ### Find what needs work
 
@@ -288,13 +227,12 @@ only together with the course maintainer.
 | A quiz question is weak or wrong | The lesson file and the reference facts | The tutor writes a new question each time, from the lesson and the facts. Make the fact exact, and name the common misreading in the lesson. |
 | The questions miss a point that matters | The unit's questions file | In the Questions tab, write guidance such as "make sure the student understands X", or write the question yourself. |
 | A practice-exam item is wrong | `mock/regulations-mock.md` | Correct the row. Keep one keyed answer, distinct wrong options, a rationale, and a link. |
-| A chat answer is wrong | Tell the course maintainer | Chat answers come from the knowledge base, which the maintainer corrects or rebuilds. |
+| A chat answer is wrong | Your pull request | Describe the question and the wrong answer. Chat answers come from the knowledge base, which the maintainer corrects or rebuilds. |
 
-### Edit in the instructor workspace
+## Edit in the instructor workspace
 
-1. Start the course with `./start.sh --instructor`. The top bar then shows an
-   **Instructor** button. Without the flag, the button and all editing are gone,
-   so a student's copy of the course cannot change its material.
+1. Start the course with `--instructor` (see "Start the course"). The top bar
+   then shows an **Instructor** button.
 2. Click **Instructor** on any screen. The workspace opens on the unit and the
    speed on screen. To edit another file, pick a unit from the list and a tab:
    **Fast-track**, **Guided**, or **Foundational**. The line next to the tabs
@@ -308,7 +246,7 @@ only together with the course maintainer.
    assistant replies with a note on what it changed and a proposal for the whole
    file. The proposal shows in the middle column. Under the note, **Changes**
    lists each line that it adds or removes. You can also speak the request with
-   the microphone button beside Send (see "Speaking a question" above).
+   the microphone button beside Send (see "Speaking a question").
 5. Read the proposal. **Apply** puts it into the editor, and **Discard** drops
    it. Ask again to adjust it, for example "make the labels larger". You can also
    edit by hand at any time. Nothing is saved until you click Save.
@@ -394,106 +332,39 @@ The plain-language explanation, then the worked example, then the common misread
 - Put an image in `curriculum/regulations/images/`, and show it in the lesson as
   `![What it shows](images/name.svg)`.
 
-### Vet
+## Hand your work back
 
-To vet a file, check every fact in it against the source text in the knowledge
-base. `docs/vetting-guide.html` is a guide and a per-unit checklist with links to
-every file, source chunk, and open question; regenerate it with
-`python3 tools/vetting_guide.py` after STATUS.md changes. The CFR outranks the Advisory Circular and the study guide. If two sources
-disagree, follow the CFR and write the conflict in the Notes column of
-`STATUS.md`; do not smooth it over in the lesson. Each save records your answer
-in the unit's row, for example `v3 vetted` or `v3 edited`. A unit is vetted when
-all its lesson files and its reference facts are vetted.
+1. Run the integrity check:
 
-### Check and hand over your change
+   ```bash
+   python3 tools/check_integrity.py
+   ```
 
-1. Run `python3 tools/check_integrity.py --allow-incomplete`. It finds a lesson
-   without a source line, a fact without a link, and a broken exam item. It
-   cannot check whether a fact is true; that part is yours.
-2. Start the course and try the unit at the speed you changed.
-3. Hand the change over. If you use git, commit the changed files and any new
-   images, with a message that names the unit, the speed, and the change. If you
-   do not use git, send the same files to the course maintainer.
+   It must report 0 errors. It finds a lesson without a source line, a fact
+   without a link, and a broken exam item. It cannot check whether a fact is
+   true; that part is yours. Open each link that you added or changed once in
+   your browser. The maintainer checks all links before a release.
 
-## Building the content locally
+2. Start the course and try each unit you changed, at the speed you changed.
 
-These steps need the PDFs, network access, and a model, which is why they run on
-your machine rather than in the build environment.
+3. Commit the course material and push your branch:
 
-1. Run the tests, then set `provider` to `claude_code` in `config.json` so the
-   build passes draw on your plan: `python3 -m unittest discover -s tests`.
+   ```bash
+   git add curriculum reference questions mock
+   git commit -m "Vet 2.1 to 2.5"
+   git push -u origin vetting/your-name
+   ```
 
-2. Fetch the sources: `python3 tools/fetch_sources.py`. It reads the `fetch`
-   block of each entry in `knowledge-base/sources.json` and writes the PDF the
-   builder expects into `knowledge-base/pdfs/`: FAA PDFs are downloaded as
-   published; the CFR parts are printed from the current eCFR text, and the
-   AIM, faa.gov, and Federal Register pages from their main content, with
-   headless Chrome. Needs network access and Chrome or Chromium. A source
-   whose PDF is present is skipped; `--redo` refreshes it. The run is noted
-   in `knowledge-base/pdfs/fetch-log.json`.
+   The `git add` line takes only the course material: lessons, images,
+   `STATUS.md`, facts, questions, and the practice exam. It leaves out
+   `config.json` and `docs/vetting-guide.html`. Do not commit those two files.
+   The maintainer regenerates the vetting guide after each merge.
 
-3. Build the source layer of the knowledge base. Needs `pdftotext` (poppler):
-   `python3 tools/build_kb.py`. Check a few chunks in `knowledge-base/regulations/`
-   against the PDF: section boundaries, page numbers, and the canonical links.
-   If a source's headings are not cut where you expect, adjust its `heading`
-   preset or give it a custom regex in the manifest and rebuild that source.
+4. Open a pull request on GitHub from your branch into `main`. List the units you
+   vetted, and each problem that you found but did not fix.
 
-4. Add the explanation layer: `python3 tools/enhance_kb.py`. One companion chunk
-   per source chunk, written by the model from the chunk and nothing beyond it,
-   tagged `kind: explanation`. Spot-check a handful for added facts; the prompt
-   forbids them, and a companion that adds one should be deleted and regenerated.
-   `knowledge-base/EXPLANATION-LAYER.md` describes the layer and the vetting
-   procedure, and `python3 tools/check_companions.py` lists the numbers in each
-   companion that its source chunk does not contain.
+## For developers
 
-5. Check the links and the structure:
-   `python3 tools/check_links.py` and `python3 tools/check_integrity.py --allow-incomplete`.
-
-6. Vet the authored content. For each unit in `STATUS.md`, read the content and
-   its reference facts against the source chunks and mark the row vetted, or fix
-   it. Do the same for every practice-exam item. The notes column holds the open
-   questions the author flagged.
-
-7. Run the course with a real model: `./start.sh`, choose Fast-track, work through
-   Task A, miss a question on purpose to see the downshift, ask the tutor a
-   free-form question, and take the practice exam. Watch the terminal for errors
-   and `progress/student-ledger.md` for the state.
-
-8. All 77 units have a Guided lesson and reference facts (Tasks B to F were
-   written on October 17, 2026; see `docs/plans/content-tasks-b-to-f.md`). To add
-   or revise content, follow the conventions at the bottom of `STATUS.md`, by hand
-   or in the instructor workspace (see "Improving the tutor"), and run the
-   integrity check without `--allow-incomplete`.
-
-9. Package: `python3 tools/package.py` writes `dist/part107-course-<date>.zip`,
-   refusing to package a course that fails the integrity check. Unzip it somewhere
-   else and run it on each backend before handing it to anyone.
-
-## How it fits together
-
-```
-ui/              the fixed shell: renders blocks, posts responses, draws the map and readiness;
-                 instructor.js is the instructor workspace
-server.py        serves the shell, routes responses, scores answers, calls the model,
-                 saves tutor drafts and instructor edits
-status.py        changes one unit's row of STATUS.md when a lesson file is saved
-orchestrator.py  which unit, which gear, which stage comes next; task boundaries and review
-mockexam.py      practice-exam attempts, lookup scoring, readiness
-llm_client.py    provider adapters (anthropic, claude_code, ollama, mock)
-retrieval.py     lexical search over the knowledge base, for free-form questions
-items.py         table parsing, vetted items, deterministic lookup scoring
-ledger.py        the student ledger: mastery, gears, parking, attempts, exam attempts
-prompts/         the tutor: global rules, one prompt per stage, the block and response schemas;
-                 author.md is the instructor's authoring assistant
-curriculum/      objectives, per-unit teaching content, vetting status
-reference/       the per-unit ground-truth facts the tutor keys answers to
-mock/            the fixed practice exam
-knowledge-base/  the source manifest and the two-layer corpus (built locally)
-sources/         the authoritative references and their precedence
-tools/           fetch_sources, build_kb, enhance_kb, check_companions, probe_retrieval, probe_chat, check_integrity, check_links, package
-tests/           the test suite; fixtures live under tests/fixtures
-docs/            the illustrated guide: the SVG diagrams shown at the top of this file
-```
-
-Design principles behind these choices are in `LLM_COURSEWARE_DESIGN_AND_PRINCIPLES.md`,
-and the build plan is in `IMPLEMENTATION_PLAN.md`.
+[DEVELOPING.md](DEVELOPING.md) covers the four backends in detail, the system
+diagrams, the cost estimates, the tests, the content build, packaging, and the
+file layout.

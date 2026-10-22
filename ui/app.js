@@ -433,10 +433,10 @@
     btn.hidden = !state.mock_available || state.mock_in_progress;
     btn.textContent = "Practice exam" + (r.attempts ? " \u00b7 " + r.passes + "/" + r.passes_needed + " passed" : "");
     if (r.ready) {
-      node.appendChild(el("div", { class: "ready" }, "Ready to schedule the real exam"));
+      node.appendChild(el("div", { class: "ready" }, "Regulations area: ready for the knowledge test"));
       return;
     }
-    node.appendChild(el("div", null, "Not yet ready for the real exam"));
+    node.appendChild(el("div", null, "Regulations area: not yet ready for the knowledge test"));
     node.appendChild(el("ul", null, (r.reasons || []).map(function (x) { return el("li", null, x); })));
   }
 

@@ -9,14 +9,6 @@ if [ -z "$PYTHON" ]; then
   exit 1
 fi
 
-PROVIDER=$("$PYTHON" -c 'import json;print(json.load(open("config.json")).get("provider",""))')
-if [ "$PROVIDER" = "anthropic" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "Note: ANTHROPIC_API_KEY is not set."
-  echo "Set it with:  export ANTHROPIC_API_KEY=your-key"
-  echo "Or set \"provider\" to \"ollama\" in config.json to run locally."
-  echo
-fi
-
 PORT=$("$PYTHON" -c 'import json;print(json.load(open("config.json")).get("port",8107))')
 "$PYTHON" server.py "$@" &
 SERVER_PID=$!

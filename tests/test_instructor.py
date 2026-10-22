@@ -136,6 +136,36 @@ class TestInstructorMode(unittest.TestCase):
             self.assertEqual(again["items"], [dict(question, item=UNIT + "-i1", unit=UNIT, answer="B")])
             self.assertEqual(saved["items"], again["items"])
 
+    def test_a_save_posted_from_another_site_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            course = instructor_course(tmp)
+            lesson = orchestrator.lesson_path(course.paths["curriculum"], UNIT, 2)
+            text = course.author_file(UNIT, 2)["text"].replace("Stub teaching content", "Edited teaching content")
+
+            def save(base, origin):
+                # text/plain, as a cross-site form or fetch would send it without a preflight
+                headers = {"content-type": "text/plain"}
+                if origin:
+                    headers["origin"] = origin
+                req = urllib.request.Request(base + "/api/author/save", headers=headers, method="POST",
+                                             data=json.dumps({"unit": UNIT, "gear": 2, "text": text}).encode("utf-8"))
+                try:
+                    with urllib.request.urlopen(req) as reply:
+                        return reply.status
+                except urllib.error.HTTPError as error:
+                    return error.code
+
+            with serving(course) as base:
+                with open(lesson, encoding="utf-8") as handle:
+                    before = handle.read()
+                self.assertEqual(save(base, "http://evil.example"), 403)
+                self.assertEqual(save(base, "http://localhost:1"), 403)
+                with open(lesson, encoding="utf-8") as handle:
+                    self.assertEqual(handle.read(), before)
+                self.assertEqual(save(base, base), 200)  # the course's own page
+                self.assertEqual(save(base, None), 200)  # curl, the tools, and the tests send no origin
+            self.assertEqual(course.tutor.content(UNIT, 2)["version"], 3)
+
 
 class TestSaving(unittest.TestCase):
     def test_a_save_raises_the_version_and_the_next_lesson_uses_it(self):

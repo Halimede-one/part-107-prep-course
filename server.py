@@ -271,8 +271,11 @@ class Course:
     # lesson, so the per-request record of model calls is kept per thread.
     _local = threading.local()
 
-    def __init__(self, config_path=os.path.join(ROOT, "config.json"), instructor=False):
+    def __init__(self, config_path=os.path.join(ROOT, "config.json"), instructor=False, provider=None):
         self.config = load_config(config_path)
+        # A provider named at start-up wins, so nobody edits the tracked config.json to switch.
+        if provider:
+            self.config["provider"] = provider
         # The instructor workspace edits the course material, so it exists only
         # when the course is started for an instructor.
         self.instructor = bool(instructor or self.config.get("instructor"))
@@ -1433,6 +1436,12 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.started = time.perf_counter()
+        # A browser names the page that sent a POST. Refuse one from another site,
+        # which could otherwise rewrite lesson files or the ledger on this machine.
+        origin = self.headers.get("origin")
+        port = self.server.server_address[1]
+        if origin and origin not in ("http://localhost:%d" % port, "http://127.0.0.1:%d" % port):
+            return self.send_error(403, "Forbidden")
         if self.path == "/api/metrics":
             return self.receive_metrics()
         authoring = self.path in ("/api/author/ask", "/api/author/save", "/api/author/questions")
@@ -1575,10 +1584,20 @@ def main():
     parser = argparse.ArgumentParser(description="The Part 107 course server.")
     parser.add_argument("--instructor", action="store_true",
                         help="add the instructor workspace, which edits the course material")
-    course = Course(instructor=parser.parse_args().instructor)
+    parser.add_argument("--provider", metavar="NAME",
+                        help="the model backend for this run, in place of \"provider\" in config.json")
+    args = parser.parse_args()
+    try:
+        course = Course(instructor=args.instructor, provider=args.provider)
+    except LLMError as error:
+        parser.error(str(error))
     port = int(course.config.get("port", 8107))
     print("Part 107 course running at http://localhost:%d" % port)
     print("Provider: %s. Press Ctrl+C to stop." % course.client.name)
+    key_env = course.client.settings.get("api_key_env", "ANTHROPIC_API_KEY")
+    if course.client.name == "anthropic" and not os.environ.get(key_env):
+        print("Note: %s is not set. Set it with:  export %s=your-key" % (key_env, key_env))
+        print("Or start with --provider claude_code to use your Claude plan.")
     if course.instructor:
         print("Instructor mode: on. The Instructor button edits the course material.")
     server = CourseServer(("127.0.0.1", port), course)

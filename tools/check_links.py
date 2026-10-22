@@ -74,9 +74,13 @@ def probe(url, timeout):
                 return again.code, str(again.reason)
             except urllib.error.URLError as again:
                 return 0, str(again.reason)
+            except OSError as again:  # a timeout or a dropped connection while reading
+                return 0, str(again) or type(again).__name__
         return error.code, str(error.reason)
     except urllib.error.URLError as error:
         return 0, str(error.reason)
+    except OSError as error:  # a timeout or a dropped connection while reading
+        return 0, str(error) or type(error).__name__
 
 
 def main():

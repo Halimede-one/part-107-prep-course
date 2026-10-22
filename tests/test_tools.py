@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import build_kb          # noqa: E402
 import check_companions  # noqa: E402
+import check_links       # noqa: E402
 import enhance_kb        # noqa: E402
 import fetch_sources     # noqa: E402
 import retrieval         # noqa: E402
@@ -138,6 +139,17 @@ class TestFetcher(unittest.TestCase):
     def test_ecfr_urls(self):
         self.assertTrue(fetch_sources.ecfr_url(part="107").endswith("title-14?part=107"))
         self.assertTrue(fetch_sources.ecfr_url(section="91.17").endswith("title-14?part=91&section=91.17"))
+
+
+class TestLinkCheck(unittest.TestCase):
+    def test_a_timeout_while_reading_is_a_failed_link_not_a_crash(self):
+        with mock.patch("urllib.request.urlopen", side_effect=TimeoutError("The read operation timed out")):
+            self.assertEqual(check_links.probe("https://www.faa.gov/x", 1), (0, "The read operation timed out"))
+
+    def test_a_dropped_connection_on_the_get_retry_is_a_failed_link(self):
+        refused = check_links.urllib.error.HTTPError("https://www.faa.gov/x", 405, "Method Not Allowed", {}, None)
+        with mock.patch("urllib.request.urlopen", side_effect=[refused, ConnectionResetError()]):
+            self.assertEqual(check_links.probe("https://www.faa.gov/x", 1), (0, "ConnectionResetError"))
 
 
 class TestCompanionCheck(unittest.TestCase):

@@ -1,5 +1,5 @@
 {
-  "provider": "claude_code",
+  "provider": "anthropic",
   "providers": {
     "anthropic": {
       "endpoint": "https://api.anthropic.com/v1/messages",

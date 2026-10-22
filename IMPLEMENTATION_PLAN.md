@@ -1,6 +1,6 @@
 # Part 107 Course: Implementation Plan (v3.2)
 
-Status: construction complete through Phase 6; content authored for Task A and the gear-3 exemplars; the rest of the content and all vetting happen locally. Supersedes v3.1.
+Status: construction complete through Phase 6; content written for all 77 units (Tasks B to F on October 17, 2026), none of it vetted yet. The release to instructors for vetting is planned in `docs/plans/instructor-release.md`. Supersedes v3.1.
 
 This version implements the principles in LLM_COURSEWARE_DESIGN_AND_PRINCIPLES.md against Part 107.
 
@@ -306,6 +306,6 @@ Closed in v3.1: knowledge-base scope (PDFs via pdftotext plus the explanation la
 Still open, all local:
 1. Vetting. Every authored unit, every reference fact, and every exam item against the source text, recorded in `curriculum/regulations/STATUS.md`. Items flagged there carry specific questions.
 2. Verify at first run: the Anthropic model string, the web-search tool format (then set `supports_web_search` true), and the PDF links in `knowledge-base/sources.json`.
-3. Author Tasks B to F against the built knowledge base, one task per batch, and extend the exam if the task weighting drifts.
+3. Author Tasks B to F against the built knowledge base, one task per batch, and extend the exam if the task weighting drifts: done on October 17, 2026. The record is `docs/plans/content-tasks-b-to-f.md`.
 4. Course-map visual design pass (Section 12.5): done on October 10, 2026 as the course tree. The design record (mockup, encoding, review) is `docs/mockups/course-tree/`. It added `title` and `attempts` per unit to `/state` and a `goto` request that teaches a unit the student picks from the tree at the gear they pick.
 5. Tunables to revisit with real students: TERMINAL_CYCLES, REVIEW_PER_BOUNDARY, REVIEW_DEMOTION_GEAR, the pass mark, and the minutes per exam item.

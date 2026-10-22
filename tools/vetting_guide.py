@@ -301,10 +301,10 @@ def build():
   <li>Check every number, date, section citation, defined term, and diagram label against the source chunk. Check the arithmetic in the worked example.</li>
   <li>The CFR outranks the Advisory Circular and the study guide. If two sources disagree, follow the CFR and write the conflict in the Notes column of <a href="__STATUS__">STATUS.md</a>. Do not smooth it over in the lesson.</li>
   <li>Review notes go in STATUS.md, never in a lesson file. The tutor reads lesson files verbatim, so a note there reaches a student.</li>
-  <li>A unit is vetted when all its lesson files and its reference facts are vetted. Every unit has a Guided lesson; 7 units also have a Foundational file.</li>
+  <li>A unit is vetted when all its lesson files and its reference facts are vetted. Every unit has a Guided lesson; __GEAR3_N__ units also have a Foundational file.</li>
   <li>The explanation layer of the knowledge base (the <code>.explained.md</code> companion chunks) is a separate, optional check, described in <a href="__EXPLANATION__">EXPLANATION-LAYER.md</a>.</li>
 </ul>
-<p>The full rules are in the README under <a href="__README__">Improving the tutor, section Vet</a>. The plan that produced Tasks B to F, with its as-built notes, is <a href="__PLAN__">content-tasks-b-to-f.md</a>.</p>
+<p>The <a href="__README__">README</a> is the instructor guide: how to start the course, how the workspace works, and how to hand your work back. The plan that produced Tasks B to F, with its as-built notes, is <a href="__PLAN__">content-tasks-b-to-f.md</a>.</p>
 
 <h2 id="where">Where everything is</h2>
 <div class="scroll"><table>
@@ -332,7 +332,7 @@ def build():
   <li>Check the unit's rows in the reference facts: the fact, the answer, the section, and the link. The answer must say what the section says, in the section's numbers.</li>
   <li>If the unit has a Foundational file, check it the same way. A tutor draft is a real lesson file that later students get; your first save removes the draft mark.</li>
   <li>Fix what is wrong, in the lesson and in the facts. A fix in the lesson alone is not enough, because questions are keyed to the facts.</li>
-  <li>Record the result as described next, then run <code>python3 tools/check_integrity.py</code> and <code>python3 tools/check_links.py</code>.</li>
+  <li>Record the result as described next, then run <code>python3 tools/check_integrity.py</code>. Open each link that you added or changed once in your browser.</li>
   <li>Click Try it as a student, or start the course, and teach the unit once.</li>
 </ol>
 
@@ -372,12 +372,17 @@ __UNITS__
 <tbody>__GEAR3__</tbody></table></div>
 
 <h2 id="after">After vetting</h2>
+<p>When you finish your units:</p>
 <ol>
-  <li>Run the checks: <code>python3 tools/check_integrity.py</code> (no <code>--allow-incomplete</code>; every unit has content) and <code>python3 tools/check_links.py</code>.</li>
+  <li>Run the check: <code>python3 tools/check_integrity.py</code> (no <code>--allow-incomplete</code>; every unit has content).</li>
+  <li>Commit the course material on your branch and open a pull request, as the <a href="__README__">README</a> describes under "Hand your work back". Do not commit this page.</li>
+</ol>
+<p>For the maintainer, after each merge:</p>
+<ol>
   <li>Regenerate this page: <code>python3 tools/vetting_guide.py</code>. The summary at the top counts the units whose Status cell says vetted.</li>
+  <li>Check the links: <code>python3 tools/check_links.py</code>. eCFR answers <code>429 Too Many Requests</code> after about 30 requests; read the status code before you change a link.</li>
   <li>Run the course with a real model from Task A to the practice exam: <code>./start.sh</code>.</li>
   <li>Package: <code>python3 tools/package.py</code>. It refuses a course that fails the integrity check.</li>
-  <li>Commit the changed files and any new images, with a message that names the units vetted.</li>
 </ol>
 </main>
 <script>

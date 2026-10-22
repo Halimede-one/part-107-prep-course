@@ -228,7 +228,7 @@
     var done = r.key === "exam" ? (rd.passes || 0) >= (rd.passes_needed || 2) : !!rd.ready;
     var label = r.key === "exam" ? "Practice exam" : "Readiness gate";
     var detail = r.key === "exam" ? (rd.passes || 0) + " of " + (rd.passes_needed || 2) + " passes at 85 percent or better"
-                                  : (rd.ready ? "Ready for the real exam" : "Every unit mastered, none set aside, two exam passes");
+                                  : (rd.ready ? "Regulations area ready for the knowledge test" :"Every unit mastered, none set aside, two exam passes");
     var g = '<g class="gate' + (done ? " done" : "") + '"><title>' + esc(label + ": " + detail) + '</title>' +
       '<rect class="gate-mark" x="' + (x - s) + '" y="' + f(y - s) + '" width="' + (2 * s) + '" height="' + (2 * s) + '" rx="' + (s * 0.3) + '"/>';
     g += '<text class="code" x="' + m.labelX + '" y="' + f(y + m.codeFont * 0.36) + '">' + esc(label) + '</text>';

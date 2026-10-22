@@ -816,6 +816,16 @@ class TestCourse(unittest.TestCase):
             first_text = next(i for i, e in enumerate(events) if "delta" in e)
             self.assertEqual(events[first_text - 1], {"status": "Writing the answer"})
 
+    def test_a_provider_named_at_start_up_replaces_the_one_in_config_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "config.json")
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(mock_config(tmp, "claude_code"), handle)
+            self.assertEqual(server_module.Course(path).client.name, "claude_code")
+            self.assertEqual(server_module.Course(path, provider="mock").client.name, "mock")
+            with self.assertRaisesRegex(LLMError, "Unknown provider 'nosuch'.*mock"):
+                server_module.Course(path, provider="nosuch")
+
     def test_the_chat_is_paused_during_a_practice_exam(self):
         with tempfile.TemporaryDirectory() as tmp:
             course = self.make(tmp)
